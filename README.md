@@ -12,5 +12,8 @@ Features:
 
 Food database note:
 - This MVP ships with a starter set of common foods (with picture keywords).
+- Searching pulls products (name, calories, ingredients, and a picture) from Open Food Facts.
+- Calories from Open Food Facts are shown as “per 100g”, and quantity multiplies that value.
 - You can add your own foods (name, category, calories per serving, serving label, optional ingredients + picture keywords).
+
 
