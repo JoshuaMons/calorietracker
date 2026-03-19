@@ -10,6 +10,8 @@
   --danger: #e11d48;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
   --radius: 16px;
+  /* Sticky dagtotaal onder vaste header (banner + tabs) */
+  --app-header-sticky-top: 118px;
 }
 
 * {
@@ -952,6 +954,30 @@ textarea:focus {
   line-height: 1.35;
 }
 
+.library-dag-total-sticky {
+  position: sticky;
+  top: var(--app-header-sticky-top);
+  z-index: 14;
+  margin: 4px -4px 12px;
+  padding: 4px 4px 10px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.97) 0%,
+    rgba(255, 255, 255, 0.92) 55%,
+    rgba(243, 244, 247, 0.88) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+}
+
+.library-dag-total-sticky .selected-items-total {
+  margin-top: 0;
+  padding-top: 10px;
+  border-top-width: 2px;
+}
+
 .library-split-aside .selected-items-total {
   font-size: 14px;
 }
@@ -1306,6 +1332,18 @@ textarea:focus {
 
 .library-dag-card .selected-items {
   margin-top: 4px;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --app-header-sticky-top: 152px;
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --app-header-sticky-top: 168px;
+  }
 }
 
 /* Schema: maaltijdplan */

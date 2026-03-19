@@ -1,0 +1,4268 @@
+[
+  {
+    "id": "staple:melk-vol",
+    "name": "Volle melk",
+    "category": "Drink",
+    "caloriesPerServing": 66,
+    "servingLabel": "100 ml",
+    "imageQuery": "melk pak vol",
+    "ingredients": [
+      "Volle melk"
+    ],
+    "tags": [
+      "melk",
+      "zuivel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:melk-halfvol",
+    "name": "Halfvolle melk",
+    "category": "Drink",
+    "caloriesPerServing": 46,
+    "servingLabel": "100 ml",
+    "imageQuery": "halfvolle melk",
+    "ingredients": [
+      "Halfvolle melk"
+    ],
+    "tags": [
+      "melk",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:melk-mager",
+    "name": "Magere melk",
+    "category": "Drink",
+    "caloriesPerServing": 35,
+    "servingLabel": "100 ml",
+    "imageQuery": "magere melk",
+    "ingredients": [
+      "Magere melk"
+    ],
+    "tags": [
+      "melk",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:karnemelk",
+    "name": "Karnemelk",
+    "category": "Drink",
+    "caloriesPerServing": 80,
+    "servingLabel": "250 ml",
+    "imageQuery": "karnemelk",
+    "ingredients": [
+      "Karnemelk"
+    ],
+    "tags": [
+      "zuivel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:chocomel",
+    "name": "Chocomel (pak)",
+    "category": "Drink",
+    "caloriesPerServing": 84,
+    "servingLabel": "100 ml",
+    "imageQuery": "chocomel",
+    "ingredients": [
+      "Chocomel"
+    ],
+    "tags": [
+      "chocolademelk",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:fristi",
+    "name": "Fristi",
+    "category": "Drink",
+    "caloriesPerServing": 50,
+    "servingLabel": "100 ml",
+    "imageQuery": "fristi",
+    "ingredients": [
+      "Fristi"
+    ],
+    "tags": [
+      "drinkyoghurt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:vla-vanille",
+    "name": "Vla vanille",
+    "category": "Drink",
+    "caloriesPerServing": 96,
+    "servingLabel": "100 ml",
+    "imageQuery": "vanille vla",
+    "ingredients": [
+      "Vla vanille"
+    ],
+    "tags": [
+      "vla",
+      "toetje",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kwark-magere",
+    "name": "Magere kwark naturel",
+    "category": "Snack",
+    "caloriesPerServing": 70,
+    "servingLabel": "100 g",
+    "imageQuery": "magere kwark",
+    "ingredients": [
+      "Magere kwark naturel"
+    ],
+    "tags": [
+      "kwark",
+      "eiwit",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kwark-vol",
+    "name": "Volle kwark naturel",
+    "category": "Snack",
+    "caloriesPerServing": 103,
+    "servingLabel": "100 g",
+    "imageQuery": "volle kwark",
+    "ingredients": [
+      "Volle kwark naturel"
+    ],
+    "tags": [
+      "kwark",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:griekse-yoghurt",
+    "name": "Griekse yoghurt naturel",
+    "category": "Snack",
+    "caloriesPerServing": 120,
+    "servingLabel": "100 g",
+    "imageQuery": "greek yogurt",
+    "ingredients": [
+      "Griekse yoghurt naturel"
+    ],
+    "tags": [
+      "yoghurt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:skyr",
+    "name": "Skyr naturel",
+    "category": "Snack",
+    "caloriesPerServing": 66,
+    "servingLabel": "100 g",
+    "imageQuery": "skyr",
+    "ingredients": [
+      "Skyr naturel"
+    ],
+    "tags": [
+      "yoghurt",
+      "ijsland",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:drinkyoghurt-aardbei",
+    "name": "Drinkyoghurt aardbei",
+    "category": "Drink",
+    "caloriesPerServing": 64,
+    "servingLabel": "100 ml",
+    "imageQuery": "drinkyoghurt",
+    "ingredients": [
+      "Drinkyoghurt aardbei"
+    ],
+    "tags": [
+      "yoghurt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:appelsap",
+    "name": "Appelsap",
+    "category": "Drink",
+    "caloriesPerServing": 45,
+    "servingLabel": "100 ml",
+    "imageQuery": "appelsap pak",
+    "ingredients": [
+      "Appelsap"
+    ],
+    "tags": [
+      "sap",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:sinasappelsap",
+    "name": "Sinaasappelsap",
+    "category": "Drink",
+    "caloriesPerServing": 42,
+    "servingLabel": "100 ml",
+    "imageQuery": "sinaasappelsap",
+    "ingredients": [
+      "Sinaasappelsap"
+    ],
+    "tags": [
+      "sap",
+      "vitamine c",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:multivitamine-sap",
+    "name": "Multivitaminesap",
+    "category": "Drink",
+    "caloriesPerServing": 45,
+    "servingLabel": "100 ml",
+    "imageQuery": "multivitamine sap",
+    "ingredients": [
+      "Multivitaminesap"
+    ],
+    "tags": [
+      "sap",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:spa-rood",
+    "name": "Spa rood / bronwater met bubbels",
+    "category": "Drink",
+    "caloriesPerServing": 0,
+    "servingLabel": "250 ml",
+    "imageQuery": "spa rood",
+    "ingredients": [
+      "Spa rood / bronwater met bubbels"
+    ],
+    "tags": [
+      "water",
+      "bruisend",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:thee-ijzer",
+    "name": "Kop zwarte thee (met suiker)",
+    "category": "Drink",
+    "caloriesPerServing": 30,
+    "servingLabel": "250 ml",
+    "imageQuery": "thee kop",
+    "ingredients": [
+      "Kop zwarte thee"
+    ],
+    "tags": [
+      "thee",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:koffie-melk-suiker",
+    "name": "Koffie met melk en suiker",
+    "category": "Drink",
+    "caloriesPerServing": 45,
+    "servingLabel": "250 ml",
+    "imageQuery": "koffie melk",
+    "ingredients": [
+      "Koffie met melk en suiker"
+    ],
+    "tags": [
+      "koffie",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:aa-drink",
+    "name": "AA Drink (isotone drank)",
+    "category": "Drink",
+    "caloriesPerServing": 24,
+    "servingLabel": "100 ml",
+    "imageQuery": "aa drink",
+    "ingredients": [
+      "AA Drink"
+    ],
+    "tags": [
+      "sportdrank",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:energiedrank",
+    "name": "Energiedrank (blik)",
+    "category": "Drink",
+    "caloriesPerServing": 45,
+    "servingLabel": "100 ml",
+    "imageQuery": "energy drink blik",
+    "ingredients": [
+      "Energiedrank"
+    ],
+    "tags": [
+      "energie",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:icetea",
+    "name": "Ice tea peach",
+    "category": "Drink",
+    "caloriesPerServing": 22,
+    "servingLabel": "100 ml",
+    "imageQuery": "ice tea",
+    "ingredients": [
+      "Ice tea peach"
+    ],
+    "tags": [
+      "thee",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:brood-wit-snee",
+    "name": "Witbrood (snee)",
+    "category": "Snack",
+    "caloriesPerServing": 80,
+    "servingLabel": "1 snee (~35 g)",
+    "imageQuery": "wit brood snee",
+    "ingredients": [
+      "Witbrood"
+    ],
+    "tags": [
+      "brood",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:brood-volkoren-snee",
+    "name": "Volkorenbrood (snee)",
+    "category": "Snack",
+    "caloriesPerServing": 75,
+    "servingLabel": "1 snee (~35 g)",
+    "imageQuery": "volkoren brood",
+    "ingredients": [
+      "Volkorenbrood"
+    ],
+    "tags": [
+      "brood",
+      "vezel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:brood-casino-wit",
+    "name": "Casinobrood wit (snee)",
+    "category": "Snack",
+    "caloriesPerServing": 85,
+    "servingLabel": "1 snee",
+    "imageQuery": "casino brood",
+    "ingredients": [
+      "Casinobrood wit"
+    ],
+    "tags": [
+      "brood",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:ontbijtkoek",
+    "name": "Ontbijtkoek (plak)",
+    "category": "Snack",
+    "caloriesPerServing": 90,
+    "servingLabel": "1 plak (~30 g)",
+    "imageQuery": "ontbijtkoek",
+    "ingredients": [
+      "Ontbijtkoek"
+    ],
+    "tags": [
+      "koek",
+      "kruid",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:beschuit",
+    "name": "Beschuit",
+    "category": "Snack",
+    "caloriesPerServing": 35,
+    "servingLabel": "1 stuk",
+    "imageQuery": "beschuit",
+    "ingredients": [
+      "Beschuit"
+    ],
+    "tags": [
+      "brood",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:crackers-haver",
+    "name": "Havercrackers",
+    "category": "Snack",
+    "caloriesPerServing": 25,
+    "servingLabel": "1 cracker",
+    "imageQuery": "haver crackers",
+    "ingredients": [
+      "Havercrackers"
+    ],
+    "tags": [
+      "cracker",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:tuc-crackers",
+    "name": "Zoute crackers (TUC-achtig)",
+    "category": "Snack",
+    "caloriesPerServing": 24,
+    "servingLabel": "1 cracker",
+    "imageQuery": "tuc crackers",
+    "ingredients": [
+      "Zoute crackers"
+    ],
+    "tags": [
+      "cracker",
+      "zout",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rijstwafel",
+    "name": "Rijstwafel naturel",
+    "category": "Snack",
+    "caloriesPerServing": 35,
+    "servingLabel": "1 stuk",
+    "imageQuery": "rijstwafel",
+    "ingredients": [
+      "Rijstwafel naturel"
+    ],
+    "tags": [
+      "glutenvrij",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:stroopwafel",
+    "name": "Stroopwafel",
+    "category": "Snack",
+    "caloriesPerServing": 140,
+    "servingLabel": "1 stuk",
+    "imageQuery": "stroopwafel",
+    "ingredients": [
+      "Stroopwafel"
+    ],
+    "tags": [
+      "koek",
+      "karamel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:speculaas",
+    "name": "Speculaas (2 koeken)",
+    "category": "Snack",
+    "caloriesPerServing": 120,
+    "servingLabel": "2 stuks",
+    "imageQuery": "speculaas",
+    "ingredients": [
+      "Speculaas"
+    ],
+    "tags": [
+      "pepernoten",
+      "sinterklaas",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:hagelslag",
+    "name": "Chocolade hagelslag",
+    "category": "Snack",
+    "caloriesPerServing": 80,
+    "servingLabel": "2 el (~15 g)",
+    "imageQuery": "hagelslag",
+    "ingredients": [
+      "Chocolade hagelslag"
+    ],
+    "tags": [
+      "chocolade",
+      "broodbeleg",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:pindakaas",
+    "name": "Pindakaas",
+    "category": "Snack",
+    "caloriesPerServing": 90,
+    "servingLabel": "1 el (~15 g)",
+    "imageQuery": "pindakaas",
+    "ingredients": [
+      "Pindakaas"
+    ],
+    "tags": [
+      "noten",
+      "broodbeleg",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:jam-aardbei",
+    "name": "Aardbeienjam",
+    "category": "Snack",
+    "caloriesPerServing": 40,
+    "servingLabel": "1 el (~15 g)",
+    "imageQuery": "aardbeienjam",
+    "ingredients": [
+      "Aardbeienjam"
+    ],
+    "tags": [
+      "jam",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:appelstroop",
+    "name": "Appelstroop",
+    "category": "Snack",
+    "caloriesPerServing": 45,
+    "servingLabel": "1 el (~15 g)",
+    "imageQuery": "appelstroop",
+    "ingredients": [
+      "Appelstroop"
+    ],
+    "tags": [
+      "stroop",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:margarine",
+    "name": "Margarine (voor op brood)",
+    "category": "Ingredient",
+    "caloriesPerServing": 36,
+    "servingLabel": "10 g",
+    "imageQuery": "margarine kuip",
+    "ingredients": [
+      "Margarine"
+    ],
+    "tags": [
+      "vet",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:roomboter",
+    "name": "Roomboter",
+    "category": "Ingredient",
+    "caloriesPerServing": 75,
+    "servingLabel": "10 g",
+    "imageQuery": "roomboter",
+    "ingredients": [
+      "Roomboter"
+    ],
+    "tags": [
+      "boter",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kaas-belegen-plak",
+    "name": "Belegen kaas (plak)",
+    "category": "Snack",
+    "caloriesPerServing": 120,
+    "servingLabel": "30 g (1 plak)",
+    "imageQuery": "kaas plak",
+    "ingredients": [
+      "Belegen kaas"
+    ],
+    "tags": [
+      "kaas",
+      "zuivel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kaas-jong-geraspt",
+    "name": "Jonge kaas geraspt",
+    "category": "Ingredient",
+    "caloriesPerServing": 400,
+    "servingLabel": "100 g",
+    "imageQuery": "geraspte kaas",
+    "ingredients": [
+      "Jonge kaas geraspt"
+    ],
+    "tags": [
+      "kaas",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:mozzarella",
+    "name": "Mozzarella (bol)",
+    "category": "Ingredient",
+    "caloriesPerServing": 250,
+    "servingLabel": "125 g",
+    "imageQuery": "mozzarella bol",
+    "ingredients": [
+      "Mozzarella"
+    ],
+    "tags": [
+      "kaas",
+      "italiaans",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:feta",
+    "name": "Feta",
+    "category": "Ingredient",
+    "caloriesPerServing": 80,
+    "servingLabel": "30 g",
+    "imageQuery": "feta kaas",
+    "ingredients": [
+      "Feta"
+    ],
+    "tags": [
+      "kaas",
+      "salade",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:ham-gekookt",
+    "name": "Gekookte ham (plakken)",
+    "category": "Meal",
+    "caloriesPerServing": 30,
+    "servingLabel": "2 plakjes (~40 g)",
+    "imageQuery": "ham plakjes",
+    "ingredients": [
+      "Gekookte ham"
+    ],
+    "tags": [
+      "vlees",
+      "varken",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kipfilet-plak",
+    "name": "Kipfilet (plakken)",
+    "category": "Meal",
+    "caloriesPerServing": 50,
+    "servingLabel": "2 plakjes (~50 g)",
+    "imageQuery": "kipfilet",
+    "ingredients": [
+      "Kipfilet"
+    ],
+    "tags": [
+      "kip",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rookworst",
+    "name": "Rookworst (AH/Jumbo)",
+    "category": "Meal",
+    "caloriesPerServing": 320,
+    "servingLabel": "1 stuk (~150 g)",
+    "imageQuery": "rookworst",
+    "ingredients": [
+      "Rookworst"
+    ],
+    "tags": [
+      "worst",
+      "bbq",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:leverworst",
+    "name": "Leverworst (plak)",
+    "category": "Snack",
+    "caloriesPerServing": 80,
+    "servingLabel": "1 dikke plak",
+    "imageQuery": "leverworst",
+    "ingredients": [
+      "Leverworst"
+    ],
+    "tags": [
+      "worst",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:filet-americain",
+    "name": "Filet américain",
+    "category": "Snack",
+    "caloriesPerServing": 250,
+    "servingLabel": "100 g",
+    "imageQuery": "filet americain",
+    "ingredients": [
+      "Filet américain"
+    ],
+    "tags": [
+      "rund",
+      "broodbeleg",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:salami-plak",
+    "name": "Salami (plakken)",
+    "category": "Snack",
+    "caloriesPerServing": 90,
+    "servingLabel": "3 plakjes",
+    "imageQuery": "salami",
+    "ingredients": [
+      "Salami"
+    ],
+    "tags": [
+      "vlees",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kipgehakt-rauw",
+    "name": "Kipgehakt (rauw, bakken)",
+    "category": "Ingredient",
+    "caloriesPerServing": 150,
+    "servingLabel": "100 g",
+    "imageQuery": "kip gehakt",
+    "ingredients": [
+      "Kipgehakt"
+    ],
+    "tags": [
+      "kip",
+      "gehakt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rund-gehakt",
+    "name": "Rundergehakt (half-om-half)",
+    "category": "Ingredient",
+    "caloriesPerServing": 250,
+    "servingLabel": "100 g",
+    "imageQuery": "gehakt half om half",
+    "ingredients": [
+      "Rundergehakt"
+    ],
+    "tags": [
+      "rund",
+      "varken",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:spekblokjes",
+    "name": "Spekblokjes (bakken)",
+    "category": "Ingredient",
+    "caloriesPerServing": 400,
+    "servingLabel": "100 g",
+    "imageQuery": "spekblokjes",
+    "ingredients": [
+      "Spekblokjes"
+    ],
+    "tags": [
+      "varken",
+      "bakvet",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kipdijfilet",
+    "name": "Kipdijfilet (gegrild)",
+    "category": "Meal",
+    "caloriesPerServing": 280,
+    "servingLabel": "150 g",
+    "imageQuery": "kipdij",
+    "ingredients": [
+      "Kipdijfilet"
+    ],
+    "tags": [
+      "kip",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:zalm-gerookt",
+    "name": "Gerookte zalm",
+    "category": "Meal",
+    "caloriesPerServing": 200,
+    "servingLabel": "100 g",
+    "imageQuery": "gerookte zalm",
+    "ingredients": [
+      "Gerookte zalm"
+    ],
+    "tags": [
+      "vis",
+      "omega",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:tonijn-water",
+    "name": "Tonijn in water (uitgelekt)",
+    "category": "Meal",
+    "caloriesPerServing": 116,
+    "servingLabel": "1 klein blikje (~80 g vis)",
+    "imageQuery": "tonijn blik",
+    "ingredients": [
+      "Tonijn in water"
+    ],
+    "tags": [
+      "vis",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:makreel-tomaten",
+    "name": "Makreel in tomatensaus",
+    "category": "Meal",
+    "caloriesPerServing": 220,
+    "servingLabel": "1 blik (~170 g)",
+    "imageQuery": "makreel blik",
+    "ingredients": [
+      "Makreel in tomatensaus"
+    ],
+    "tags": [
+      "vis",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:haring",
+    "name": "Hollandse nieuwe haring",
+    "category": "Meal",
+    "caloriesPerServing": 180,
+    "servingLabel": "1 stuk",
+    "imageQuery": "haring vis",
+    "ingredients": [
+      "Hollandse nieuwe haring"
+    ],
+    "tags": [
+      "vis",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:ei-gekookt",
+    "name": "Ei gekookt",
+    "category": "Meal",
+    "caloriesPerServing": 78,
+    "servingLabel": "1 middelgroot ei",
+    "imageQuery": "gekookt ei",
+    "ingredients": [
+      "Ei gekookt"
+    ],
+    "tags": [
+      "eiwit",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:tofu-vast",
+    "name": "Tofu naturel (vast)",
+    "category": "Ingredient",
+    "caloriesPerServing": 120,
+    "servingLabel": "150 g",
+    "imageQuery": "tofu blok",
+    "ingredients": [
+      "Tofu naturel"
+    ],
+    "tags": [
+      "plantaardig",
+      "eiwit",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:tempeh",
+    "name": "Tempeh",
+    "category": "Ingredient",
+    "caloriesPerServing": 190,
+    "servingLabel": "100 g",
+    "imageQuery": "tempeh",
+    "ingredients": [
+      "Tempeh"
+    ],
+    "tags": [
+      "soja",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:falafel",
+    "name": "Falafelballetjes (diepvries/vers)",
+    "category": "Meal",
+    "caloriesPerServing": 200,
+    "servingLabel": "4 stuks (~80 g)",
+    "imageQuery": "falafel",
+    "ingredients": [
+      "Falafelballetjes"
+    ],
+    "tags": [
+      "vegetarisch",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:hummus",
+    "name": "Hummus",
+    "category": "Snack",
+    "caloriesPerServing": 180,
+    "servingLabel": "100 g",
+    "imageQuery": "hummus",
+    "ingredients": [
+      "Hummus"
+    ],
+    "tags": [
+      "kikkererwt",
+      "dip",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:mayonaise",
+    "name": "Mayonaise",
+    "category": "Ingredient",
+    "caloriesPerServing": 100,
+    "servingLabel": "1 el (~15 g)",
+    "imageQuery": "mayonaise pot",
+    "ingredients": [
+      "Mayonaise"
+    ],
+    "tags": [
+      "saus",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:ketchup",
+    "name": "Ketchup",
+    "category": "Ingredient",
+    "caloriesPerServing": 15,
+    "servingLabel": "1 el (~15 g)",
+    "imageQuery": "ketchup fles",
+    "ingredients": [
+      "Ketchup"
+    ],
+    "tags": [
+      "saus",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:joppiesaus",
+    "name": "Joppiesaus",
+    "category": "Ingredient",
+    "caloriesPerServing": 100,
+    "servingLabel": "30 g",
+    "imageQuery": "joppiesaus",
+    "ingredients": [
+      "Joppiesaus"
+    ],
+    "tags": [
+      "friet",
+      "saus",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:curry-ketchup",
+    "name": "Curry ketchup",
+    "category": "Ingredient",
+    "caloriesPerServing": 20,
+    "servingLabel": "1 el",
+    "imageQuery": "curry ketchup",
+    "ingredients": [
+      "Curry ketchup"
+    ],
+    "tags": [
+      "saus",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:mosterd",
+    "name": "Mosterd",
+    "category": "Ingredient",
+    "caloriesPerServing": 15,
+    "servingLabel": "1 el",
+    "imageQuery": "mosterd pot",
+    "ingredients": [
+      "Mosterd"
+    ],
+    "tags": [
+      "saus",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:olijfolie",
+    "name": "Olijfolie (extra vierge)",
+    "category": "Ingredient",
+    "caloriesPerServing": 90,
+    "servingLabel": "1 el (~10 g)",
+    "imageQuery": "olijfolie",
+    "ingredients": [
+      "Olijfolie"
+    ],
+    "tags": [
+      "olie",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:zonnebloemolie",
+    "name": "Zonnebloemolie",
+    "category": "Ingredient",
+    "caloriesPerServing": 90,
+    "servingLabel": "1 el (~10 g)",
+    "imageQuery": "zonnebloemolie",
+    "ingredients": [
+      "Zonnebloemolie"
+    ],
+    "tags": [
+      "olie",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:aardappel-koken",
+    "name": "Aardappel gekookt",
+    "category": "Ingredient",
+    "caloriesPerServing": 87,
+    "servingLabel": "100 g",
+    "imageQuery": "gekookte aardappel",
+    "ingredients": [
+      "Aardappel gekookt"
+    ],
+    "tags": [
+      "aardappel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:friet-portie",
+    "name": "Friet / patat (cafetaria)",
+    "category": "Meal",
+    "caloriesPerServing": 450,
+    "servingLabel": "150 g portie",
+    "imageQuery": "patat friet",
+    "ingredients": [
+      "Friet / patat"
+    ],
+    "tags": [
+      "aardappel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kroket",
+    "name": "Kroket",
+    "category": "Snack",
+    "caloriesPerServing": 250,
+    "servingLabel": "1 stuk",
+    "imageQuery": "kroket",
+    "ingredients": [
+      "Kroket"
+    ],
+    "tags": [
+      "snack",
+      "frituur",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:frikandel",
+    "name": "Frikandel",
+    "category": "Snack",
+    "caloriesPerServing": 180,
+    "servingLabel": "1 stuk",
+    "imageQuery": "frikandel",
+    "ingredients": [
+      "Frikandel"
+    ],
+    "tags": [
+      "snack",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:bitterbal",
+    "name": "Bitterbal",
+    "category": "Snack",
+    "caloriesPerServing": 60,
+    "servingLabel": "1 stuk",
+    "imageQuery": "bitterbal",
+    "ingredients": [
+      "Bitterbal"
+    ],
+    "tags": [
+      "borrel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:bapao-kip",
+    "name": "Bapao kip",
+    "category": "Meal",
+    "caloriesPerServing": 280,
+    "servingLabel": "1 broodje",
+    "imageQuery": "bapao",
+    "ingredients": [
+      "Bapao kip"
+    ],
+    "tags": [
+      "broodje",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:tosti-ham-kaas",
+    "name": "Tosti ham-kaas",
+    "category": "Meal",
+    "caloriesPerServing": 350,
+    "servingLabel": "1 tosti",
+    "imageQuery": "tosti",
+    "ingredients": [
+      "Tosti ham-kaas"
+    ],
+    "tags": [
+      "brood",
+      "kaas",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:diepvries-pizza",
+    "name": "Diepvries pizza (magnetron)",
+    "category": "Meal",
+    "caloriesPerServing": 240,
+    "servingLabel": "1/4 pizza (~125 g)",
+    "imageQuery": "diepvries pizza",
+    "ingredients": [
+      "Diepvries pizza"
+    ],
+    "tags": [
+      "pizza",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:lasagne-kant",
+    "name": "Lasagne uit de oven (kant-en-klaar)",
+    "category": "Meal",
+    "caloriesPerServing": 560,
+    "servingLabel": "400 g portie",
+    "imageQuery": "lasagne",
+    "ingredients": [
+      "Lasagne uit de oven"
+    ],
+    "tags": [
+      "pasta",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:nasi-kant",
+    "name": "Nasi goreng (kant-en-klaar)",
+    "category": "Meal",
+    "caloriesPerServing": 500,
+    "servingLabel": "300 g",
+    "imageQuery": "nasi goreng",
+    "ingredients": [
+      "Nasi goreng"
+    ],
+    "tags": [
+      "rijst",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:roti",
+    "name": "Surinaamse roti rol",
+    "category": "Meal",
+    "caloriesPerServing": 450,
+    "servingLabel": "1 rol",
+    "imageQuery": "roti rol",
+    "ingredients": [
+      "Surinaamse roti rol"
+    ],
+    "tags": [
+      "kip",
+      "kruid",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:erwtensoep",
+    "name": "Erwtensoep (snert)",
+    "category": "Meal",
+    "caloriesPerServing": 180,
+    "servingLabel": "300 ml kom",
+    "imageQuery": "erwtensoep",
+    "ingredients": [
+      "Erwtensoep"
+    ],
+    "tags": [
+      "soep",
+      "winter",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:stamppot-boerenkool",
+    "name": "Boerenkoolstamppot met rookworst",
+    "category": "Meal",
+    "caloriesPerServing": 650,
+    "servingLabel": "1 bord (~500 g)",
+    "imageQuery": "boerenkool stamppot",
+    "ingredients": [
+      "Boerenkoolstamppot met rookworst"
+    ],
+    "tags": [
+      "stamppot",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:hutspot",
+    "name": "Hutspot met klapstuk",
+    "category": "Meal",
+    "caloriesPerServing": 580,
+    "servingLabel": "1 bord",
+    "imageQuery": "hutspot",
+    "ingredients": [
+      "Hutspot met klapstuk"
+    ],
+    "tags": [
+      "stamppot",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:spaghetti-80-droog",
+    "name": "Spaghetti (droog, gekookt portie)",
+    "category": "Ingredient",
+    "caloriesPerServing": 280,
+    "servingLabel": "80 g droog → ~220 g gekookt",
+    "imageQuery": "spaghetti",
+    "ingredients": [
+      "Spaghetti"
+    ],
+    "tags": [
+      "pasta",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:penne-droog",
+    "name": "Penne (droog, gekookt portie)",
+    "category": "Ingredient",
+    "caloriesPerServing": 270,
+    "servingLabel": "80 g droog",
+    "imageQuery": "penne pasta",
+    "ingredients": [
+      "Penne"
+    ],
+    "tags": [
+      "pasta",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rijst-basmati-droog",
+    "name": "Basmatirijst (droog, gekookt portie)",
+    "category": "Ingredient",
+    "caloriesPerServing": 210,
+    "servingLabel": "60 g droog",
+    "imageQuery": "basmati rijst",
+    "ingredients": [
+      "Basmatirijst"
+    ],
+    "tags": [
+      "rijst",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:couscous-droog",
+    "name": "Couscous (droog, bereid)",
+    "category": "Ingredient",
+    "caloriesPerServing": 200,
+    "servingLabel": "60 g droog",
+    "imageQuery": "couscous",
+    "ingredients": [
+      "Couscous"
+    ],
+    "tags": [
+      "pasta",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:havermout",
+    "name": "Havermout",
+    "category": "Snack",
+    "caloriesPerServing": 150,
+    "servingLabel": "40 g droog + water",
+    "imageQuery": "havermout",
+    "ingredients": [
+      "Havermout"
+    ],
+    "tags": [
+      "ontbijt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:cornflakes",
+    "name": "Cornflakes",
+    "category": "Snack",
+    "caloriesPerServing": 115,
+    "servingLabel": "30 g + melk apart",
+    "imageQuery": "cornflakes",
+    "ingredients": [
+      "Cornflakes"
+    ],
+    "tags": [
+      "ontbijt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:muesli-noten",
+    "name": "Muesli met noten",
+    "category": "Snack",
+    "caloriesPerServing": 190,
+    "servingLabel": "45 g",
+    "imageQuery": "muesli",
+    "ingredients": [
+      "Muesli met noten"
+    ],
+    "tags": [
+      "ontbijt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:bruine-bonen",
+    "name": "Bruine bonen (pot, uitgelekt)",
+    "category": "Ingredient",
+    "caloriesPerServing": 100,
+    "servingLabel": "100 g",
+    "imageQuery": "bruine bonen pot",
+    "ingredients": [
+      "Bruine bonen"
+    ],
+    "tags": [
+      "bonen",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kidneybonen",
+    "name": "Kidneybonen (blik)",
+    "category": "Ingredient",
+    "caloriesPerServing": 100,
+    "servingLabel": "100 g",
+    "imageQuery": "kidney bonen",
+    "ingredients": [
+      "Kidneybonen"
+    ],
+    "tags": [
+      "bonen",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kikkererwten",
+    "name": "Kikkererwten (blik, uitgelekt)",
+    "category": "Ingredient",
+    "caloriesPerServing": 120,
+    "servingLabel": "100 g",
+    "imageQuery": "kikkererwten",
+    "ingredients": [
+      "Kikkererwten"
+    ],
+    "tags": [
+      "bonen",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:mais",
+    "name": "Mais (blik, uitgelekt)",
+    "category": "Ingredient",
+    "caloriesPerServing": 90,
+    "servingLabel": "100 g",
+    "imageQuery": "mais blik",
+    "ingredients": [
+      "Mais"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:tomaat",
+    "name": "Tomaat",
+    "category": "Ingredient",
+    "caloriesPerServing": 18,
+    "servingLabel": "100 g",
+    "imageQuery": "tomaat",
+    "ingredients": [
+      "Tomaat"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:komkommer",
+    "name": "Komkommer",
+    "category": "Ingredient",
+    "caloriesPerServing": 15,
+    "servingLabel": "100 g",
+    "imageQuery": "komkommer",
+    "ingredients": [
+      "Komkommer"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:paprika",
+    "name": "Paprika rood",
+    "category": "Ingredient",
+    "caloriesPerServing": 31,
+    "servingLabel": "100 g",
+    "imageQuery": "paprika",
+    "ingredients": [
+      "Paprika rood"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:ui",
+    "name": "Ui",
+    "category": "Ingredient",
+    "caloriesPerServing": 40,
+    "servingLabel": "100 g",
+    "imageQuery": "ui groente",
+    "ingredients": [
+      "Ui"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:broccoli",
+    "name": "Broccoli (gestoomd)",
+    "category": "Ingredient",
+    "caloriesPerServing": 35,
+    "servingLabel": "100 g",
+    "imageQuery": "broccoli",
+    "ingredients": [
+      "Broccoli"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:spinazie-diepvries",
+    "name": "Spinazie (diepvries, bereid)",
+    "category": "Ingredient",
+    "caloriesPerServing": 30,
+    "servingLabel": "100 g",
+    "imageQuery": "spinazie",
+    "ingredients": [
+      "Spinazie"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:avocado",
+    "name": "Avocado",
+    "category": "Ingredient",
+    "caloriesPerServing": 160,
+    "servingLabel": "half avocado (~100 g)",
+    "imageQuery": "avocado",
+    "ingredients": [
+      "Avocado"
+    ],
+    "tags": [
+      "vet",
+      "gezond",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:banaan",
+    "name": "Banaan",
+    "category": "Snack",
+    "caloriesPerServing": 105,
+    "servingLabel": "1 middel (120 g)",
+    "imageQuery": "banaan",
+    "ingredients": [
+      "Banaan"
+    ],
+    "tags": [
+      "fruit",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:appel",
+    "name": "Appel",
+    "category": "Snack",
+    "caloriesPerServing": 70,
+    "servingLabel": "1 middel (130 g)",
+    "imageQuery": "appel fruit",
+    "ingredients": [
+      "Appel"
+    ],
+    "tags": [
+      "fruit",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:sinaasappel",
+    "name": "Sinaasappel",
+    "category": "Snack",
+    "caloriesPerServing": 62,
+    "servingLabel": "1 middel (150 g)",
+    "imageQuery": "sinaasappel",
+    "ingredients": [
+      "Sinaasappel"
+    ],
+    "tags": [
+      "fruit",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:drop-zacht",
+    "name": "Drop (zoet)",
+    "category": "Snack",
+    "caloriesPerServing": 300,
+    "servingLabel": "100 g",
+    "imageQuery": "drop snoep",
+    "ingredients": [
+      "Drop"
+    ],
+    "tags": [
+      "snoep",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:pepernoten",
+    "name": "Pepernoten / kruidnoten",
+    "category": "Snack",
+    "caloriesPerServing": 430,
+    "servingLabel": "100 g",
+    "imageQuery": "kruidnoten",
+    "ingredients": [
+      "Pepernoten / kruidnoten"
+    ],
+    "tags": [
+      "sinterklaas",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:melkchocolade-reep",
+    "name": "Melkchocolade reep",
+    "category": "Snack",
+    "caloriesPerServing": 125,
+    "servingLabel": "1 reep (25 g)",
+    "imageQuery": "melkchocolade reep",
+    "ingredients": [
+      "Melkchocolade reep"
+    ],
+    "tags": [
+      "chocolade",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:pure-chocolade",
+    "name": "Pure chocolade 70%",
+    "category": "Snack",
+    "caloriesPerServing": 170,
+    "servingLabel": "30 g",
+    "imageQuery": "pure chocolade",
+    "ingredients": [
+      "Pure chocolade 70%"
+    ],
+    "tags": [
+      "chocolade",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:winegums",
+    "name": "Winegums",
+    "category": "Snack",
+    "caloriesPerServing": 320,
+    "servingLabel": "100 g",
+    "imageQuery": "winegums",
+    "ingredients": [
+      "Winegums"
+    ],
+    "tags": [
+      "snoep",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:chips-naturel",
+    "name": "Chips naturel",
+    "category": "Snack",
+    "caloriesPerServing": 536,
+    "servingLabel": "100 g",
+    "imageQuery": "chips zak",
+    "ingredients": [
+      "Chips naturel"
+    ],
+    "tags": [
+      "aardappel",
+      "zout",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:olijven-groen",
+    "name": "Groene olijven",
+    "category": "Snack",
+    "caloriesPerServing": 140,
+    "servingLabel": "50 g",
+    "imageQuery": "olijven groen",
+    "ingredients": [
+      "Groene olijven"
+    ],
+    "tags": [
+      "italiaans",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:augurk",
+    "name": "Augurken",
+    "category": "Snack",
+    "caloriesPerServing": 5,
+    "servingLabel": "1 augurk",
+    "imageQuery": "augurk pot",
+    "ingredients": [
+      "Augurken"
+    ],
+    "tags": [
+      "zuur",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:croissant",
+    "name": "Croissant",
+    "category": "Snack",
+    "caloriesPerServing": 230,
+    "servingLabel": "1 stuk",
+    "imageQuery": "croissant",
+    "ingredients": [
+      "Croissant"
+    ],
+    "tags": [
+      "ontbijt",
+      "bakker",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:donut",
+    "name": "Donut geglazuurd",
+    "category": "Snack",
+    "caloriesPerServing": 280,
+    "servingLabel": "1 stuk",
+    "imageQuery": "donut",
+    "ingredients": [
+      "Donut geglazuurd"
+    ],
+    "tags": [
+      "gebak",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:muffin",
+    "name": "Muffin chocolade",
+    "category": "Snack",
+    "caloriesPerServing": 400,
+    "servingLabel": "1 grote muffin",
+    "imageQuery": "muffin",
+    "ingredients": [
+      "Muffin chocolade"
+    ],
+    "tags": [
+      "gebak",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:yoghurt-drink-mango",
+    "name": "Yoghurtdrink mango",
+    "category": "Drink",
+    "caloriesPerServing": 60,
+    "servingLabel": "100 ml",
+    "imageQuery": "yoghurt drink",
+    "ingredients": [
+      "Yoghurtdrink mango"
+    ],
+    "tags": [
+      "yoghurt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:icelatte",
+    "name": "IJs latte (kant-en-klaar)",
+    "category": "Drink",
+    "caloriesPerServing": 50,
+    "servingLabel": "100 ml",
+    "imageQuery": "ice latte",
+    "ingredients": [
+      "IJs latte"
+    ],
+    "tags": [
+      "koffie",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kokosmelk-blik",
+    "name": "Kokosmelk (light, koken)",
+    "category": "Ingredient",
+    "caloriesPerServing": 50,
+    "servingLabel": "100 ml",
+    "imageQuery": "kokosmelk blik",
+    "ingredients": [
+      "Kokosmelk"
+    ],
+    "tags": [
+      "kokos",
+      "curry",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:bouillonblokje",
+    "name": "Bouillonblokje (bereid in water)",
+    "category": "Drink",
+    "caloriesPerServing": 10,
+    "servingLabel": "250 ml kop",
+    "imageQuery": "bouillon",
+    "ingredients": [
+      "Bouillonblokje"
+    ],
+    "tags": [
+      "soep",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:sojasaus",
+    "name": "Sojasaus",
+    "category": "Ingredient",
+    "caloriesPerServing": 53,
+    "servingLabel": "100 ml",
+    "imageQuery": "sojasaus fles",
+    "ingredients": [
+      "Sojasaus"
+    ],
+    "tags": [
+      "aziatisch",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:sambal",
+    "name": "Sambal oelek",
+    "category": "Ingredient",
+    "caloriesPerServing": 20,
+    "servingLabel": "1 tl (~5 g)",
+    "imageQuery": "sambal",
+    "ingredients": [
+      "Sambal oelek"
+    ],
+    "tags": [
+      "pittig",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:pesto-groen",
+    "name": "Pesto alla genovese",
+    "category": "Ingredient",
+    "caloriesPerServing": 350,
+    "servingLabel": "100 g",
+    "imageQuery": "pesto groen",
+    "ingredients": [
+      "Pesto alla genovese"
+    ],
+    "tags": [
+      "pasta",
+      "saus",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:passata",
+    "name": "Passata / gezeefde tomaten",
+    "category": "Ingredient",
+    "caloriesPerServing": 24,
+    "servingLabel": "100 g",
+    "imageQuery": "passata",
+    "ingredients": [
+      "Passata / gezeefde tomaten"
+    ],
+    "tags": [
+      "tomaat",
+      "italiaans",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:zure-kool",
+    "name": "Zuurkool (pot)",
+    "category": "Ingredient",
+    "caloriesPerServing": 20,
+    "servingLabel": "100 g",
+    "imageQuery": "zuurkool",
+    "ingredients": [
+      "Zuurkool"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:spruitjes",
+    "name": "Spruitjes (gekookt)",
+    "category": "Ingredient",
+    "caloriesPerServing": 43,
+    "servingLabel": "100 g",
+    "imageQuery": "spruitjes",
+    "ingredients": [
+      "Spruitjes"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:wortelen",
+    "name": "Wortelen (gekookt)",
+    "category": "Ingredient",
+    "caloriesPerServing": 35,
+    "servingLabel": "100 g",
+    "imageQuery": "wortelen",
+    "ingredients": [
+      "Wortelen"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:bloemkool",
+    "name": "Bloemkool (gekookt)",
+    "category": "Ingredient",
+    "caloriesPerServing": 25,
+    "servingLabel": "100 g",
+    "imageQuery": "bloemkool",
+    "ingredients": [
+      "Bloemkool"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:courgette",
+    "name": "Courgette",
+    "category": "Ingredient",
+    "caloriesPerServing": 17,
+    "servingLabel": "100 g",
+    "imageQuery": "courgette",
+    "ingredients": [
+      "Courgette"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:aubergine",
+    "name": "Aubergine",
+    "category": "Ingredient",
+    "caloriesPerServing": 25,
+    "servingLabel": "100 g",
+    "imageQuery": "aubergine",
+    "ingredients": [
+      "Aubergine"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:perzik-op-siroop",
+    "name": "Perziken op lichte siroop",
+    "category": "Snack",
+    "caloriesPerServing": 60,
+    "servingLabel": "100 g uitgelekt",
+    "imageQuery": "perzik blik",
+    "ingredients": [
+      "Perziken op lichte siroop"
+    ],
+    "tags": [
+      "fruit",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:pruimen",
+    "name": "Ontpitte pruimen (droog)",
+    "category": "Snack",
+    "caloriesPerServing": 240,
+    "servingLabel": "100 g",
+    "imageQuery": "pruimen gedroogd",
+    "ingredients": [
+      "Ontpitte pruimen"
+    ],
+    "tags": [
+      "fruit",
+      "vezel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rozijnen",
+    "name": "Rozijnen",
+    "category": "Snack",
+    "caloriesPerServing": 300,
+    "servingLabel": "100 g",
+    "imageQuery": "rozijnen",
+    "ingredients": [
+      "Rozijnen"
+    ],
+    "tags": [
+      "fruit",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:pinda-gezouten",
+    "name": "Pinda's gezouten",
+    "category": "Snack",
+    "caloriesPerServing": 600,
+    "servingLabel": "100 g",
+    "imageQuery": "pinda's",
+    "ingredients": [
+      "Pinda's gezouten"
+    ],
+    "tags": [
+      "noten",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:amandelen",
+    "name": "Amandelen",
+    "category": "Snack",
+    "caloriesPerServing": 600,
+    "servingLabel": "100 g",
+    "imageQuery": "amandelen",
+    "ingredients": [
+      "Amandelen"
+    ],
+    "tags": [
+      "noten",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:walnoten",
+    "name": "Walnoten",
+    "category": "Snack",
+    "caloriesPerServing": 650,
+    "servingLabel": "100 g",
+    "imageQuery": "walnoten",
+    "ingredients": [
+      "Walnoten"
+    ],
+    "tags": [
+      "noten",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:zoute-sticks",
+    "name": "Zoute sticks / breadsticks",
+    "category": "Snack",
+    "caloriesPerServing": 400,
+    "servingLabel": "100 g",
+    "imageQuery": "zoute sticks",
+    "ingredients": [
+      "Zoute sticks / breadsticks"
+    ],
+    "tags": [
+      "borrel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kaasstengels",
+    "name": "Kaasstengels (diepvries)",
+    "category": "Snack",
+    "caloriesPerServing": 320,
+    "servingLabel": "100 g (4–5 stuks)",
+    "imageQuery": "kaasstengels",
+    "ingredients": [
+      "Kaasstengels"
+    ],
+    "tags": [
+      "borrel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:oliebollen",
+    "name": "Oliebol (met poedersuiker)",
+    "category": "Snack",
+    "caloriesPerServing": 280,
+    "servingLabel": "1 stuk",
+    "imageQuery": "oliebol",
+    "ingredients": [
+      "Oliebol"
+    ],
+    "tags": [
+      "nieuwjaar",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:appelflap",
+    "name": "Appelflap (bakker)",
+    "category": "Snack",
+    "caloriesPerServing": 200,
+    "servingLabel": "1 stuk",
+    "imageQuery": "appelflap",
+    "ingredients": [
+      "Appelflap"
+    ],
+    "tags": [
+      "gebak",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:worstenbroodje",
+    "name": "Worstenbroodje",
+    "category": "Snack",
+    "caloriesPerServing": 320,
+    "servingLabel": "1 stuk",
+    "imageQuery": "worstenbroodje",
+    "ingredients": [
+      "Worstenbroodje"
+    ],
+    "tags": [
+      "vlees",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kaasbroodje",
+    "name": "Kaasbroodje (bakker)",
+    "category": "Snack",
+    "caloriesPerServing": 380,
+    "servingLabel": "1 stuk",
+    "imageQuery": "kaasbroodje",
+    "ingredients": [
+      "Kaasbroodje"
+    ],
+    "tags": [
+      "kaas",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:yoghurt-hoepelm",
+    "name": "Yoghurt met hoestreep (perzik)",
+    "category": "Drink",
+    "caloriesPerServing": 85,
+    "servingLabel": "125 ml",
+    "imageQuery": "yoghurt drink perzik",
+    "ingredients": [
+      "Yoghurt met hoestreep"
+    ],
+    "tags": [
+      "yoghurt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:limonadesiroop",
+    "name": "Limonadesiroop (aangelengd)",
+    "category": "Drink",
+    "caloriesPerServing": 40,
+    "servingLabel": "250 ml glas",
+    "imageQuery": "limonade siroop",
+    "ingredients": [
+      "Limonadesiroop"
+    ],
+    "tags": [
+      "fris",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:radler-00",
+    "name": "Radler 0.0",
+    "category": "Drink",
+    "caloriesPerServing": 27,
+    "servingLabel": "100 ml",
+    "imageQuery": "radler 0.0",
+    "ingredients": [
+      "Radler 0.0"
+    ],
+    "tags": [
+      "bier",
+      "alcoholvrij",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:appelmoes",
+    "name": "Appelmoes zonder toegevoegde suiker",
+    "category": "Snack",
+    "caloriesPerServing": 50,
+    "servingLabel": "100 g",
+    "imageQuery": "appelmoes",
+    "ingredients": [
+      "Appelmoes zonder toegevoegde suiker"
+    ],
+    "tags": [
+      "fruit",
+      "kind",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:custard",
+    "name": "Vanillevla / custard (beker)",
+    "category": "Drink",
+    "caloriesPerServing": 95,
+    "servingLabel": "125 ml",
+    "imageQuery": "vanille vla beker",
+    "ingredients": [
+      "Vanillevla / custard"
+    ],
+    "tags": [
+      "vla",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:roomijs-bek",
+    "name": "Roomijs vanille (schep)",
+    "category": "Snack",
+    "caloriesPerServing": 135,
+    "servingLabel": "100 ml (~2 bolletjes)",
+    "imageQuery": "vanille ijs",
+    "ingredients": [
+      "Roomijs vanille"
+    ],
+    "tags": [
+      "ijs",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:magnum-achtig",
+    "name": "IJslolly melkchocolade (Magnum-achtig)",
+    "category": "Snack",
+    "caloriesPerServing": 290,
+    "servingLabel": "1 stuk",
+    "imageQuery": "magnum ijs",
+    "ingredients": [
+      "IJslolly melkchocolade"
+    ],
+    "tags": [
+      "ijs",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:slagroom-spuitbus",
+    "name": "Slagroom (spuitbus)",
+    "category": "Ingredient",
+    "caloriesPerServing": 45,
+    "servingLabel": "2 el (~15 g)",
+    "imageQuery": "slagroom spuitbus",
+    "ingredients": [
+      "Slagroom"
+    ],
+    "tags": [
+      "room",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:cottage-cheese",
+    "name": "Cottage cheese",
+    "category": "Snack",
+    "caloriesPerServing": 98,
+    "servingLabel": "100 g",
+    "imageQuery": "cottage cheese",
+    "ingredients": [
+      "Cottage cheese"
+    ],
+    "tags": [
+      "kaas",
+      "eiwit",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:roomkaas-natuur",
+    "name": "Roomkaas naturel (Philadelphia-achtig)",
+    "category": "Ingredient",
+    "caloriesPerServing": 250,
+    "servingLabel": "100 g",
+    "imageQuery": "roomkaas",
+    "ingredients": [
+      "Roomkaas naturel"
+    ],
+    "tags": [
+      "kaas",
+      "dip",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:zure-room",
+    "name": "Zure room / crème fraîche",
+    "category": "Ingredient",
+    "caloriesPerServing": 200,
+    "servingLabel": "100 g",
+    "imageQuery": "creme fraiche",
+    "ingredients": [
+      "Zure room / crème fraîche"
+    ],
+    "tags": [
+      "room",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:slasaus",
+    "name": "Slasaus (yoghurt)",
+    "category": "Ingredient",
+    "caloriesPerServing": 120,
+    "servingLabel": "100 g",
+    "imageQuery": "slasaus",
+    "ingredients": [
+      "Slasaus"
+    ],
+    "tags": [
+      "salade",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:knackebrod",
+    "name": "Knäckebröd",
+    "category": "Snack",
+    "caloriesPerServing": 35,
+    "servingLabel": "1 plak",
+    "imageQuery": "knackebrod",
+    "ingredients": [
+      "Knäckebröd"
+    ],
+    "tags": [
+      "cracker",
+      "vezel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:ontbijtgranen-honey",
+    "name": "Ontbijtgranen honing (Corn Flakes-achtig)",
+    "category": "Snack",
+    "caloriesPerServing": 380,
+    "servingLabel": "100 g",
+    "imageQuery": "honey loops",
+    "ingredients": [
+      "Ontbijtgranen honing"
+    ],
+    "tags": [
+      "ontbijt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:granola-honing",
+    "name": "Granola met honing",
+    "category": "Snack",
+    "caloriesPerServing": 450,
+    "servingLabel": "100 g",
+    "imageQuery": "granola",
+    "ingredients": [
+      "Granola met honing"
+    ],
+    "tags": [
+      "ontbijt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:pannenkoek",
+    "name": "Pannenkoek (plat)",
+    "category": "Meal",
+    "caloriesPerServing": 180,
+    "servingLabel": "1 middelgrote",
+    "imageQuery": "pannenkoek",
+    "ingredients": [
+      "Pannenkoek"
+    ],
+    "tags": [
+      "nederlands",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:poffertjes",
+    "name": "Poffertjes (met boter en poedersuiker)",
+    "category": "Meal",
+    "caloriesPerServing": 350,
+    "servingLabel": "10 stuks",
+    "imageQuery": "poffertjes",
+    "ingredients": [
+      "Poffertjes"
+    ],
+    "tags": [
+      "nederlands",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:nasi-kruiden",
+    "name": "Nasi / bami kruidenmix (bereid)",
+    "category": "Ingredient",
+    "caloriesPerServing": 180,
+    "servingLabel": "100 g bereide rijst",
+    "imageQuery": "nasi kruiden",
+    "ingredients": [
+      "Nasi / bami kruidenmix"
+    ],
+    "tags": [
+      "kruiden",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:satésaus",
+    "name": "Pindasaus / satésaus (kant-en-klaar)",
+    "category": "Ingredient",
+    "caloriesPerServing": 220,
+    "servingLabel": "100 g",
+    "imageQuery": "pindasaus",
+    "ingredients": [
+      "Pindasaus / satésaus"
+    ],
+    "tags": [
+      "indisch",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:ketjap-manis",
+    "name": "Ketjap manis",
+    "category": "Ingredient",
+    "caloriesPerServing": 200,
+    "servingLabel": "100 ml",
+    "imageQuery": "ketjap manis",
+    "ingredients": [
+      "Ketjap manis"
+    ],
+    "tags": [
+      "indisch",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rijstnoedels",
+    "name": "Rijstnoedels (droog)",
+    "category": "Ingredient",
+    "caloriesPerServing": 360,
+    "servingLabel": "100 g droog",
+    "imageQuery": "rijstnoedels",
+    "ingredients": [
+      "Rijstnoedels"
+    ],
+    "tags": [
+      "aziatisch",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:wokgroente-diepvries",
+    "name": "Wokgroente diepvries",
+    "category": "Ingredient",
+    "caloriesPerServing": 45,
+    "servingLabel": "100 g",
+    "imageQuery": "wok groente",
+    "ingredients": [
+      "Wokgroente diepvries"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kipfiletblokjes",
+    "name": "Kipfiletblokjes (roerbak)",
+    "category": "Meal",
+    "caloriesPerServing": 165,
+    "servingLabel": "150 g",
+    "imageQuery": "kipfilet blokjes",
+    "ingredients": [
+      "Kipfiletblokjes"
+    ],
+    "tags": [
+      "kip",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:biefstuk",
+    "name": "Biefstuk (gegrild)",
+    "category": "Meal",
+    "caloriesPerServing": 180,
+    "servingLabel": "100 g",
+    "imageQuery": "biefstuk",
+    "ingredients": [
+      "Biefstuk"
+    ],
+    "tags": [
+      "rund",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:speklap",
+    "name": "Speklap (gebakken)",
+    "category": "Meal",
+    "caloriesPerServing": 350,
+    "servingLabel": "100 g",
+    "imageQuery": "speklap",
+    "ingredients": [
+      "Speklap"
+    ],
+    "tags": [
+      "varken",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:schnitzel",
+    "name": "Kipschnitzel (bereid)",
+    "category": "Meal",
+    "caloriesPerServing": 220,
+    "servingLabel": "1 stuk (~120 g)",
+    "imageQuery": "kipschnitzel",
+    "ingredients": [
+      "Kipschnitzel"
+    ],
+    "tags": [
+      "kip",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kipcorn",
+    "name": "Kipcorn",
+    "category": "Snack",
+    "caloriesPerServing": 200,
+    "servingLabel": "1 stuk",
+    "imageQuery": "kipcorn",
+    "ingredients": [
+      "Kipcorn"
+    ],
+    "tags": [
+      "frituur",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kipnuggets",
+    "name": "Kipnuggets (oven)",
+    "category": "Snack",
+    "caloriesPerServing": 260,
+    "servingLabel": "6 stuks (~100 g)",
+    "imageQuery": "kip nuggets",
+    "ingredients": [
+      "Kipnuggets"
+    ],
+    "tags": [
+      "kip",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:vegaburger",
+    "name": "Vegaburger (bereid)",
+    "category": "Meal",
+    "caloriesPerServing": 180,
+    "servingLabel": "1 burger",
+    "imageQuery": "vega burger",
+    "ingredients": [
+      "Vegaburger"
+    ],
+    "tags": [
+      "vegetarisch",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:beyond-style",
+    "name": "Plantaardige burger (Beyond-achtig)",
+    "category": "Meal",
+    "caloriesPerServing": 250,
+    "servingLabel": "1 burger",
+    "imageQuery": "plant based burger",
+    "ingredients": [
+      "Plantaardige burger"
+    ],
+    "tags": [
+      "vegan",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:quorn-stukjes",
+    "name": "Quorn stukjes (bereid)",
+    "category": "Meal",
+    "caloriesPerServing": 120,
+    "servingLabel": "100 g",
+    "imageQuery": "quorn",
+    "ingredients": [
+      "Quorn stukjes"
+    ],
+    "tags": [
+      "vegetarisch",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:linzensoep",
+    "name": "Linzensoep",
+    "category": "Meal",
+    "caloriesPerServing": 90,
+    "servingLabel": "250 ml",
+    "imageQuery": "linzensoep",
+    "ingredients": [
+      "Linzensoep"
+    ],
+    "tags": [
+      "soep",
+      "vezel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:tomatensoep",
+    "name": "Tomatensoep (pak)",
+    "category": "Meal",
+    "caloriesPerServing": 45,
+    "servingLabel": "250 ml",
+    "imageQuery": "tomatensoep",
+    "ingredients": [
+      "Tomatensoep"
+    ],
+    "tags": [
+      "soep",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:groentesoep",
+    "name": "Groentesoep (pak)",
+    "category": "Meal",
+    "caloriesPerServing": 35,
+    "servingLabel": "250 ml",
+    "imageQuery": "groentesoep",
+    "ingredients": [
+      "Groentesoep"
+    ],
+    "tags": [
+      "soep",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:bouillon-kip",
+    "name": "Kippenbouillon (drink)",
+    "category": "Drink",
+    "caloriesPerServing": 15,
+    "servingLabel": "250 ml",
+    "imageQuery": "kippenbouillon",
+    "ingredients": [
+      "Kippenbouillon"
+    ],
+    "tags": [
+      "soep",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:stokbrood",
+    "name": "Stokbrood wit (stuk)",
+    "category": "Snack",
+    "caloriesPerServing": 240,
+    "servingLabel": "100 g",
+    "imageQuery": "stokbrood",
+    "ingredients": [
+      "Stokbrood wit"
+    ],
+    "tags": [
+      "brood",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:pistolet",
+    "name": "Pistolet wit",
+    "category": "Snack",
+    "caloriesPerServing": 220,
+    "servingLabel": "1 bol",
+    "imageQuery": "pistolet brood",
+    "ingredients": [
+      "Pistolet wit"
+    ],
+    "tags": [
+      "brood",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:tortilla-wrap",
+    "name": "Tortilla wrap groot",
+    "category": "Ingredient",
+    "caloriesPerServing": 180,
+    "servingLabel": "1 stuk (~65 g)",
+    "imageQuery": "tortilla wrap",
+    "ingredients": [
+      "Tortilla wrap groot"
+    ],
+    "tags": [
+      "wrap",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:nacho-chips",
+    "name": "Nacho tortilla chips",
+    "category": "Snack",
+    "caloriesPerServing": 500,
+    "servingLabel": "100 g",
+    "imageQuery": "nacho chips",
+    "ingredients": [
+      "Nacho tortilla chips"
+    ],
+    "tags": [
+      "mexicaans",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:guacamole-pot",
+    "name": "Guacamole (kant-en-klaar)",
+    "category": "Snack",
+    "caloriesPerServing": 160,
+    "servingLabel": "100 g",
+    "imageQuery": "guacamole",
+    "ingredients": [
+      "Guacamole"
+    ],
+    "tags": [
+      "avocado",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:tzatziki",
+    "name": "Tzatziki (kuip)",
+    "category": "Snack",
+    "caloriesPerServing": 130,
+    "servingLabel": "100 g",
+    "imageQuery": "tzatziki",
+    "ingredients": [
+      "Tzatziki"
+    ],
+    "tags": [
+      "yoghurt",
+      "dip",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:coleslaw",
+    "name": "Coleslaw salade",
+    "category": "Snack",
+    "caloriesPerServing": 150,
+    "servingLabel": "100 g",
+    "imageQuery": "coleslaw",
+    "ingredients": [
+      "Coleslaw salade"
+    ],
+    "tags": [
+      "salade",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rugbrood",
+    "name": "Roggebrood (plak)",
+    "category": "Snack",
+    "caloriesPerServing": 90,
+    "servingLabel": "1 plak",
+    "imageQuery": "roggebrood",
+    "ingredients": [
+      "Roggebrood"
+    ],
+    "tags": [
+      "brood",
+      "vezel",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:cruesli",
+    "name": "Cruesli chocolade",
+    "category": "Snack",
+    "caloriesPerServing": 420,
+    "servingLabel": "100 g",
+    "imageQuery": "cruesli",
+    "ingredients": [
+      "Cruesli chocolade"
+    ],
+    "tags": [
+      "ontbijt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:ontbijtrepen",
+    "name": "Ontbijtrepen muesli",
+    "category": "Snack",
+    "caloriesPerServing": 180,
+    "servingLabel": "1 reep (35 g)",
+    "imageQuery": "ontbijt reep",
+    "ingredients": [
+      "Ontbijtrepen muesli"
+    ],
+    "tags": [
+      "reep",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:studentenhaver",
+    "name": "Studentenhaver",
+    "category": "Snack",
+    "caloriesPerServing": 480,
+    "servingLabel": "100 g",
+    "imageQuery": "studentenhaver",
+    "ingredients": [
+      "Studentenhaver"
+    ],
+    "tags": [
+      "noten",
+      "rozijn",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:paddestoelen",
+    "name": "Champignons (bak)",
+    "category": "Ingredient",
+    "caloriesPerServing": 22,
+    "servingLabel": "100 g",
+    "imageQuery": "champignons",
+    "ingredients": [
+      "Champignons"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:erwten-diepvries",
+    "name": "Doperwten (diepvries)",
+    "category": "Ingredient",
+    "caloriesPerServing": 85,
+    "servingLabel": "100 g",
+    "imageQuery": "doperwten",
+    "ingredients": [
+      "Doperwten"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:sperziebonen",
+    "name": "Sperziebonen (gekookt)",
+    "category": "Ingredient",
+    "caloriesPerServing": 35,
+    "servingLabel": "100 g",
+    "imageQuery": "sperziebonen",
+    "ingredients": [
+      "Sperziebonen"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rode-kool",
+    "name": "Rode kool (pot)",
+    "category": "Ingredient",
+    "caloriesPerServing": 45,
+    "servingLabel": "100 g",
+    "imageQuery": "rode kool",
+    "ingredients": [
+      "Rode kool"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:andijvie",
+    "name": "Andijvie (stamppot)",
+    "category": "Ingredient",
+    "caloriesPerServing": 20,
+    "servingLabel": "100 g",
+    "imageQuery": "andijvie",
+    "ingredients": [
+      "Andijvie"
+    ],
+    "tags": [
+      "groente",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:endive",
+    "name": "Stamppot met rauwe andijvie",
+    "category": "Meal",
+    "caloriesPerServing": 420,
+    "servingLabel": "1 bord",
+    "imageQuery": "stamppot andijvie",
+    "ingredients": [
+      "Stamppot met rauwe andijvie"
+    ],
+    "tags": [
+      "stamppot",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:zuivelspread",
+    "name": "Zuivelspread (kuip)",
+    "category": "Snack",
+    "caloriesPerServing": 250,
+    "servingLabel": "100 g",
+    "imageQuery": "zuivelspread",
+    "ingredients": [
+      "Zuivelspread"
+    ],
+    "tags": [
+      "broodbeleg",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:vlaflip",
+    "name": "Vlaflip vanille-chocola",
+    "category": "Drink",
+    "caloriesPerServing": 110,
+    "servingLabel": "150 ml",
+    "imageQuery": "vlaflip",
+    "ingredients": [
+      "Vlaflip vanille-chocola"
+    ],
+    "tags": [
+      "vla",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:toffee-vla",
+    "name": "Karamelvla",
+    "category": "Drink",
+    "caloriesPerServing": 100,
+    "servingLabel": "125 ml",
+    "imageQuery": "karamel vla",
+    "ingredients": [
+      "Karamelvla"
+    ],
+    "tags": [
+      "vla",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rijstepap",
+    "name": "Rijstepap (kant-en-klaar)",
+    "category": "Drink",
+    "caloriesPerServing": 95,
+    "servingLabel": "200 g beker",
+    "imageQuery": "rijstepap",
+    "ingredients": [
+      "Rijstepap"
+    ],
+    "tags": [
+      "rijst",
+      "ontbijt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:griesmeelpap",
+    "name": "Griesmeelpap",
+    "category": "Drink",
+    "caloriesPerServing": 90,
+    "servingLabel": "200 g",
+    "imageQuery": "griesmeel pap",
+    "ingredients": [
+      "Griesmeelpap"
+    ],
+    "tags": [
+      "ontbijt",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:karnemelk-linzen",
+    "name": "Linzen in tomatensaus (blik)",
+    "category": "Meal",
+    "caloriesPerServing": 110,
+    "servingLabel": "250 g",
+    "imageQuery": "linzen tomatensaus",
+    "ingredients": [
+      "Linzen in tomatensaus"
+    ],
+    "tags": [
+      "vegan",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:bakkerskaasbroodje",
+    "name": "Kaas-uienbroodje",
+    "category": "Snack",
+    "caloriesPerServing": 320,
+    "servingLabel": "1 stuk",
+    "imageQuery": "kaas ui broodje",
+    "ingredients": [
+      "Kaas-uienbroodje"
+    ],
+    "tags": [
+      "bakker",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:saucijzenbroodje",
+    "name": "Saucijzenbroodje",
+    "category": "Snack",
+    "caloriesPerServing": 340,
+    "servingLabel": "1 stuk",
+    "imageQuery": "saucijzenbroodje",
+    "ingredients": [
+      "Saucijzenbroodje"
+    ],
+    "tags": [
+      "vlees",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kaassouffle",
+    "name": "Kaassoufflé",
+    "category": "Snack",
+    "caloriesPerServing": 280,
+    "servingLabel": "1 stuk",
+    "imageQuery": "kaassouffle",
+    "ingredients": [
+      "Kaassoufflé"
+    ],
+    "tags": [
+      "frituur",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:loempia",
+    "name": "Loempia klein",
+    "category": "Snack",
+    "caloriesPerServing": 200,
+    "servingLabel": "1 stuk",
+    "imageQuery": "loempia",
+    "ingredients": [
+      "Loempia klein"
+    ],
+    "tags": [
+      "aziatisch",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:nasi-bami-bami",
+    "name": "Bami goreng (kant-en-klaar)",
+    "category": "Meal",
+    "caloriesPerServing": 480,
+    "servingLabel": "300 g",
+    "imageQuery": "bami goreng",
+    "ingredients": [
+      "Bami goreng"
+    ],
+    "tags": [
+      "noedels",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:macaroni-kaas-oven",
+    "name": "Macaroni kaas uit de oven",
+    "category": "Meal",
+    "caloriesPerServing": 420,
+    "servingLabel": "300 g portie",
+    "imageQuery": "macaroni kaas",
+    "ingredients": [
+      "Macaroni kaas uit de oven"
+    ],
+    "tags": [
+      "pasta",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:spaghetti-pesto",
+    "name": "Spaghetti met pesto",
+    "category": "Meal",
+    "caloriesPerServing": 550,
+    "servingLabel": "1 bord",
+    "imageQuery": "spaghetti pesto",
+    "ingredients": [
+      "Spaghetti met pesto"
+    ],
+    "tags": [
+      "pasta",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rijst-kip-curry",
+    "name": "Kipfilet in zoete curry met rijst",
+    "category": "Meal",
+    "caloriesPerServing": 520,
+    "servingLabel": "450 g",
+    "imageQuery": "kip curry rijst",
+    "ingredients": [
+      "Kipfilet in zoete curry met rijst"
+    ],
+    "tags": [
+      "afhaal",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:shoarma-broodje",
+    "name": "Shoarmabroodje met saus",
+    "category": "Meal",
+    "caloriesPerServing": 650,
+    "servingLabel": "1 broodje",
+    "imageQuery": "shoarma broodje",
+    "ingredients": [
+      "Shoarmabroodje met saus"
+    ],
+    "tags": [
+      "afhaal",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kipburger-mc-style",
+    "name": "Kipburger (fastfood-achtig)",
+    "category": "Meal",
+    "caloriesPerServing": 480,
+    "servingLabel": "1 burger",
+    "imageQuery": "kipburger",
+    "ingredients": [
+      "Kipburger"
+    ],
+    "tags": [
+      "fastfood",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:hamburger-rund",
+    "name": "Hamburger rund",
+    "category": "Meal",
+    "caloriesPerServing": 520,
+    "servingLabel": "1 burger",
+    "imageQuery": "hamburger",
+    "ingredients": [
+      "Hamburger rund"
+    ],
+    "tags": [
+      "fastfood",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:patat-mayo",
+    "name": "Patat met mayonaise (klein)",
+    "category": "Meal",
+    "caloriesPerServing": 550,
+    "servingLabel": "klein bakje + 2 el mayo",
+    "imageQuery": "patat mayo",
+    "ingredients": [
+      "Patat met mayonaise"
+    ],
+    "tags": [
+      "friet",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:kibbeling",
+    "name": "Kibbeling (gebakken vis)",
+    "category": "Meal",
+    "caloriesPerServing": 380,
+    "servingLabel": "200 g",
+    "imageQuery": "kibbeling",
+    "ingredients": [
+      "Kibbeling"
+    ],
+    "tags": [
+      "vis",
+      "viskraam",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:haring-ui",
+    "name": "Haring met uitjes",
+    "category": "Meal",
+    "caloriesPerServing": 220,
+    "servingLabel": "1 portie",
+    "imageQuery": "haring ui",
+    "ingredients": [
+      "Haring met uitjes"
+    ],
+    "tags": [
+      "vis",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:krentenbol",
+    "name": "Krentenbol",
+    "category": "Snack",
+    "caloriesPerServing": 240,
+    "servingLabel": "1 stuk",
+    "imageQuery": "krentenbol",
+    "ingredients": [
+      "Krentenbol"
+    ],
+    "tags": [
+      "bakker",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rozijnenbrood",
+    "name": "Rozijnenbrood (snee)",
+    "category": "Snack",
+    "caloriesPerServing": 100,
+    "servingLabel": "1 snee",
+    "imageQuery": "rozijnenbrood",
+    "ingredients": [
+      "Rozijnenbrood"
+    ],
+    "tags": [
+      "brood",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:suikerwafel",
+    "name": "Suikerwafel (rond)",
+    "category": "Snack",
+    "caloriesPerServing": 180,
+    "servingLabel": "1 stuk",
+    "imageQuery": "suikerwafel",
+    "ingredients": [
+      "Suikerwafel"
+    ],
+    "tags": [
+      "koek",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:eierkoek",
+    "name": "Eierkoek",
+    "category": "Snack",
+    "caloriesPerServing": 150,
+    "servingLabel": "1 stuk",
+    "imageQuery": "eierkoek",
+    "ingredients": [
+      "Eierkoek"
+    ],
+    "tags": [
+      "koek",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:gevulde-koek",
+    "name": "Gevulde koek",
+    "category": "Snack",
+    "caloriesPerServing": 280,
+    "servingLabel": "1 stuk",
+    "imageQuery": "gevulde koek amandel",
+    "ingredients": [
+      "Gevulde koek"
+    ],
+    "tags": [
+      "koek",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:tompouce",
+    "name": "Tompouce punt",
+    "category": "Snack",
+    "caloriesPerServing": 220,
+    "servingLabel": "1 punt",
+    "imageQuery": "tompouce",
+    "ingredients": [
+      "Tompouce punt"
+    ],
+    "tags": [
+      "gebak",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:bossche-bollen",
+    "name": "Soes met chocolade (Bossche bol-achtig)",
+    "category": "Snack",
+    "caloriesPerServing": 380,
+    "servingLabel": "1 stuk",
+    "imageQuery": "chocolade soes",
+    "ingredients": [
+      "Soes met chocolade"
+    ],
+    "tags": [
+      "gebak",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:oliehoorn",
+    "name": "Oliehoorn / saucijzenbroodje bladerdeeg",
+    "category": "Snack",
+    "caloriesPerServing": 360,
+    "servingLabel": "1 stuk",
+    "imageQuery": "saucijzenbroodje bladerdeeg",
+    "ingredients": [
+      "Oliehoorn / saucijzenbroodje bladerdeeg"
+    ],
+    "tags": [
+      "vlees",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:bier-pils",
+    "name": "Pilsbier",
+    "category": "Drink",
+    "caloriesPerServing": 40,
+    "servingLabel": "100 ml",
+    "imageQuery": "pils bier",
+    "ingredients": [
+      "Pilsbier"
+    ],
+    "tags": [
+      "alcohol",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:wijn-wit",
+    "name": "Witte wijn",
+    "category": "Drink",
+    "caloriesPerServing": 82,
+    "servingLabel": "100 ml",
+    "imageQuery": "witte wijn glas",
+    "ingredients": [
+      "Witte wijn"
+    ],
+    "tags": [
+      "alcohol",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  },
+  {
+    "id": "staple:rose",
+    "name": "Rosé wijn",
+    "category": "Drink",
+    "caloriesPerServing": 75,
+    "servingLabel": "100 ml",
+    "imageQuery": "rose wijn",
+    "ingredients": [
+      "Rosé wijn"
+    ],
+    "tags": [
+      "alcohol",
+      "nederland",
+      "supermarkt",
+      "albert heijn",
+      "jumbo",
+      "lidl"
+    ]
+  }
+]

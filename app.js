@@ -23,6 +23,8 @@ const BUILTIN_FOOD_IDS = new Set(BUILTIN_FOODS.map((f) => f.id));
 const BUILTIN_NORMALIZED = BUILTIN_FOODS.map(normalizeFoodForStorage);
 
 let nlFoodsNormalized = [];
+/** Curated NL supermarkt-items (merge in core + full dataset) */
+let nlStapleFoodsNormalized = [];
 let nlFoodsLoading = true;
 let NL_FOOD_IDS = new Set();
 let nlFoodsFullLoaded = false;
@@ -620,6 +622,17 @@ function scheduleWebSearch(query) {
   }, 450);
 }
 
+function mergeFoodLibraryLists(primary, secondary) {
+  const m = new Map();
+  for (const f of primary) {
+    if (f?.id) m.set(f.id, f);
+  }
+  for (const f of secondary) {
+    if (f?.id && !m.has(f.id)) m.set(f.id, f);
+  }
+  return [...m.values()];
+}
+
 function scheduleNlFoodsFullLoad() {
   if (nlFoodsFullLoaded || nlFoodsFullLoading) return;
   if (nlFoodsFullTimer) window.clearTimeout(nlFoodsFullTimer);
@@ -632,16 +645,29 @@ function scheduleNlFoodsFullLoad() {
 async function loadNlFoodsCore() {
   nlFoodsLoading = true;
   try {
-    const res = await fetch("./data/nl-foods-core.json", { cache: "force-cache" });
-    if (!res.ok) throw new Error(`nl-foods-core.json ${res.status}`);
-    const data = await res.json();
-    if (!Array.isArray(data)) throw new Error("nl-foods-core.json invalid");
-    nlFoodsNormalized = data.map(normalizeFoodForStorage);
+    const [coreRes, stapleRes] = await Promise.all([
+      fetch("./data/nl-foods-core.json", { cache: "force-cache" }),
+      fetch("./data/nl-supermarkt-staples.json", { cache: "force-cache" }),
+    ]);
+    let coreNorm = [];
+    if (coreRes.ok) {
+      const data = await coreRes.json();
+      if (Array.isArray(data)) coreNorm = data.map(normalizeFoodForStorage);
+    }
+    let stapleNorm = [];
+    if (stapleRes.ok) {
+      const st = await stapleRes.json();
+      if (Array.isArray(st)) stapleNorm = st.map(normalizeFoodForStorage);
+    }
+    nlStapleFoodsNormalized = stapleNorm;
+    nlFoodsNormalized = mergeFoodLibraryLists(coreNorm, stapleNorm);
     NL_FOOD_IDS = new Set(nlFoodsNormalized.map((f) => f.id));
+    if (!coreRes.ok) console.warn(`nl-foods-core.json ${coreRes.status}`);
+    if (!stapleRes.ok) console.warn(`nl-supermarkt-staples.json ${stapleRes.status}`);
   } catch (err) {
     console.warn(err?.message || String(err));
-    nlFoodsNormalized = [];
-    NL_FOOD_IDS = new Set();
+    nlFoodsNormalized = mergeFoodLibraryLists([], nlStapleFoodsNormalized);
+    NL_FOOD_IDS = new Set(nlFoodsNormalized.map((f) => f.id));
   } finally {
     nlFoodsLoading = false;
     markFoodsDirty();
@@ -658,7 +684,8 @@ async function loadNlFoodsFull() {
     if (!res.ok) throw new Error(`nl-foods.json ${res.status}`);
     const data = await res.json();
     if (!Array.isArray(data)) throw new Error("nl-foods.json invalid");
-    nlFoodsNormalized = data.map(normalizeFoodForStorage);
+    const fullNorm = data.map(normalizeFoodForStorage);
+    nlFoodsNormalized = mergeFoodLibraryLists(fullNorm, nlStapleFoodsNormalized);
     NL_FOOD_IDS = new Set(nlFoodsNormalized.map((f) => f.id));
     nlFoodsFullLoaded = true;
   } catch (err) {
@@ -1646,18 +1673,14 @@ function closeRecipeModal() {
   if (modal) modal.hidden = true;
 }
 
-function appendSelectedTotalRow(wrap, mode, consumed, goal, remaining) {
-  if (!wrap) return;
-  const totalRow = document.createElement("div");
-  totalRow.className = "selected-items-total";
-  totalRow.setAttribute("aria-live", "polite");
+function renderLibraryDagTotalLine(el, mode, consumed, goal, remaining) {
+  if (!el) return;
   const c = Math.round(consumed);
   if (mode === "log") {
-    totalRow.textContent = ui.log.dayTotalLine(consumed, goal, remaining);
+    el.textContent = ui.log.dayTotalLine(consumed, goal, remaining);
   } else {
-    totalRow.textContent = ui.library.selectedTotal(c);
+    el.textContent = ui.library.selectedTotal(c);
   }
-  wrap.appendChild(totalRow);
 }
 
 function renderSelectedItems() {
@@ -1673,22 +1696,23 @@ function renderSelectedItems() {
   const goal = dailyGoal();
   const remaining = goal - consumed;
 
+  const totalLine = $("#library-dag-total-line");
+  renderLibraryDagTotalLine(totalLine, "log", consumed, goal, remaining);
+
   const emptyHtml = `<div class="muted">${escapeHtml(ui.log.empty)}</div>`;
 
-  const fillWrap = (wrap, mode) => {
-    if (!wrap) return;
-    wrap.innerHTML = "";
-    if (!items.length) {
-      wrap.innerHTML = emptyHtml;
-    } else {
-      for (const { food, qty, servingAmount, calories } of items) {
-        const row = document.createElement("div");
-        row.className = "selected-row";
-        const gramsPart =
-          food.caloriesBaseUnit === "g" && Number.isFinite(servingAmount)
-            ? ` · ${escapeHtml(ui.common.eachGrams(Math.round(servingAmount)))}`
-            : "";
-        row.innerHTML = `
+  wLib.innerHTML = "";
+  if (!items.length) {
+    wLib.innerHTML = emptyHtml;
+  } else {
+    for (const { food, qty, servingAmount, calories } of items) {
+      const row = document.createElement("div");
+      row.className = "selected-row";
+      const gramsPart =
+        food.caloriesBaseUnit === "g" && Number.isFinite(servingAmount)
+          ? ` · ${escapeHtml(ui.common.eachGrams(Math.round(servingAmount)))}`
+          : "";
+      row.innerHTML = `
         <div>
           <strong>${escapeHtml(food.name)}</strong>
           <div class="muted small">
@@ -1697,23 +1721,19 @@ function renderSelectedItems() {
         </div>
         <div class="muted" style="font-weight:900;">${Math.round(calories)} kcal</div>
       `;
-        const btn = document.createElement("button");
-        btn.className = "btn btn-ghost";
-        btn.type = "button";
-        btn.textContent = ui.common.remove;
-        btn.addEventListener("click", () => {
-          setQtyForFood(state.selectedDate, food.id, 0);
-          renderAll();
-        });
+      const btn = document.createElement("button");
+      btn.className = "btn btn-ghost";
+      btn.type = "button";
+      btn.textContent = ui.common.remove;
+      btn.addEventListener("click", () => {
+        setQtyForFood(state.selectedDate, food.id, 0);
+        renderAll();
+      });
 
-        row.appendChild(btn);
-        wrap.appendChild(row);
-      }
+      row.appendChild(btn);
+      wLib.appendChild(row);
     }
-    appendSelectedTotalRow(wrap, mode, consumed, goal, remaining);
-  };
-
-  fillWrap(wLib, "log");
+  }
 }
 
 function openModalForFood(food) {

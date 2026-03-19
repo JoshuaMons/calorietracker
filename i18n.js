@@ -265,7 +265,7 @@ export const ui = {
   library: {
     pageTitle: "Voeding & dagtotaal",
     mergedIntro:
-      "Zoek producten en vink af wat je at; hieronder zie je het dagtotaal voor je logdag op Start. Bij opstart een compacte NL-set; bij zoeken wordt de volledige lijst geladen. Kcal vaak per 100 g.",
+      "Zoek producten en vink af wat je at; de dagtotaal-balk blijft zichtbaar tijdens scrollen. Er is een extra set veelvoorkomende Nederlandse supermarkt-producten (indicatieve kcal); bij zoeken laadt ook de grote Open Food Facts-lijst. Kcal vaak per 100 g.",
     title: "Voedingsdatabase",
     intro:
       "Vink af wat je at. Bij start laden we een compacte NL-set; tijdens zoeken wordt de volledige lijst opgehaald. Kcal vaak per 100 g.",
