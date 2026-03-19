@@ -210,7 +210,7 @@ export const ui = {
     generateHint:
       "Elke klik kiest opnieuw willekeurig uit de beste passende maaltijden — je plan wordt dus elke keer anders.",
     dayTitle: (n) => `Dag ${n}`,
-    dayTotals: (kcal, p) => `Totaal schatting: ~${kcal} kcal · ~${p} g eiwit`,
+    dayTotals: (kcal, p) => `Totaal: ${kcal} kcal (gelijk aan je dagbudget) · ~${p} g eiwit (schatting)`,
     drinkLine: "Drank",
     stepsTitle: "Stappen",
     empty: "Klik op de knop om een plan te maken.",

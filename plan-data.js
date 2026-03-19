@@ -39,6 +39,61 @@ function pickNear(pool, targetKcal, rng) {
 }
 
 /**
+ * Verdeelt `total` als gehele kcal over slots, proportioneel aan `weights` (recept-schattingen),
+ * zodat de som exact `total` is (geen afrondingsverschil met het dagbudget).
+ */
+function distributeKcalToSlots(total, weights) {
+  const t = Math.max(0, Math.round(Number(total) || 0));
+  const w = weights.map((x) => Math.max(0.001, Number(x) || 0.001));
+  const sumW = w.reduce((a, b) => a + b, 0);
+  const raw = w.map((x) => (t * x) / sumW);
+  const out = raw.map((x) => Math.floor(x));
+  let rem = t - out.reduce((a, b) => a + b, 0);
+  const order = raw
+    .map((x, i) => ({ i, f: x - Math.floor(x) }))
+    .sort((a, b) => b.f - a.f);
+  for (let k = 0; k < rem; k++) {
+    out[order[k % order.length].i]++;
+  }
+  return out;
+}
+
+function buildDaySlots(kcalPerDay, rng) {
+  const target = Math.max(100, Math.round(Number(kcalPerDay) || 0));
+  const b = pickNear(BREAKFAST_POOL, target * SLOT_FRACS.breakfast, rng);
+  const l = pickNear(LUNCH_POOL, target * SLOT_FRACS.lunch, rng);
+  const di = pickNear(DINNER_POOL, target * SLOT_FRACS.dinner, rng);
+  const s = pickNear(SNACK_POOL, target * SLOT_FRACS.snack, rng);
+  const dr = pickNear(DRINK_POOL, 0, rng);
+
+  const picked = [
+    { label: "Ontbijt", title: b.title, kcal: b.kcal, protein: b.protein, steps: b.steps },
+    { label: "Lunch", title: l.title, kcal: l.kcal, protein: l.protein, steps: l.steps },
+    { label: "Diner", title: di.title, kcal: di.kcal, protein: di.protein, steps: di.steps },
+    { label: "Tussendoortje", title: s.title, kcal: s.kcal, protein: s.protein, steps: s.steps },
+  ];
+
+  const weights = picked.map((x) => x.kcal);
+  const kcals = distributeKcalToSlots(target, weights);
+
+  const slots = picked.map((slot, i) => {
+    const baseK = slot.kcal > 0 ? slot.kcal : 1;
+    const ratio = kcals[i] / baseK;
+    return {
+      label: slot.label,
+      title: slot.title,
+      steps: slot.steps,
+      kcal: kcals[i],
+      protein: Math.max(0, Math.round(slot.protein * ratio)),
+    };
+  });
+
+  const totalKcal = slots.reduce((sum, x) => sum + x.kcal, 0);
+  const totalProtein = slots.reduce((sum, x) => sum + x.protein, 0);
+  return { slots, drinkTip: dr.title, totalKcal, totalProtein };
+}
+
+/**
  * @param {number} durationDays
  * @param {number} kcalPerDay
  * @param {() => number} rng 0..1
@@ -46,26 +101,13 @@ function pickNear(pool, targetKcal, rng) {
 export function buildMealPlan(durationDays, kcalPerDay, rng) {
   const days = [];
   for (let d = 1; d <= durationDays; d++) {
-    const slots = [];
-    const b = pickNear(BREAKFAST_POOL, kcalPerDay * SLOT_FRACS.breakfast, rng);
-    const l = pickNear(LUNCH_POOL, kcalPerDay * SLOT_FRACS.lunch, rng);
-    const di = pickNear(DINNER_POOL, kcalPerDay * SLOT_FRACS.dinner, rng);
-    const s = pickNear(SNACK_POOL, kcalPerDay * SLOT_FRACS.snack, rng);
-    const dr = pickNear(DRINK_POOL, 0, rng);
-    slots.push(
-      { label: "Ontbijt", ...b },
-      { label: "Lunch", ...l },
-      { label: "Diner", ...di },
-      { label: "Tussendoortje", ...s },
-    );
-    const totalKcal = slots.reduce((sum, x) => sum + x.kcal, 0);
-    const totalP = slots.reduce((sum, x) => sum + x.protein, 0);
+    const { slots, drinkTip, totalKcal, totalProtein } = buildDaySlots(kcalPerDay, rng);
     days.push({
       day: d,
       slots,
-      drinkTip: dr.title,
+      drinkTip,
       totalKcal,
-      totalProtein: totalP,
+      totalProtein,
     });
   }
   return days;
