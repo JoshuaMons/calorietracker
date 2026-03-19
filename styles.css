@@ -1423,6 +1423,37 @@ a.inline-link-btn {
   line-height: 1.3;
 }
 
+.meal-slot--clickable {
+  cursor: pointer;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.08s ease;
+}
+
+.meal-slot--clickable:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
+}
+
+.meal-slot--clickable:focus {
+  outline: 2px solid rgba(37, 99, 235, 0.45);
+  outline-offset: 2px;
+}
+
+.meal-slot--clickable:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.meal-slot-click-hint {
+  margin: 0;
+  font-size: 11px;
+}
+
+.meal-slot-modal-steps {
+  margin: 0 0 12px;
+  padding-left: 1.1rem;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .meal-slot-meta {
   font-size: 11px;
   font-weight: 800;

@@ -703,6 +703,39 @@
       </div>
     </div>
 
+    <!-- Maaltijd uit schema (ingrediënten) -->
+    <div id="meal-slot-modal-backdrop" class="modal-backdrop" hidden></div>
+    <div
+      id="meal-slot-modal"
+      class="modal recipe-modal"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-label="Maaltijd uit schema"
+    >
+      <div class="modal-inner">
+        <div class="modal-head">
+          <div>
+            <div class="modal-kicker" id="meal-slot-modal-kicker">—</div>
+            <h3 id="meal-slot-modal-title">—</h3>
+          </div>
+          <button id="meal-slot-modal-close" class="btn btn-ghost" type="button" aria-label="Sluiten">Sluiten</button>
+        </div>
+        <div class="modal-body recipe-modal-body">
+          <p class="muted small" id="meal-slot-modal-meta" style="margin-top: 0"></p>
+          <div>
+            <h4 class="recipe-modal-ingredients-heading" id="meal-slot-modal-ingredients-title">Ingrediënten</h4>
+            <ul id="meal-slot-modal-ingredients" class="recipe-modal-ingredients-list"></ul>
+          </div>
+          <div id="meal-slot-modal-prep-wrap" hidden>
+            <h4 class="recipe-modal-ingredients-heading" id="meal-slot-modal-steps-title">Bereiding</h4>
+            <ol id="meal-slot-modal-steps" class="meal-slot-modal-steps"></ol>
+          </div>
+          <p class="muted small" id="meal-slot-modal-footnote"></p>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="./app.js"></script>
   </body>
 </html>

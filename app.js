@@ -910,7 +910,7 @@ function renderMealPlanTargetLine() {
   }
 }
 
-function renderMealPlanInto(wrapSel, snap, emptyText) {
+function renderMealPlanInto(wrapSel, snap, emptyText, planType) {
   const wrap = $(wrapSel);
   if (!wrap) return;
   if (!snap || !Array.isArray(snap.days) || snap.days.length === 0) {
@@ -926,22 +926,26 @@ function renderMealPlanInto(wrapSel, snap, emptyText) {
   }
 
   const daysHtml = validDays
-    .map((day) => {
+    .map((day, dayIdx) => {
       const slotsHtml = day.slots
-        .map((slot) => {
-          const steps =
-            Array.isArray(slot.steps) && slot.steps.length
-              ? `<ol class="meal-slot-steps">${slot.steps.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ol>`
-              : "";
+        .map((slot, slotIdx) => {
           const webPart = slot.fromWeb ? ` · ${escapeHtml(ui.freePlan.fromWebTag)}` : "";
           return `
-            <div class="meal-slot meal-slot--compact">
+            <div
+              class="meal-slot meal-slot--compact meal-slot--clickable"
+              role="button"
+              tabindex="0"
+              data-plan="${planType === "free" ? "free" : "goal"}"
+              data-day="${dayIdx}"
+              data-slot="${slotIdx}"
+              aria-label="${escapeHtml(`${slot.label}: ${slot.title}. ${ui.schemaPlan.mealSlotClickHint}`)}"
+            >
               <div class="meal-slot-head">
                 <strong>${escapeHtml(slot.label)}</strong>
                 <span class="meal-slot-meta">${Math.round(slot.kcal)} kcal · ~${Math.round(slot.protein)} g ${escapeHtml(ui.stats.protein)}${webPart}</span>
               </div>
               <div class="meal-slot-title">${escapeHtml(slot.title)}</div>
-              ${steps ? `<div class="muted small meal-slot-steps-title">${escapeHtml(sp.stepsTitle)}</div>${steps}` : ""}
+              <div class="muted small meal-slot-click-hint">${escapeHtml(ui.schemaPlan.mealSlotClickHint)}</div>
             </div>`;
         })
         .join("");
@@ -962,11 +966,97 @@ function renderMealPlanInto(wrapSel, snap, emptyText) {
 }
 
 function renderMealPlanOutput() {
-  renderMealPlanInto("#meal-plan-output", state.mealPlan, ui.schemaPlan.empty);
+  renderMealPlanInto("#meal-plan-output", state.mealPlan, ui.schemaPlan.empty, "goal");
 }
 
 function renderFreeMealPlanOutput() {
-  renderMealPlanInto("#free-meal-plan-output", state.freeMealPlan, ui.freePlan.empty);
+  renderMealPlanInto("#free-meal-plan-output", state.freeMealPlan, ui.freePlan.empty, "free");
+}
+
+function listsDifferAsJson(a, b) {
+  return JSON.stringify(a || []) !== JSON.stringify(b || []);
+}
+
+function openMealSlotModal(planAttr, dayIndex, slotIndex) {
+  const snap = planAttr === "free" ? state.freeMealPlan : state.mealPlan;
+  const day = snap?.days?.[dayIndex];
+  const slot = day?.slots?.[slotIndex];
+  if (!slot) return;
+
+  const ingredients = Array.isArray(slot.ingredients) && slot.ingredients.length ? slot.ingredients : slot.steps || [];
+  const steps = Array.isArray(slot.steps) ? slot.steps : [];
+  const showPrep = listsDifferAsJson(ingredients, steps) && steps.length > 0;
+
+  const backdrop = $("#meal-slot-modal-backdrop");
+  const modal = $("#meal-slot-modal");
+  const kicker = $("#meal-slot-modal-kicker");
+  const titleEl = $("#meal-slot-modal-title");
+  const metaEl = $("#meal-slot-modal-meta");
+  const ingTitle = $("#meal-slot-modal-ingredients-title");
+  const ingList = $("#meal-slot-modal-ingredients");
+  const prepWrap = $("#meal-slot-modal-prep-wrap");
+  const prepList = $("#meal-slot-modal-steps");
+  const foot = $("#meal-slot-modal-footnote");
+
+  if (kicker) kicker.textContent = slot.label || "—";
+  if (titleEl) titleEl.textContent = slot.title || "—";
+  if (metaEl) {
+    const webPart = slot.fromWeb ? ` · ${ui.freePlan.fromWebTag}` : "";
+    metaEl.textContent = `${Math.round(slot.kcal)} kcal · ~${Math.round(slot.protein)} g ${ui.stats.protein}${webPart}`;
+  }
+  if (ingTitle) ingTitle.textContent = ui.schemaPlan.mealSlotIngredientsTitle;
+  if (ingList) {
+    ingList.innerHTML = ingredients.length
+      ? ingredients.map((s) => `<li>${escapeHtml(s)}</li>`).join("")
+      : `<li class="muted">${escapeHtml(ui.schemaPlan.mealSlotNoIngredients)}</li>`;
+  }
+  const prepTitle = $("#meal-slot-modal-steps-title");
+  if (prepTitle) prepTitle.textContent = ui.schemaPlan.mealSlotPrepTitle;
+  if (prepWrap) prepWrap.hidden = !showPrep;
+  if (prepList) {
+    prepList.innerHTML = showPrep
+      ? steps.map((s) => `<li>${escapeHtml(s)}</li>`).join("")
+      : "";
+  }
+  if (foot) foot.textContent = ui.schemaPlan.mealSlotFootnote;
+
+  if (backdrop) backdrop.hidden = false;
+  if (modal) {
+    modal.hidden = false;
+    modal.setAttribute("aria-label", ui.schemaPlan.mealSlotModalAria);
+  }
+}
+
+function closeMealSlotModal() {
+  const backdrop = $("#meal-slot-modal-backdrop");
+  const modal = $("#meal-slot-modal");
+  if (backdrop) backdrop.hidden = true;
+  if (modal) modal.hidden = true;
+}
+
+function initMealSlotModal() {
+  const schemaPage = $("#page-schema");
+  schemaPage?.addEventListener("click", (e) => {
+    const el = e.target.closest(".meal-slot--clickable");
+    if (!el) return;
+    const plan = el.getAttribute("data-plan");
+    const day = parseInt(el.getAttribute("data-day"), 10);
+    const slot = parseInt(el.getAttribute("data-slot"), 10);
+    if (!plan || Number.isNaN(day) || Number.isNaN(slot)) return;
+    openMealSlotModal(plan, day, slot);
+  });
+
+  schemaPage?.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const el = e.target.closest(".meal-slot--clickable");
+    if (!el) return;
+    e.preventDefault();
+    const plan = el.getAttribute("data-plan");
+    const day = parseInt(el.getAttribute("data-day"), 10);
+    const slot = parseInt(el.getAttribute("data-slot"), 10);
+    if (!plan || Number.isNaN(day) || Number.isNaN(slot)) return;
+    openMealSlotModal(plan, day, slot);
+  });
 }
 
 function renderFreePlanTargetLine() {
@@ -1025,26 +1115,31 @@ async function buildFreeMealPlanDays(durationDays, kcalPerDay) {
             kcal: ext.kcal,
             protein: ext.protein,
             steps: ext.steps,
+            ingredients: ext.ingredients?.length ? ext.ingredients : ext.steps,
             fromWeb: true,
           });
         } else {
           const loc = pickNearSlot(m.key, targetBase * m.frac, rng, FREE_PICK_OPTS);
+          const locIng = Array.isArray(loc.ingredients) && loc.ingredients.length ? loc.ingredients : loc.steps;
           picked.push({
             label: m.label,
             title: loc.title,
             kcal: loc.kcal,
             protein: loc.protein,
             steps: loc.steps,
+            ingredients: locIng,
           });
         }
       } else {
         const loc = pickNearSlot(m.key, targetBase * m.frac, rng, FREE_PICK_OPTS);
+        const locIng = Array.isArray(loc.ingredients) && loc.ingredients.length ? loc.ingredients : loc.steps;
         picked.push({
           label: m.label,
           title: loc.title,
           kcal: loc.kcal,
           protein: loc.protein,
           steps: loc.steps,
+          ingredients: locIng,
         });
       }
     }
@@ -1126,6 +1221,11 @@ function syncSchemaPageCopy() {
 
   const rclose = $("#recipe-modal-close");
   if (rclose) rclose.setAttribute("aria-label", ui.recipeModal.close);
+
+  const msClose = $("#meal-slot-modal-close");
+  if (msClose) msClose.setAttribute("aria-label", ui.recipeModal.close);
+  const msm = $("#meal-slot-modal");
+  if (msm) msm.setAttribute("aria-label", ui.schemaPlan.mealSlotModalAria);
 
   $("#recipe-modal-serving-label")?.replaceChildren(document.createTextNode(ui.recipeModal.serving));
   $("#recipe-modal-kcal-label")?.replaceChildren(document.createTextNode(ui.recipeModal.kcal));
@@ -1928,6 +2028,7 @@ function initRouting() {
 function closeAllModals() {
   closeModal();
   closeRecipeModal();
+  closeMealSlotModal();
   const ib = $("#import-backdrop");
   const im = $("#import-modal");
   ib.hidden = true;
@@ -2272,6 +2373,8 @@ function initModals() {
 
   $("#recipe-modal-close")?.addEventListener("click", closeAllModals);
   $("#recipe-modal-backdrop")?.addEventListener("click", closeAllModals);
+  $("#meal-slot-modal-close")?.addEventListener("click", closeAllModals);
+  $("#meal-slot-modal-backdrop")?.addEventListener("click", closeAllModals);
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeAllModals();
@@ -2369,6 +2472,7 @@ initSchemaPage();
 initFoodSearch();
 initCustomFoodForm();
 initModals();
+initMealSlotModal();
 
 syncHomePageCopy();
 syncSchemaPageCopy();

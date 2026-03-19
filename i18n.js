@@ -209,7 +209,7 @@ export const ui = {
     generateBtn: "Vrij schema genereren",
     resetBtn: "Vrij plan wissen",
     generateHint:
-      "Elke run haalt opnieuw willekeurige maaltijden binnen — ook van het web als de verbinding het toelaat.",
+      "Elke run haalt opnieuw willekeurige maaltijden binnen — ook van het web als de verbinding het toelaat. Klik op een maaltijd voor ingrediënten.",
     generating: "Bezig met genereren… even geduld.",
     targetLine: (kcal, days) => `Doel voor dit plan: ${kcal} kcal/dag · ${days} ${days === 1 ? "dag" : "dagen"}.`,
     empty: "Kies kcal en dagen en klik op genereren.",
@@ -231,7 +231,14 @@ export const ui = {
     duration14: "14 dagen",
     generateBtn: "Nieuw plan genereren",
     generateHint:
-      "Elke klik kiest opnieuw willekeurig uit de beste passende maaltijden — je plan wordt dus elke keer anders.",
+      "Elke klik kiest opnieuw willekeurig uit de beste passende maaltijden — je plan wordt dus elke keer anders. Tik of klik op een maaltijd voor ingrediënten (en bereiding).",
+    mealSlotClickHint: "Klik voor ingrediënten",
+    mealSlotModalAria: "Maaltijd uit schema",
+    mealSlotIngredientsTitle: "Ingrediënten",
+    mealSlotPrepTitle: "Bereiding",
+    mealSlotNoIngredients: "Geen aparte ingrediëntenlijst — zie bereiding.",
+    mealSlotFootnote:
+      "Hoeveelheden zijn indicatief; je dagtotaal in het plan is wel exact op je kcal-doel afgestemd. Log echte producten in je dagboek.",
     dayTitle: (n) => `Dag ${n}`,
     dayTotals: (kcal, p) => `Totaal: ${kcal} kcal (gelijk aan je dagbudget) · ~${p} g eiwit (schatting)`,
     drinkLine: "Drank",

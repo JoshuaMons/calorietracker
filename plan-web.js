@@ -27,6 +27,19 @@ function estimateProteinFromCategory(category) {
   return 28;
 }
 
+function extractMealDbIngredients(m) {
+  const out = [];
+  for (let i = 1; i <= 20; i++) {
+    const ing = m[`strIngredient${i}`];
+    const meas = m[`strMeasure${i}`];
+    const ingT = ing && String(ing).trim();
+    if (!ingT) continue;
+    const measT = meas && String(meas).trim();
+    out.push(measT ? `${measT} ${ingT}` : ingT);
+  }
+  return out;
+}
+
 function instructionsToSteps(text) {
   const raw = String(text || "").trim();
   if (!raw) return ["Bereiden volgens het originele recept (bron: TheMealDB)."];
@@ -49,7 +62,7 @@ function instructionsToSteps(text) {
 }
 
 /**
- * @returns {Promise<null | { title: string, steps: string[], kcal: number, protein: number, sourceNote: string }>}
+ * @returns {Promise<null | { title: string, steps: string[], ingredients: string[], kcal: number, protein: number, sourceNote: string }>}
  */
 export async function fetchTheMealDbMeal() {
   try {
@@ -61,9 +74,12 @@ export async function fetchTheMealDbMeal() {
 
     const cat = m.strCategory || "";
     const title = `${m.strMeal} (TheMealDB)`;
+    const ingredients = extractMealDbIngredients(m);
+    const steps = instructionsToSteps(m.strInstructions);
     return {
       title,
-      steps: instructionsToSteps(m.strInstructions),
+      steps,
+      ingredients: ingredients.length ? ingredients : steps,
       kcal: estimateKcalFromCategory(cat),
       protein: estimateProteinFromCategory(cat),
       sourceNote: [cat, m.strArea].filter(Boolean).join(" · "),

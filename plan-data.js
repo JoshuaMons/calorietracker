@@ -73,11 +73,12 @@ function buildDaySlots(kcalPerDay, rng, pickOpts = DEFAULT_PICK_OPTS) {
   const s = pickNear(SNACK_POOL, target * SLOT_FRACS.snack, rng, pickOpts);
   const dr = pickNear(DRINK_POOL, 0, rng, { jitter: 24, topNMin: 2, topNMax: DRINK_POOL.length });
 
+  const ingOrSteps = (m) => (Array.isArray(m.ingredients) && m.ingredients.length ? m.ingredients : m.steps);
   const picked = [
-    { label: "Ontbijt", title: b.title, kcal: b.kcal, protein: b.protein, steps: b.steps },
-    { label: "Lunch", title: l.title, kcal: l.kcal, protein: l.protein, steps: l.steps },
-    { label: "Diner", title: di.title, kcal: di.kcal, protein: di.protein, steps: di.steps },
-    { label: "Tussendoortje", title: s.title, kcal: s.kcal, protein: s.protein, steps: s.steps },
+    { label: "Ontbijt", title: b.title, kcal: b.kcal, protein: b.protein, steps: b.steps, ingredients: ingOrSteps(b) },
+    { label: "Lunch", title: l.title, kcal: l.kcal, protein: l.protein, steps: l.steps, ingredients: ingOrSteps(l) },
+    { label: "Diner", title: di.title, kcal: di.kcal, protein: di.protein, steps: di.steps, ingredients: ingOrSteps(di) },
+    { label: "Tussendoortje", title: s.title, kcal: s.kcal, protein: s.protein, steps: s.steps, ingredients: ingOrSteps(s) },
   ];
 
   const weights = picked.map((x) => x.kcal);
@@ -90,6 +91,7 @@ function buildDaySlots(kcalPerDay, rng, pickOpts = DEFAULT_PICK_OPTS) {
       label: slot.label,
       title: slot.title,
       steps: slot.steps,
+      ingredients: slot.ingredients || slot.steps,
       kcal: kcals[i],
       protein: Math.max(0, Math.round(slot.protein * ratio)),
     };
@@ -102,7 +104,7 @@ function buildDaySlots(kcalPerDay, rng, pickOpts = DEFAULT_PICK_OPTS) {
 
 /**
  * Zet ruwe slot-keuzes om naar exact dagbudget (zelfde logica als doelenplan).
- * @param {Array<{label:string,title:string,kcal:number,protein:number,steps:string[],fromWeb?:boolean}>} picked
+ * @param {Array<{label:string,title:string,kcal:number,protein:number,steps:string[],ingredients?:string[],fromWeb?:boolean}>} picked
  */
 export function finalizeDaySlotsFromPicks(picked, kcalPerDay) {
   const target = Math.max(100, Math.round(Number(kcalPerDay) || 0));
@@ -111,10 +113,13 @@ export function finalizeDaySlotsFromPicks(picked, kcalPerDay) {
   const slots = picked.map((slot, i) => {
     const baseK = slot.kcal > 0 ? slot.kcal : 1;
     const ratio = kcals[i] / baseK;
+    const ingredients =
+      Array.isArray(slot.ingredients) && slot.ingredients.length ? slot.ingredients : slot.steps;
     const out = {
       label: slot.label,
       title: slot.title,
       steps: slot.steps,
+      ingredients,
       kcal: kcals[i],
       protein: Math.max(0, Math.round(slot.protein * ratio)),
     };
