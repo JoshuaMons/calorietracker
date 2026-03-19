@@ -41,9 +41,170 @@ body {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(255, 255, 255, 0.74);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
+}
+
+/* Fitness banner */
+.fitness-banner {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.fitness-banner-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, rgba(31, 157, 85, 0.22) 0%, rgba(37, 99, 235, 0.18) 45%, rgba(14, 165, 233, 0.12) 100%),
+    radial-gradient(ellipse 80% 120% at 100% 0%, rgba(31, 157, 85, 0.35), transparent 55%),
+    radial-gradient(ellipse 60% 100% at 0% 100%, rgba(37, 99, 235, 0.28), transparent 50%),
+    linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  opacity: 1;
+}
+
+.fitness-banner-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -18deg,
+    transparent,
+    transparent 12px,
+    rgba(255, 255, 255, 0.03) 12px,
+    rgba(255, 255, 255, 0.03) 13px
+  );
+  pointer-events: none;
+}
+
+.fitness-banner-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 22px 18px 20px;
+}
+
+.fitness-banner-text {
+  max-width: 560px;
+}
+
+.fitness-kicker {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.fitness-title {
+  margin: 0 0 8px;
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  font-weight: 950;
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.fitness-tagline {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(226, 232, 240, 0.88);
+  font-weight: 600;
+}
+
+.fitness-banner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #f1f5f9;
+  font-weight: 900;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.fitness-icon {
+  font-size: 18px;
+  color: rgba(52, 211, 153, 0.95);
+}
+
+.inline-link {
+  color: rgba(37, 99, 235, 0.95);
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(37, 99, 235, 0.35);
+}
+
+.inline-link:hover {
+  border-bottom-color: rgba(37, 99, 235, 0.75);
+}
+
+.summary-compact-card h2 {
+  margin-bottom: 10px;
+}
+
+.summary-compact {
+  gap: 12px;
+}
+
+.summary-compact-top {
+  align-items: center;
+}
+
+.summary-compact-ring-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.pill-compact {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.ring-wrap-compact {
+  flex-direction: row-reverse;
+}
+
+.calorie-ring-compact {
+  width: 44px;
+  height: 44px;
+}
+
+.calorie-ring-compact::after {
+  inset: 7px;
+}
+
+.progress-bar-wrap-compact {
+  height: 10px;
+}
+
+.progress-nums-compact {
+  font-size: 12px;
+}
+
+.summary-one-liner {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  font-weight: 700;
+  color: rgba(17, 24, 39, 0.82);
+}
+
+.date-hint {
+  margin: 0 0 16px;
 }
 
 .tabs-wrap {

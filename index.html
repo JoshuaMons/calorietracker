@@ -4,24 +4,30 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Calorie Tracker</title>
-    <meta name="description" content="Track what you eat and drink, set calorie goals, and get smart suggestions." />
+    <meta name="description" content="Track meals and calories, set daily goals, and browse Openverse-powered food suggestions." />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <header class="app-header">
-      <div class="container header-inner">
-        <div class="brand">
-          <div class="brand-mark" aria-hidden="true">C</div>
-          <div>
-            <h1 class="brand-title">Calorie Tracker</h1>
-            <p class="brand-subtitle">Daily checkoff + goal countdown</p>
+      <div class="fitness-banner" role="banner">
+        <div class="fitness-banner-bg" aria-hidden="true"></div>
+        <div class="container fitness-banner-inner">
+          <div class="fitness-banner-text">
+            <p class="fitness-kicker">Train · Fuel · Repeat</p>
+            <h1 class="fitness-title">Calorie Tracker</h1>
+            <p class="fitness-tagline">Hit your daily fuel target with a clear schedule and smart suggestions.</p>
+          </div>
+          <div class="fitness-banner-badge" aria-hidden="true">
+            <span class="fitness-icon">◆</span>
+            <span>Stay on track</span>
           </div>
         </div>
       </div>
 
       <div class="tabs-wrap">
         <nav class="tabs" aria-label="Sections">
-          <a class="tab" href="#/schedule" id="tab-schedule" aria-current="page">Schedule</a>
+          <a class="tab" href="#/home" id="tab-home" aria-current="page">Home</a>
+          <a class="tab" href="#/suggestions" id="tab-suggestions">Suggestions</a>
           <a class="tab" href="#/library" id="tab-library">Food Library</a>
           <a class="tab" href="#/log" id="tab-log">Log</a>
           <a class="tab" href="#/settings" id="tab-settings">Data</a>
@@ -30,8 +36,8 @@
     </header>
 
     <main class="container">
-      <!-- Schedule page -->
-      <section id="page-schedule" class="page is-active">
+      <!-- Home: schedule + compact daily summary -->
+      <section id="page-home" class="page is-active">
         <section class="grid grid-2">
           <div class="card">
           <h2>Schedule & Goals</h2>
@@ -68,18 +74,18 @@
           </div>
           </div>
 
-          <div class="card">
-          <h2>Daily Summary</h2>
-          <div class="summary">
-            <div class="summary-top">
+          <div class="card summary-compact-card">
+          <h2>Daily summary</h2>
+          <div class="summary summary-compact">
+            <div class="summary-top summary-compact-top">
               <div>
-                <div class="muted">Selected day</div>
+                <div class="muted small">Selected day</div>
                 <div class="summary-day" id="selected-day-label">—</div>
               </div>
-              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
-                <div class="pill" id="goal-pill">Goal: —</div>
-                <div class="ring-wrap">
-                  <div id="calorie-ring" class="calorie-ring" role="img" aria-label="Calories progress"></div>
+              <div class="summary-compact-ring-block">
+                <div class="pill pill-compact" id="goal-pill">Goal: —</div>
+                <div class="ring-wrap ring-wrap-compact">
+                  <div id="calorie-ring" class="calorie-ring calorie-ring-compact" role="img" aria-label="Calories progress"></div>
                   <div class="ring-text">
                     <div class="muted small">Progress</div>
                     <div id="ring-percent" class="ring-main">0%</div>
@@ -87,23 +93,42 @@
                 </div>
               </div>
             </div>
-            <div class="progress">
-              <div class="progress-bar-wrap">
+            <div class="progress progress-compact">
+              <div class="progress-bar-wrap progress-bar-wrap-compact">
                 <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
               </div>
-              <div class="progress-nums">
+              <div class="progress-nums progress-nums-compact">
                 <div><strong id="consumed-label">0</strong> kcal eaten</div>
                 <div><strong id="remaining-label">0</strong> kcal remaining</div>
               </div>
             </div>
+            <p class="muted small summary-one-liner" id="summary-one-liner" aria-live="polite"></p>
+            <p class="muted small" style="margin: 0;">
+              <a class="inline-link" href="#/suggestions">Open suggestions →</a> for snacks, a sample meal plan, and macros.
+            </p>
+          </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Suggestions: snacks/drinks images via Openverse, meal plan, macros -->
+      <section id="page-suggestions" class="page">
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <h2>Suggestions &amp; insights</h2>
+              <p class="muted">
+                Snack and drink ideas based on calories left today, plus a quick meal plan and macro breakdown for the selected day.
+              </p>
+            </div>
           </div>
 
-          <div class="separator"></div>
+          <div class="date-hint muted small" id="suggestions-day-hint"></div>
 
           <div class="suggestions">
             <h3>Suggestions (snacks/drinks)</h3>
             <p class="muted small">
-              Based on your remaining calories. If you already ate everything, add a custom food below.
+              Thumbnails load from the <a href="https://openverse.org/" target="_blank" rel="noopener noreferrer">Openverse</a> catalog (CC-licensed media).
             </p>
             <div id="suggestions-list" class="suggestions-list"></div>
           </div>
@@ -111,7 +136,7 @@
           <div class="separator"></div>
 
           <div class="mealplan">
-            <h3>Suggested Meal Plan</h3>
+            <h3>Suggested meal plan</h3>
             <p class="muted small">
               Quick plan to help you reach your goal. Click “Add” to log servings.
             </p>
@@ -122,12 +147,11 @@
           <div class="separator"></div>
 
           <div class="macros">
-            <h3>Macro Breakdown</h3>
+            <h3>Macro breakdown</h3>
             <div id="macro-breakdown" class="macro-breakdown"></div>
             <p class="muted small" style="margin-top: 10px;">
               Macros come from Open Food Facts when available.
             </p>
-          </div>
           </div>
         </section>
       </section>

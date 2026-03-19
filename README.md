@@ -3,10 +3,11 @@
 Open `calorie-tracker/index.html` in your browser.
 
 Features:
-- Set a start date, number of days, and daily calorie goal.
-- Pick a day and log foods/drinks using checkboxes + quantity.
+- **Home** (`#/home`): schedule, goals, day picker, and a compact daily summary.
+- **Suggestions** (`#/suggestions`): snack/drink ideas (thumbnails via [Openverse](https://openverse.org/)), sample meal plan, and macro breakdown.
+- Pick a day and log foods/drinks using checkboxes + quantity (Food Library / Log).
 - Totals update instantly (eaten, remaining).
-- Snack/drink suggestions to help you reach your goal.
+- Legacy URL `#/schedule` still opens Home.
 - All inputs persist in `localStorage`.
 - Export / Import app state (JSON) and reset logs for the selected day.
 

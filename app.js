@@ -188,6 +188,57 @@ function attachImageErrorFallback(imgEl, food) {
   };
 }
 
+/** Openverse (https://openverse.org/) image search — CC-licensed catalog */
+const OPENVERSE_IMAGES_API = "https://api.openverse.engineering/v1/images/";
+const openverseImageCache = new Map();
+let suggestionsOpenverseGen = 0;
+
+async function fetchOpenverseThumbnailForQuery(query) {
+  const qBase = (query || "healthy food")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ");
+  const searchQ = `${qBase || "healthy"} food`.slice(0, 120);
+  if (openverseImageCache.has(searchQ)) {
+    return openverseImageCache.get(searchQ);
+  }
+  try {
+    const params = new URLSearchParams({
+      q: searchQ,
+      page_size: "1",
+    });
+    const res = await fetch(`${OPENVERSE_IMAGES_API}?${params}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const hit = data?.results?.[0];
+    const url = hit?.thumbnail || hit?.url || null;
+    if (url) openverseImageCache.set(searchQ, url);
+    return url;
+  } catch {
+    return null;
+  }
+}
+
+async function hydrateOpenverseSuggestionImages(container, gen) {
+  if (!container) return;
+  const imgs = container.querySelectorAll('img[data-openverse="1"]');
+  for (const img of imgs) {
+    if (gen !== suggestionsOpenverseGen) return;
+    const foodQuery = img.dataset.imgQuery || "";
+    const url = await fetchOpenverseThumbnailForQuery(foodQuery);
+    if (gen !== suggestionsOpenverseGen) return;
+    if (!img.isConnected) continue;
+    if (url) {
+      img.onerror = () => {
+        img.onerror = null;
+        img.src = IMAGE_PLACEHOLDER_URL;
+      };
+      img.src = url;
+    }
+  }
+}
+
 function getScheduleDays(schedule) {
   const days = clampInt(schedule?.days ?? 7, 1, 365);
   const start = schedule?.startDate || toYMD(new Date());
@@ -598,6 +649,30 @@ function renderSummary() {
     ringPercentEl.textContent = `${Math.round(pct)}%`;
   }
 
+  const oneLiner = $("#summary-one-liner");
+  if (oneLiner) {
+    const g = Math.round(goal);
+    const c = Math.round(consumed);
+    const r = Math.round(remaining);
+    if (g <= 0) {
+      oneLiner.textContent = "";
+    } else if (r < 0) {
+      oneLiner.textContent = `You’re about ${Math.abs(r)} kcal over today’s goal — adjust tomorrow or move a bit more.`;
+    } else if (c >= g) {
+      oneLiner.textContent = "You’ve hit your calorie goal for this day. Great work.";
+    } else if (c === 0) {
+      oneLiner.textContent = `Nothing logged yet — ${r} kcal left to plan for ${formatShortDay(ymd)}.`;
+    } else {
+      oneLiner.textContent = `${c} kcal logged · ${r} kcal still available toward your ${g} kcal goal.`;
+    }
+  }
+}
+
+function renderMacrosPanel() {
+  const ymd = state.selectedDate;
+  const { consumed, macros } = calcTotalsForDate(ymd);
+  const goal = currentGoal();
+  const remaining = goal - consumed;
   renderMacroBreakdown(macros, remaining);
 }
 
@@ -645,7 +720,17 @@ function renderMacroBreakdown(macros, remaining) {
 
 function renderSuggestions() {
   const wrap = $("#suggestions-list");
+  if (!wrap) return;
+
+  const hint = $("#suggestions-day-hint");
+  if (hint) {
+    hint.textContent = `Using the day selected on Home: ${formatNiceDate(state.selectedDate)}.`;
+  }
+
   const { remaining, suggestions } = computeSuggestions(state.selectedDate);
+
+  suggestionsOpenverseGen += 1;
+  const gen = suggestionsOpenverseGen;
 
   if (remaining <= 0) {
     wrap.innerHTML = `<div class="muted">Nice work. You met your goal for this day.</div>`;
@@ -662,7 +747,7 @@ function renderSuggestions() {
     const el = document.createElement("div");
     el.className = "suggestion";
     el.innerHTML = `
-      <img alt="" loading="eager" src="${makeImageUrl(food)}" />
+      <img alt="" loading="lazy" src="${IMAGE_PLACEHOLDER_URL}" width="60" height="50" />
       <div>
         <div class="name">${escapeHtml(food.name)}</div>
         <div class="meta">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 serving")}</div>
@@ -671,7 +756,9 @@ function renderSuggestions() {
     `;
     const imgEl = el.querySelector("img");
     if (imgEl) {
-      attachImageErrorFallback(imgEl, food);
+      imgEl.dataset.openverse = "1";
+      imgEl.dataset.imgQuery = makeImageQuery(food);
+      imgEl.alt = `${food.name || "Food"} (Openverse)`;
     }
     el.querySelector("button")?.addEventListener("click", () => {
       const log = getLogForDate(state.selectedDate);
@@ -683,6 +770,8 @@ function renderSuggestions() {
     });
     wrap.appendChild(el);
   }
+
+  void hydrateOpenverseSuggestionImages(wrap, gen);
 }
 
 function renderMealPlan() {
@@ -1045,21 +1134,25 @@ function ensureImagesInActivePage() {
 
 function initRouting() {
   const routeToPage = {
-    "#/schedule": "page-schedule",
+    "#/home": "page-home",
+    "#/schedule": "page-home",
+    "#/suggestions": "page-suggestions",
     "#/library": "page-library",
     "#/log": "page-log",
     "#/settings": "page-settings",
   };
 
   const tabToHash = [
-    { tabId: "tab-schedule", hash: "#/schedule" },
+    { tabId: "tab-home", hash: "#/home" },
+    { tabId: "tab-suggestions", hash: "#/suggestions" },
     { tabId: "tab-library", hash: "#/library" },
     { tabId: "tab-log", hash: "#/log" },
     { tabId: "tab-settings", hash: "#/settings" },
   ];
 
   function applyRoute() {
-    const hash = location.hash && routeToPage[location.hash] ? location.hash : "#/schedule";
+    const raw = location.hash || "#/home";
+    const hash = routeToPage[raw] ? raw : "#/home";
     const pageId = routeToPage[hash];
 
     document.querySelectorAll(".page").forEach((p) => {
@@ -1069,7 +1162,7 @@ function initRouting() {
     for (const { tabId, hash: tHash } of tabToHash) {
       const tab = document.getElementById(tabId);
       if (!tab) continue;
-      const isActive = hash === tHash;
+      const isActive = hash === tHash || (tHash === "#/home" && hash === "#/schedule");
       tab.classList.toggle("is-active", isActive);
       tab.setAttribute("aria-current", isActive ? "page" : "false");
     }
@@ -1078,7 +1171,7 @@ function initRouting() {
   }
 
   window.addEventListener("hashchange", applyRoute);
-  if (!location.hash) location.hash = "#/schedule";
+  if (!location.hash) location.hash = "#/home";
   applyRoute();
 }
 
@@ -1099,6 +1192,7 @@ function renderAll() {
   // but date strip will highlight schedule days only.
   renderSchedule();
   renderSummary();
+  renderMacrosPanel();
   renderSuggestions();
   renderMealPlan();
   renderSelectedItems();
