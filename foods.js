@@ -365,6 +365,13 @@ export function normalizeFoodForStorage(food) {
     imageUrl: String(food.imageUrl || "").trim(),
     caloriesBaseAmount: baseAmount,
     caloriesBaseUnit: baseUnit,
+    // Optional macro data (grams), expressed per `caloriesBaseAmount` / base unit.
+    // For Open Food Facts foods: these are typically per 100g.
+    proteinPerBaseAmount: Number.isFinite(Number(food.proteinPerBaseAmount))
+      ? Number(food.proteinPerBaseAmount)
+      : undefined,
+    carbsPerBaseAmount: Number.isFinite(Number(food.carbsPerBaseAmount)) ? Number(food.carbsPerBaseAmount) : undefined,
+    fatPerBaseAmount: Number.isFinite(Number(food.fatPerBaseAmount)) ? Number(food.fatPerBaseAmount) : undefined,
     ingredients: Array.isArray(food.ingredients) ? food.ingredients : [],
     tags: Array.isArray(food.tags) ? food.tags : [],
   };

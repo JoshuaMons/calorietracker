@@ -139,6 +139,26 @@ function makeImageFallbackUrl(food) {
   return `https://source.unsplash.com/400x300/?${q}`;
 }
 
+const IMAGE_PLACEHOLDER_URL =
+  "data:image/svg+xml;charset=utf-8," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="#f3f4f7"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="18" fill="#6b7280">Food</text></svg>`,
+  );
+
+function attachImageErrorFallback(imgEl, food) {
+  if (!imgEl) return;
+  imgEl.onerror = () => {
+    imgEl.onerror = null;
+    const tried = imgEl.dataset.imgTried || "";
+    if (tried === "1") {
+      imgEl.src = IMAGE_PLACEHOLDER_URL;
+      return;
+    }
+    imgEl.dataset.imgTried = "1";
+    imgEl.src = makeImageFallbackUrl(food);
+  };
+}
+
 function getScheduleDays(schedule) {
   const days = clampInt(schedule?.days ?? 7, 1, 365);
   const start = schedule?.startDate || toYMD(new Date());
@@ -213,6 +233,13 @@ async function fetchOpenFoodFacts(query) {
       const kcalRawAlt = p?.nutriments?.["energy-kcal"];
       const kcal = Number(kcal100gRaw ?? kcalRawAlt);
 
+      // Macro data is (usually) provided per 100g.
+      const protein =
+        Number(p?.nutriments?.["proteins_100g"] ?? p?.nutriments?.["protein_100g"] ?? p?.nutriments?.["proteins"]);
+      const carbs =
+        Number(p?.nutriments?.["carbohydrates_100g"] ?? p?.nutriments?.["carbohydrate_100g"] ?? p?.nutriments?.["carbohydrates"]);
+      const fat = Number(p?.nutriments?.["fat_100g"] ?? p?.nutriments?.["fat"]);
+
       const ingredientsText = p.ingredients_text || "";
       const ingredients = ingredientsText
         ? ingredientsText
@@ -230,6 +257,9 @@ async function fetchOpenFoodFacts(query) {
         servingLabel: "100g",
         // We intentionally use Unsplash for all images, so we only set keywords here.
         imageQuery: `${p.product_name || name} ${p.brands || ""}`.trim(),
+        proteinPerBaseAmount: Number.isFinite(protein) ? protein : undefined,
+        carbsPerBaseAmount: Number.isFinite(carbs) ? carbs : undefined,
+        fatPerBaseAmount: Number.isFinite(fat) ? fat : undefined,
         ingredients: ingredients.length ? ingredients : [],
         tags: Array.isArray(p.categories_tags) ? p.categories_tags : [],
       });
@@ -323,6 +353,10 @@ function calcTotalsForDate(dateYMD) {
   const byId = foodById();
   const log = getLogForDate(dateYMD);
   let consumed = 0;
+  let proteinGrams = 0;
+  let carbsGrams = 0;
+  let fatGrams = 0;
+  let hasAnyMacro = false;
   const items = [];
   for (const [foodId, entry] of Object.entries(log)) {
     const food = byId.get(foodId);
@@ -330,28 +364,70 @@ function calcTotalsForDate(dateYMD) {
     if (!food || !Number.isFinite(food.caloriesPerServing) || !qty) continue;
 
     let cals = 0;
+    let p = undefined;
+    let c = undefined;
+    let f = undefined;
     if (food.caloriesBaseUnit === "g") {
       const base = Number(food.caloriesBaseAmount ?? 100);
       const servingAmount = entry.servingAmount ?? base;
       if (Number.isFinite(base) && base > 0 && Number.isFinite(servingAmount)) {
         cals = (food.caloriesPerServing / base) * servingAmount * qty;
+        if (Number.isFinite(food.proteinPerBaseAmount)) {
+          p = (food.proteinPerBaseAmount / base) * servingAmount * qty;
+        }
+        if (Number.isFinite(food.carbsPerBaseAmount)) {
+          c = (food.carbsPerBaseAmount / base) * servingAmount * qty;
+        }
+        if (Number.isFinite(food.fatPerBaseAmount)) {
+          f = (food.fatPerBaseAmount / base) * servingAmount * qty;
+        }
       } else {
         cals = food.caloriesPerServing * qty;
       }
     } else {
       cals = food.caloriesPerServing * qty;
+      if (Number.isFinite(food.proteinPerBaseAmount)) p = food.proteinPerBaseAmount * qty;
+      if (Number.isFinite(food.carbsPerBaseAmount)) c = food.carbsPerBaseAmount * qty;
+      if (Number.isFinite(food.fatPerBaseAmount)) f = food.fatPerBaseAmount * qty;
     }
 
     consumed += cals;
+    if (Number.isFinite(p)) {
+      proteinGrams += p;
+      hasAnyMacro = true;
+    }
+    if (Number.isFinite(c)) {
+      carbsGrams += c;
+      hasAnyMacro = true;
+    }
+    if (Number.isFinite(f)) {
+      fatGrams += f;
+      hasAnyMacro = true;
+    }
+
     items.push({
       food,
       qty,
       servingAmount: food.caloriesBaseUnit === "g" ? entry.servingAmount ?? food.caloriesBaseAmount : undefined,
       calories: cals,
+      proteinGrams: Number.isFinite(p) ? p : undefined,
+      carbsGrams: Number.isFinite(c) ? c : undefined,
+      fatGrams: Number.isFinite(f) ? f : undefined,
     });
   }
   items.sort((a, b) => b.calories - a.calories);
-  return { consumed, items };
+  const macroCalories = hasAnyMacro ? proteinGrams * 4 + carbsGrams * 4 + fatGrams * 9 : undefined;
+  return {
+    consumed,
+    items,
+    macros: {
+      hasAnyMacro,
+      proteinGrams,
+      carbsGrams,
+      fatGrams,
+      macroCalories,
+    },
+  };
 }
 
 function normalizeSearch(s) {
@@ -450,9 +526,11 @@ function renderSummary() {
   const consumedEl = $("#consumed-label");
   const remainingEl = $("#remaining-label");
   const bar = $("#progress-bar");
+  const ringEl = $("#calorie-ring");
+  const ringPercentEl = $("#ring-percent");
 
   const ymd = state.selectedDate;
-  const { consumed } = calcTotalsForDate(ymd);
+  const { consumed, macros } = calcTotalsForDate(ymd);
   const goal = currentGoal();
   const remaining = goal - consumed;
 
@@ -464,6 +542,57 @@ function renderSummary() {
   const pct = goal > 0 ? Math.min(100, Math.max(0, (consumed / goal) * 100)) : 0;
   bar.style.width = `${pct}%`;
   bar.setAttribute("aria-valuenow", String(pct));
+
+  if (ringEl) {
+    ringEl.style.background = `conic-gradient(var(--accent-2) ${pct}%, rgba(17, 24, 39, 0.08) ${pct}% )`;
+  }
+  if (ringPercentEl) {
+    ringPercentEl.textContent = `${Math.round(pct)}%`;
+  }
+
+  renderMacroBreakdown(macros, remaining);
+}
+
+function renderMacroBreakdown(macros, remaining) {
+  const wrap = $("#macro-breakdown");
+  if (!wrap) return;
+
+  if (!macros || !macros.hasAnyMacro) {
+    wrap.innerHTML = `<div class="muted">No macro data available for logged foods yet. Add custom macros or use Open Food Facts foods.</div>`;
+    return;
+  }
+
+  const macroCalories = Number.isFinite(macros.macroCalories) ? macros.macroCalories : undefined;
+  const proteinPct = macroCalories ? Math.round((macros.proteinGrams * 4 * 100) / macroCalories) : 0;
+  const carbsPct = macroCalories ? Math.round((macros.carbsGrams * 4 * 100) / macroCalories) : 0;
+  const fatPct = macroCalories ? Math.round((macros.fatGrams * 9 * 100) / macroCalories) : 0;
+
+  wrap.innerHTML = `
+    <div class="macro-row">
+      <div class="macro-row-top">
+        <span>Protein</span>
+        <span>${macros.proteinGrams.toFixed(0)}g</span>
+      </div>
+      <div class="macro-bar-wrap"><div class="macro-bar" style="--w:${proteinPct}%"></div></div>
+      <div class="macro-row-top"><span class="muted">~${Math.round(macros.proteinGrams * 4)} kcal</span><span class="muted">${proteinPct}%</span></div>
+    </div>
+    <div class="macro-row">
+      <div class="macro-row-top">
+        <span>Carbs</span>
+        <span>${macros.carbsGrams.toFixed(0)}g</span>
+      </div>
+      <div class="macro-bar-wrap"><div class="macro-bar" style="--w:${carbsPct}%"></div></div>
+      <div class="macro-row-top"><span class="muted">~${Math.round(macros.carbsGrams * 4)} kcal</span><span class="muted">${carbsPct}%</span></div>
+    </div>
+    <div class="macro-row">
+      <div class="macro-row-top">
+        <span>Fat</span>
+        <span>${macros.fatGrams.toFixed(0)}g</span>
+      </div>
+      <div class="macro-bar-wrap"><div class="macro-bar" style="--w:${fatPct}%"></div></div>
+      <div class="macro-row-top"><span class="muted">~${Math.round(macros.fatGrams * 9)} kcal</span><span class="muted">${fatPct}%</span></div>
+    </div>
+  `;
 }
 
 function renderSuggestions() {
@@ -494,10 +623,7 @@ function renderSuggestions() {
     `;
     const imgEl = el.querySelector("img");
     if (imgEl) {
-      imgEl.onerror = () => {
-        imgEl.onerror = null;
-        imgEl.src = makeImageFallbackUrl(food);
-      };
+      attachImageErrorFallback(imgEl, food);
     }
     el.querySelector("button")?.addEventListener("click", () => {
       const log = getLogForDate(state.selectedDate);
@@ -508,6 +634,96 @@ function renderSuggestions() {
       renderAll();
     });
     wrap.appendChild(el);
+  }
+}
+
+function renderMealPlan() {
+  const list = $("#mealplan-list");
+  const meta = $("#mealplan-meta");
+  if (!list || !meta) return;
+
+  const goal = currentGoal();
+  const { consumed } = calcTotalsForDate(state.selectedDate);
+  const remaining = goal - consumed;
+
+  if (remaining <= 0) {
+    meta.textContent = `Remaining: ${Math.round(remaining)} kcal`;
+    list.innerHTML = `<div class="muted">Goal reached today. Nice work.</div>`;
+    return;
+  }
+
+  const log = getLogForDate(state.selectedDate);
+  const isLogged = (foodId) => {
+    const entry = log[foodId];
+    const qty = entry && typeof entry === "object" ? entry.qty || 0 : 0;
+    return qty > 0;
+  };
+
+  const allFoods = foodLibrary().filter((f) => f && Number.isFinite(f.caloriesPerServing) && f.caloriesPerServing > 0);
+
+  const mealCandidates = allFoods.filter((f) => f.category === "Meal" && !isLogged(f.id));
+  const snackCandidates = allFoods.filter((f) => ["Snack", "Drink"].includes(f.category) && !isLogged(f.id));
+
+  const slots = [
+    { name: "Breakfast", frac: 0.3, pickFrom: () => mealCandidates },
+    { name: "Lunch", frac: 0.35, pickFrom: () => mealCandidates },
+    { name: "Dinner", frac: 0.25, pickFrom: () => mealCandidates },
+    { name: "Snack/Drink", frac: 0.1, pickFrom: () => snackCandidates.length ? snackCandidates : mealCandidates },
+  ];
+
+  const used = new Set();
+  const picks = []; // [{ slotName, food }]
+
+  const pickFoodClosest = (candidates, target) => {
+    if (!candidates.length) return null;
+    const under = candidates.filter((f) => !used.has(f.id) && f.caloriesPerServing <= target);
+    const pool = under.length ? under : candidates.filter((f) => !used.has(f.id));
+    if (!pool.length) return null;
+    pool.sort((a, b) => Math.abs(a.caloriesPerServing - target) - Math.abs(b.caloriesPerServing - target));
+    return pool[0] || null;
+  };
+
+  for (const slot of slots) {
+    const target = Math.round(remaining * slot.frac);
+    const choice = pickFoodClosest(slot.pickFrom(), target);
+    if (!choice) continue;
+    used.add(choice.id);
+    picks.push({ slotName: slot.name, food: choice });
+    // Stop early if we already filled most of remaining.
+    if (picks.reduce((sum, p) => sum + p.food.caloriesPerServing, 0) >= remaining) break;
+  }
+
+  const planned = picks.reduce((sum, p) => sum + p.food.caloriesPerServing, 0);
+  meta.textContent = `Remaining: ${Math.round(remaining)} kcal · Plan estimate: ${Math.round(planned)} kcal`;
+
+  if (!picks.length) {
+    list.innerHTML = `<div class="muted">No suitable meal plan items found. Add custom foods or search more items.</div>`;
+    return;
+  }
+
+  list.innerHTML = "";
+  for (const pick of picks) {
+    const food = pick.food;
+    const itemEl = document.createElement("div");
+    itemEl.className = "mealplan-item";
+    itemEl.innerHTML = `
+      <div class="left">
+        <div class="mealplan-slot">${escapeHtml(pick.slotName)}</div>
+        <div class="mealplan-name">${escapeHtml(food.name)}</div>
+        <div class="mealplan-meta">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 serving")}</div>
+      </div>
+      <button class="btn btn-primary" type="button">Add</button>
+    `;
+    const btn = itemEl.querySelector("button");
+    btn?.addEventListener("click", () => {
+      ensureFoodInCustom(food);
+      const dayLog = getLogForDate(state.selectedDate);
+      const entry = dayLog[food.id];
+      const existing = entry && typeof entry === "object" ? entry.qty || 0 : 0;
+      setQtyForFood(state.selectedDate, food.id, existing + 1);
+      renderAll();
+    });
+    list.appendChild(itemEl);
   }
 }
 
@@ -570,12 +786,7 @@ function openModalForFood(food) {
 
   $("#modal-image").src = makeImageUrl(food);
   $("#modal-image").alt = `${food.name} photo`;
-  $("#modal-image").onerror = () => {
-    const imgEl = $("#modal-image");
-    if (!imgEl) return;
-    imgEl.onerror = null;
-    imgEl.src = makeImageFallbackUrl(food);
-  };
+  attachImageErrorFallback($("#modal-image"), food);
 
   const log = getLogForDate(state.selectedDate);
   const entry = log[food.id];
@@ -695,10 +906,7 @@ function renderFoodGrid() {
 
     const imgEl = card.querySelector(".food-thumb img");
     if (imgEl) {
-      imgEl.onerror = () => {
-        imgEl.onerror = null;
-        imgEl.src = makeImageFallbackUrl(food);
-      };
+      attachImageErrorFallback(imgEl, food);
     }
 
     card.addEventListener("click", (e) => {
@@ -844,6 +1052,7 @@ function renderAll() {
   renderSchedule();
   renderSummary();
   renderSuggestions();
+  renderMealPlan();
   renderSelectedItems();
   renderFoodGrid();
 }
@@ -897,6 +1106,9 @@ function initCustomFoodForm() {
     const servingLabel = $("#custom-serving").value.trim();
     const imageQuery = $("#custom-image-query").value.trim();
     const ingredientsRaw = $("#custom-ingredients").value.trim();
+    const proteinRaw = $("#custom-protein")?.value;
+    const carbsRaw = $("#custom-carbs")?.value;
+    const fatRaw = $("#custom-fat")?.value;
 
     const ingredients = ingredientsRaw
       ? ingredientsRaw
@@ -922,6 +1134,9 @@ function initCustomFoodForm() {
       imageQuery: imageQuery || undefined,
       ingredients,
       tags: [],
+      proteinPerBaseAmount: proteinRaw ? Number(proteinRaw) : undefined,
+      carbsPerBaseAmount: carbsRaw ? Number(carbsRaw) : undefined,
+      fatPerBaseAmount: fatRaw ? Number(fatRaw) : undefined,
     });
 
     state.customFoods = [...state.customFoods, food];
