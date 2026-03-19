@@ -32,6 +32,7 @@
       <div class="tabs-wrap">
         <nav class="tabs" aria-label="Hoofdonderdelen">
           <a class="tab" href="#/home" id="tab-home" aria-current="page">Start</a>
+          <a class="tab" href="#/schema" id="tab-schema">Schema</a>
           <a class="tab" href="#/suggestions" id="tab-suggestions">Tips &amp; recepten</a>
           <a class="tab" href="#/library" id="tab-library">Voedingsdatabase</a>
           <a class="tab" href="#/log" id="tab-log">Dagboek</a>
@@ -42,96 +43,159 @@
     </header>
 
     <main class="container">
-      <!-- Start: schema + compacte samenvatting -->
+      <!-- Start: alleen doelen (dag / week / maand) -->
       <section id="page-home" class="page is-active">
         <section class="grid grid-2">
           <div class="card">
-            <h2>Schema &amp; doelen</h2>
-            <form id="schedule-form" class="form">
+            <h2>Doelen</h2>
+            <p class="muted small" style="margin-top: 0">
+              Stel je calorie-limieten in. De geselecteerde dag voor je logboek kies je op
+              <a class="inline-link" href="#/schema">Schema →</a>.
+            </p>
+            <form id="goals-form" class="form">
               <label class="field">
-                <span>Startdatum schema</span>
-                <input id="schedule-start" type="date" required />
+                <span>Dagdoel (kcal)</span>
+                <input id="goal-daily" type="number" min="100" max="20000" step="10" required />
+                <span class="hint">Per gekozen dag (o.a. suggesties en dagboek).</span>
               </label>
               <label class="field">
-                <span>Aantal dagen</span>
-                <input id="schedule-days" type="number" min="1" max="365" value="7" required />
+                <span>Weekdoel (kcal)</span>
+                <input id="goal-weekly" type="number" min="500" max="500000" step="50" required />
+                <span class="hint">Kalenderweek (ma–zo) rond de gekozen dag.</span>
               </label>
               <label class="field">
-                <span>Dagelijks calorie-doel</span>
-                <input id="schedule-goal" type="number" min="100" max="20000" step="10" required />
-                <span class="hint">Kcal per dag (voor resterend budget en tips).</span>
+                <span>Maanddoel (kcal)</span>
+                <input id="goal-monthly" type="number" min="1000" max="2000000" step="100" required />
+                <span class="hint">Hele kalendermaand van de gekozen dag.</span>
               </label>
-              <div class="row">
-                <button class="btn btn-primary" type="submit">Schema opslaan</button>
-                <button
-                  id="btn-use-today"
-                  class="btn"
-                  type="button"
-                  title="Selecteert vandaag; schema blijft hetzelfde."
-                >
-                  Vandaag
-                </button>
-              </div>
+              <button class="btn btn-primary" type="submit">Doelen opslaan</button>
             </form>
-
-            <div class="separator"></div>
-
-            <div class="date-strip">
-              <div class="date-strip-head">
-                <h3>Kies een dag</h3>
-                <div class="muted" id="schedule-meta"></div>
-              </div>
-              <div id="date-strip" class="date-strip-list" aria-label="Dagen in schema"></div>
-            </div>
           </div>
 
           <div class="card summary-compact-card">
-            <h2>Dagelijkse samenvatting</h2>
+            <h2>Voortgang</h2>
             <div class="summary summary-compact">
-              <div class="summary-top summary-compact-top">
+              <div class="summary-top summary-compact-top" style="align-items: flex-start">
                 <div>
-                  <div class="muted small">Geselecteerde dag</div>
+                  <div class="muted small">Geselecteerde dag (zie Schema)</div>
                   <div class="summary-day" id="selected-day-label">—</div>
                 </div>
-                <div class="summary-compact-ring-block">
-                  <div class="pill pill-compact" id="goal-pill">Doel: —</div>
-                  <div class="ring-wrap ring-wrap-compact">
+              </div>
+
+              <div class="goal-tiers">
+                <div class="goal-tier">
+                  <div class="goal-tier-head">
+                    <span class="goal-tier-title">Dagdoel</span>
+                    <span class="goal-tier-nums"
+                      ><span id="consumed-label">0</span> / <span id="goal-daily-display">0</span> kcal</span
+                    >
+                  </div>
+                  <div class="progress-bar-wrap progress-bar-wrap-compact">
                     <div
-                      id="calorie-ring"
-                      class="calorie-ring calorie-ring-compact"
-                      role="img"
-                      aria-label="Calorie-voortgang"
+                      id="progress-bar-day"
+                      class="progress-bar"
+                      role="progressbar"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-valuenow="0"
                     ></div>
-                    <div class="ring-text">
-                      <div class="muted small">Voortgang</div>
-                      <div id="ring-percent" class="ring-main">0%</div>
-                    </div>
+                  </div>
+                  <div class="muted small"><strong id="remaining-label">0</strong> kcal resterend vandaag</div>
+                </div>
+
+                <div class="goal-tier">
+                  <div class="goal-tier-head">
+                    <span class="goal-tier-title">Weekdoel</span>
+                    <span class="goal-tier-nums"
+                      ><span id="consumed-week-label">0</span> / <span id="goal-weekly-display">0</span> kcal</span
+                    >
+                  </div>
+                  <div class="progress-bar-wrap progress-bar-wrap-compact">
+                    <div
+                      id="progress-bar-week"
+                      class="progress-bar"
+                      role="progressbar"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-valuenow="0"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="goal-tier">
+                  <div class="goal-tier-head">
+                    <span class="goal-tier-title">Maanddoel</span>
+                    <span class="goal-tier-nums"
+                      ><span id="consumed-month-label">0</span> / <span id="goal-monthly-display">0</span> kcal</span
+                    >
+                  </div>
+                  <div class="progress-bar-wrap progress-bar-wrap-compact">
+                    <div
+                      id="progress-bar-month"
+                      class="progress-bar"
+                      role="progressbar"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-valuenow="0"
+                    ></div>
                   </div>
                 </div>
               </div>
-              <div class="progress progress-compact">
-                <div class="progress-bar-wrap progress-bar-wrap-compact">
-                  <div
-                    id="progress-bar"
-                    class="progress-bar"
-                    role="progressbar"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    aria-valuenow="0"
-                  ></div>
-                </div>
-                <div class="progress-nums progress-nums-compact">
-                  <div><strong id="consumed-label">0</strong> kcal gegeten</div>
-                  <div><strong id="remaining-label">0</strong> kcal resterend</div>
+
+              <div class="ring-wrap ring-wrap-compact" style="margin-top: 8px; justify-content: flex-start">
+                <div
+                  id="calorie-ring"
+                  class="calorie-ring calorie-ring-compact"
+                  role="img"
+                  aria-label="Dag-voortgang"
+                ></div>
+                <div class="ring-text">
+                  <div class="muted small">Dag (%)</div>
+                  <div id="ring-percent" class="ring-main">0%</div>
                 </div>
               </div>
+
               <p class="muted small summary-one-liner" id="summary-one-liner" aria-live="polite"></p>
               <p class="muted small" style="margin: 0">
-                <a class="inline-link" href="#/suggestions">Tips &amp; recepten →</a>
-                voor tussendoortjes en gezonde receptideeën;
-                <a class="inline-link" href="#/stats">macro's &amp; statistiek →</a>
+                <a class="inline-link" href="#/schema">Schema →</a> ·
+                <a class="inline-link" href="#/suggestions">Tips &amp; recepten →</a> ·
+                <a class="inline-link" href="#/stats">Macro's &amp; statistiek →</a>
               </p>
             </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Schema: periode + dagkiezer -->
+      <section id="page-schema" class="page">
+        <section class="card">
+          <h2>Schema</h2>
+          <p class="muted small">
+            Startdatum en lengte van je plan. Klik een dag om die overal in de app te gebruiken voor je logboek.
+          </p>
+          <form id="schedule-form" class="form">
+            <label class="field">
+              <span>Startdatum</span>
+              <input id="schedule-start" type="date" required />
+            </label>
+            <label class="field">
+              <span>Aantal dagen</span>
+              <input id="schedule-days" type="number" min="1" max="365" value="7" required />
+            </label>
+            <div class="row">
+              <button class="btn btn-primary" type="submit">Schema opslaan</button>
+              <button id="btn-use-today" class="btn" type="button" title="Selecteert vandaag in je schema.">
+                Vandaag
+              </button>
+            </div>
+          </form>
+          <div class="separator"></div>
+          <div class="date-strip">
+            <div class="date-strip-head">
+              <h3>Kies een dag</h3>
+              <div class="muted" id="schedule-meta"></div>
+            </div>
+            <div id="date-strip" class="date-strip-list" aria-label="Dagen in schema"></div>
           </div>
         </section>
       </section>
@@ -190,7 +254,7 @@
                 <input
                   id="search"
                   type="search"
-                  placeholder="Zoek (bijv. kip, yoghurt, frisdrank)"
+                  placeholder="Zoek NL of EN (bijv. rijst, rice, kip, chicken)"
                   autocomplete="off"
                 />
               </label>

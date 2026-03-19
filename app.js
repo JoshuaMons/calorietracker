@@ -1,5 +1,6 @@
 import { BUILTIN_FOODS, normalizeFoodForStorage } from "./foods.js";
 import { ui } from "./i18n.js";
+import { matchesFoodSearchQuery } from "./search-synonyms.js";
 
 const STORAGE_KEY = "calorieTracker.v1";
 const LOCALE = "nl-NL";
@@ -60,7 +61,11 @@ const stateDefault = () => {
     schedule: {
       startDate: today,
       days: 7,
-      dailyGoal: 2000,
+    },
+    goals: {
+      daily: 2000,
+      weekly: 14000,
+      monthly: 60000,
     },
     selectedDate: today,
     customFoods: [],
@@ -78,6 +83,16 @@ function loadState() {
     st.selectedDate = st.selectedDate || st.schedule.startDate;
     st.customFoods = Array.isArray(st.customFoods) ? st.customFoods : [];
     st.logs = st.logs && typeof st.logs === "object" ? st.logs : {};
+    st.goals = st.goals && typeof st.goals === "object" ? st.goals : {};
+    const legacyDaily = Number(st.schedule?.dailyGoal);
+    const baseDaily = Number.isFinite(legacyDaily) && legacyDaily > 0 ? legacyDaily : 2000;
+    if (!Number.isFinite(Number(st.goals.daily)) || Number(st.goals.daily) <= 0) st.goals.daily = baseDaily;
+    if (!Number.isFinite(Number(st.goals.weekly)) || Number(st.goals.weekly) <= 0) {
+      st.goals.weekly = Number(st.goals.daily) * 7;
+    }
+    if (!Number.isFinite(Number(st.goals.monthly)) || Number(st.goals.monthly) <= 0) {
+      st.goals.monthly = Number(st.goals.daily) * 30;
+    }
 
     // Migration: older versions stored log values as numbers. Now we store { qty, servingAmount? }.
     for (const [dateYMD, dayLog] of Object.entries(st.logs)) {
@@ -119,6 +134,40 @@ function addDaysYMD(startYMD, deltaDays) {
   const dt = new Date(y, m - 1, d);
   dt.setDate(dt.getDate() + deltaDays);
   return toYMD(dt);
+}
+
+function ymdToTime(ymd) {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(y, m - 1, d).getTime();
+}
+
+function sumConsumedBetweenInclusive(startYMD, endYMD) {
+  let sum = 0;
+  let cur = startYMD;
+  const endT = ymdToTime(endYMD);
+  while (ymdToTime(cur) <= endT) {
+    sum += calcTotalsForDate(cur).consumed;
+    cur = addDaysYMD(cur, 1);
+  }
+  return sum;
+}
+
+function calendarWeekRangeContaining(ymd) {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  const day = dt.getDay();
+  const offsetMon = (day + 6) % 7;
+  const start = addDaysYMD(ymd, -offsetMon);
+  const end = addDaysYMD(start, 6);
+  return { start, end };
+}
+
+function calendarMonthRangeContaining(ymd) {
+  const [y, m] = ymd.split("-").map(Number);
+  const start = `${y}-${String(m).padStart(2, "0")}-01`;
+  const lastDay = new Date(y, m, 0).getDate();
+  const end = `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+  return { start, end };
 }
 
 function formatNiceDate(ymd) {
@@ -270,7 +319,7 @@ async function fetchOpenverseThumbnailForQuery(query) {
     if (!res.ok) return null;
     const data = await res.json();
     const hit = data?.results?.[0];
-    const url = hit?.thumbnail || hit?.url || null;
+    const url = hit?.url || hit?.thumbnail || null;
     if (url) openverseImageCache.set(searchQ, url);
     return url;
   } catch {
@@ -302,8 +351,16 @@ function getScheduleDays(schedule) {
   return out;
 }
 
-function currentGoal() {
-  return Number(state.schedule?.dailyGoal ?? 2000);
+function dailyGoal() {
+  return clampInt(state.goals?.daily ?? state.schedule?.dailyGoal ?? 2000, 100, 200000);
+}
+
+function weeklyGoal() {
+  return clampInt(state.goals?.weekly ?? dailyGoal() * 7, 200, 5000000);
+}
+
+function monthlyGoal() {
+  return clampInt(state.goals?.monthly ?? dailyGoal() * 30, 500, 20000000);
 }
 
 function ensureFoodInCustom(food) {
@@ -617,12 +674,6 @@ function normalizeSearch(s) {
   return String(s || "").toLowerCase().trim();
 }
 
-function matchesFoodQuery(food, query) {
-  if (!query) return true;
-  const q = query.toLowerCase();
-  const hay = `${food.name} ${food.category} ${(food.tags || []).join(" ")} ${(food.ingredients || []).join(" ")}`.toLowerCase();
-  return hay.includes(q);
-}
 
 function suggestionFoodPool() {
   const custom = state.customFoods.map(normalizeFoodForStorage);
@@ -636,7 +687,7 @@ function suggestionFoodPool() {
 }
 
 function computeSuggestions(dateYMD) {
-  const goal = currentGoal();
+  const goal = dailyGoal();
   const { consumed } = calcTotalsForDate(dateYMD);
   const remaining = goal - consumed;
   const log = getLogForDate(dateYMD);
@@ -689,12 +740,13 @@ function escapeHtml(str) {
 }
 
 function renderSchedule() {
-  const days = getScheduleDays(state.schedule);
   const strip = $("#date-strip");
+  if (!strip) return;
+  const days = getScheduleDays(state.schedule);
   strip.innerHTML = "";
 
   const meta = $("#schedule-meta");
-  meta.textContent = ui.home.daysCount(state.schedule.days);
+  if (meta) meta.textContent = ui.home.daysCount(state.schedule.days);
 
   for (const ymd of days) {
     const btn = document.createElement("button");
@@ -712,29 +764,52 @@ function renderSchedule() {
   }
 }
 
+function setProgressBar(barEl, consumed, goal) {
+  if (!barEl) return;
+  const pct = goal > 0 ? Math.min(100, Math.max(0, (consumed / goal) * 100)) : 0;
+  barEl.style.width = `${pct}%`;
+  barEl.setAttribute("aria-valuenow", String(Math.round(pct)));
+}
+
 function renderSummary() {
   const dayLabel = $("#selected-day-label");
-  const goalPill = $("#goal-pill");
   const consumedEl = $("#consumed-label");
   const remainingEl = $("#remaining-label");
-  const bar = $("#progress-bar");
   const ringEl = $("#calorie-ring");
   const ringPercentEl = $("#ring-percent");
 
   const ymd = state.selectedDate;
   const { consumed } = calcTotalsForDate(ymd);
-  const goal = currentGoal();
-  const remaining = goal - consumed;
+  const dg = dailyGoal();
+  const wg = weeklyGoal();
+  const mg = monthlyGoal();
+  const remaining = dg - consumed;
 
-  dayLabel.textContent = formatNiceDate(ymd);
-  goalPill.textContent = ui.home.goalPill(goal);
-  consumedEl.textContent = Math.round(consumed);
-  remainingEl.textContent = Math.round(remaining);
+  if (dayLabel) dayLabel.textContent = formatNiceDate(ymd);
+  if (consumedEl) consumedEl.textContent = Math.round(consumed);
+  if (remainingEl) remainingEl.textContent = Math.round(remaining);
 
-  const pct = goal > 0 ? Math.min(100, Math.max(0, (consumed / goal) * 100)) : 0;
-  bar.style.width = `${pct}%`;
-  bar.setAttribute("aria-valuenow", String(pct));
+  const gdd = $("#goal-daily-display");
+  const gwd = $("#goal-weekly-display");
+  const gmd = $("#goal-monthly-display");
+  const cw = $("#consumed-week-label");
+  const cm = $("#consumed-month-label");
+  if (gdd) gdd.textContent = String(Math.round(dg));
+  if (gwd) gwd.textContent = String(Math.round(wg));
+  if (gmd) gmd.textContent = String(Math.round(mg));
 
+  const wk = calendarWeekRangeContaining(ymd);
+  const weekConsumed = sumConsumedBetweenInclusive(wk.start, wk.end);
+  const mo = calendarMonthRangeContaining(ymd);
+  const monthConsumed = sumConsumedBetweenInclusive(mo.start, mo.end);
+  if (cw) cw.textContent = String(Math.round(weekConsumed));
+  if (cm) cm.textContent = String(Math.round(monthConsumed));
+
+  setProgressBar($("#progress-bar-day"), consumed, dg);
+  setProgressBar($("#progress-bar-week"), weekConsumed, wg);
+  setProgressBar($("#progress-bar-month"), monthConsumed, mg);
+
+  const pct = dg > 0 ? Math.min(100, Math.max(0, (consumed / dg) * 100)) : 0;
   if (ringEl) {
     ringEl.style.background = `conic-gradient(var(--accent-2) ${pct}%, rgba(17, 24, 39, 0.08) ${pct}% )`;
   }
@@ -744,7 +819,7 @@ function renderSummary() {
 
   const oneLiner = $("#summary-one-liner");
   if (oneLiner) {
-    const g = Math.round(goal);
+    const g = Math.round(dg);
     const c = Math.round(consumed);
     const r = Math.round(remaining);
     if (g <= 0) {
@@ -764,7 +839,7 @@ function renderSummary() {
 function renderMacrosPanel() {
   const ymd = state.selectedDate;
   const { consumed, macros } = calcTotalsForDate(ymd);
-  const goal = currentGoal();
+  const goal = dailyGoal();
   const remaining = goal - consumed;
   renderMacroBreakdown(macros, remaining);
 }
@@ -887,7 +962,7 @@ function renderWeekStats() {
   const wrap = $("#week-stats-bars");
   const goalEl = $("#week-stats-goal");
   if (!wrap || !goalEl) return;
-  const goal = currentGoal();
+  const goal = dailyGoal();
   goalEl.textContent = ui.stats.weekGoal(goal);
   const end = state.selectedDate;
   const rows = [];
@@ -1019,6 +1094,7 @@ function closeModal() {
 
 function renderFoodGrid() {
   const grid = $("#food-grid");
+  if (!grid) return;
   grid.innerHTML = "";
 
   const q = normalizeSearch($("#search")?.value);
@@ -1027,7 +1103,7 @@ function renderFoodGrid() {
   const foods = foodLibrary()
     .filter((f) => !f || !Number.isNaN(f.caloriesPerServing))
     .filter((f) => (category === "all" ? true : f.category === category))
-    .filter((f) => matchesFoodQuery(f, q));
+    .filter((f) => matchesFoodSearchQuery(f, q));
 
   const log = getLogForDate(state.selectedDate);
 
@@ -1060,38 +1136,46 @@ function renderFoodGrid() {
           <div class="food-kcal">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 portie")}</div>
         </div>
         <div class="food-actions">
-          <div class="food-check">
-            <input type="checkbox" ${qty > 0 ? "checked" : ""} aria-label="${escapeHtml(ui.common.log)}: ${escapeHtml(food.name)}" data-food-id="${food.id}" />
-            <span class="muted small">${escapeHtml(ui.common.log)}</span>
+          <div class="food-actions-top">
+            <div class="food-check">
+              <input type="checkbox" ${qty > 0 ? "checked" : ""} aria-label="${escapeHtml(ui.common.log)}: ${escapeHtml(food.name)}" data-food-id="${food.id}" />
+              <span class="muted small">${escapeHtml(ui.common.log)}</span>
+            </div>
+            <div class="qty-pill" aria-label="${escapeHtml(ui.common.qtyLabel)}">
+              <button type="button" class="qty-minus" ${qty <= 0 ? "disabled" : ""} data-food-id="${food.id}" aria-label="${escapeHtml(ui.common.qtyMinus)}">−</button>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value="${qty > 0 ? qty : 0}"
+                data-food-id="${food.id}"
+                class="qty-input"
+                ${qty <= 0 ? "disabled" : ""}
+              />
+              <button type="button" class="qty-plus" data-food-id="${food.id}" aria-label="${escapeHtml(ui.common.qtyPlus)}" ${qty <= 0 ? "disabled" : ""}>+</button>
+            </div>
           </div>
-          <div class="qty" aria-label="${escapeHtml(ui.common.qtyLabel)}">
-            <button type="button" class="qty-minus" ${qty <= 0 ? "disabled" : ""} data-food-id="${food.id}" aria-label="${escapeHtml(ui.common.qtyMinus)}">-</button>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              value="${qty > 0 ? qty : 0}"
-              data-food-id="${food.id}"
-              class="qty-input"
-              ${qty <= 0 ? "disabled" : ""}
-            />
-            <button type="button" class="qty-plus" data-food-id="${food.id}" aria-label="${escapeHtml(ui.common.qtyPlus)}" ${qty <= 0 ? "disabled" : ""}>+</button>
-            ${
-              food?.caloriesBaseUnit === "g"
-                ? `<input
-                    type="number"
-                    min="0"
-                    max="5000"
-                    step="1"
-                    value="${Math.round(servingAmount)}"
-                    data-serving-grams="${food.id}"
-                    class="grams-input"
-                    ${qty <= 0 ? "disabled" : ""}
-                    aria-label="${escapeHtml(ui.common.gramsLabel)} (${escapeHtml(food.name)})"
-                  />`
-                : ""
-            }
-          </div>
+          ${
+            food?.caloriesBaseUnit === "g"
+              ? `<div class="grams-row">
+                  <span class="muted small">${escapeHtml(ui.common.gramsAbbr)}</span>
+                  <div class="grams-pill">
+                    <input
+                      type="number"
+                      min="0"
+                      max="5000"
+                      step="1"
+                      value="${Math.round(servingAmount)}"
+                      data-serving-grams="${food.id}"
+                      class="grams-input"
+                      ${qty <= 0 ? "disabled" : ""}
+                      aria-label="${escapeHtml(ui.common.gramsLabel)} (${escapeHtml(food.name)})"
+                    />
+                    <span class="muted small">g</span>
+                  </div>
+                </div>`
+              : ""
+          }
         </div>
       </div>
     `;
@@ -1112,7 +1196,8 @@ function renderFoodGrid() {
           target.tagName === "TEXTAREA" ||
           target.classList?.contains("qty-minus") ||
           target.classList?.contains("qty-plus") ||
-          target.classList?.contains("qty-input"));
+          target.classList?.contains("qty-input") ||
+          target.classList?.contains("grams-input"));
       if (!isInteractive) openModalForFood(food);
     });
 
@@ -1201,7 +1286,8 @@ function ensureImagesInActivePage() {
 function initRouting() {
   const routeToPage = {
     "#/home": "page-home",
-    "#/schedule": "page-home",
+    "#/schedule": "page-schema",
+    "#/schema": "page-schema",
     "#/suggestions": "page-suggestions",
     "#/library": "page-library",
     "#/log": "page-log",
@@ -1211,6 +1297,7 @@ function initRouting() {
 
   const tabToHash = [
     { tabId: "tab-home", hash: "#/home" },
+    { tabId: "tab-schema", hash: "#/schema" },
     { tabId: "tab-suggestions", hash: "#/suggestions" },
     { tabId: "tab-library", hash: "#/library" },
     { tabId: "tab-log", hash: "#/log" },
@@ -1230,7 +1317,7 @@ function initRouting() {
     for (const { tabId, hash: tHash } of tabToHash) {
       const tab = document.getElementById(tabId);
       if (!tab) continue;
-      const isActive = hash === tHash || (tHash === "#/home" && hash === "#/schedule");
+      const isActive = hash === tHash || (tHash === "#/schema" && hash === "#/schedule");
       tab.classList.toggle("is-active", isActive);
       tab.setAttribute("aria-current", isActive ? "page" : "false");
     }
@@ -1254,6 +1341,7 @@ function closeAllModals() {
 function renderAll() {
   // Guard: schedule might be missing if localStorage was cleared mid-session.
   state.schedule = state.schedule || stateDefault().schedule;
+  state.goals = state.goals && typeof state.goals === "object" ? state.goals : { ...stateDefault().goals };
   if (!state.selectedDate) state.selectedDate = state.schedule.startDate;
 
   // If selectedDate falls outside the schedule, keep it (so user can still log),
@@ -1271,29 +1359,52 @@ let state = loadState();
 // Custom foods (and later the Dutch dataset) affect which foods exist for calorie/macro calculations.
 markFoodsDirty();
 
+function initGoalsForm() {
+  const form = $("#goals-form");
+  if (!form) return;
+  const d = $("#goal-daily");
+  const w = $("#goal-weekly");
+  const m = $("#goal-monthly");
+  if (!d || !w || !m) return;
+  d.value = String(dailyGoal());
+  w.value = String(weeklyGoal());
+  m.value = String(monthlyGoal());
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    state.goals = {
+      daily: clampInt(d.value, 100, 200000),
+      weekly: clampInt(w.value, 200, 5000000),
+      monthly: clampInt(m.value, 500, 20000000),
+    };
+    saveState();
+    renderAll();
+  });
+}
+
 function initScheduleForm() {
   const startInput = $("#schedule-start");
   const daysInput = $("#schedule-days");
-  const goalInput = $("#schedule-goal");
+  if (!startInput || !daysInput) return;
 
   const today = toYMD(new Date());
   startInput.value = state.schedule?.startDate || today;
   daysInput.value = state.schedule?.days ?? 7;
-  goalInput.value = state.schedule?.dailyGoal ?? 2000;
 
-  $("#schedule-form").addEventListener("submit", (e) => {
+  const form = $("#schedule-form");
+  if (!form) return;
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     const start = startInput.value || today;
     const days = clampInt(daysInput.value, 1, 365);
-    const goal = clampInt(goalInput.value, 100, 20000);
 
-    state.schedule = { startDate: start, days, dailyGoal: goal };
+    state.schedule = { ...state.schedule, startDate: start, days };
     state.selectedDate = start;
     saveState();
     renderAll();
   });
 
-  $("#btn-use-today").addEventListener("click", () => {
+  $("#btn-use-today")?.addEventListener("click", () => {
     state.selectedDate = toYMD(new Date());
     saveState();
     renderAll();
@@ -1406,6 +1517,16 @@ function initModals() {
       state.selectedDate = state.selectedDate || state.schedule.startDate;
       state.customFoods = Array.isArray(state.customFoods) ? state.customFoods : [];
       state.logs = state.logs && typeof state.logs === "object" ? state.logs : {};
+      state.goals = state.goals && typeof state.goals === "object" ? state.goals : {};
+      const legacyDailyImp = Number(state.schedule?.dailyGoal);
+      const baseDailyImp = Number.isFinite(legacyDailyImp) && legacyDailyImp > 0 ? legacyDailyImp : 2000;
+      if (!Number.isFinite(Number(state.goals.daily)) || Number(state.goals.daily) <= 0) state.goals.daily = baseDailyImp;
+      if (!Number.isFinite(Number(state.goals.weekly)) || Number(state.goals.weekly) <= 0) {
+        state.goals.weekly = Number(state.goals.daily) * 7;
+      }
+      if (!Number.isFinite(Number(state.goals.monthly)) || Number(state.goals.monthly) <= 0) {
+        state.goals.monthly = Number(state.goals.daily) * 30;
+      }
 
       // Migration: handle older imports where log values were stored as numbers.
       for (const [dateYMD, dayLog] of Object.entries(state.logs)) {
@@ -1454,6 +1575,7 @@ function initModals() {
 
 // ---------- Boot ----------
 initRouting();
+initGoalsForm();
 initScheduleForm();
 initFoodSearch();
 initCustomFoodForm();
