@@ -332,6 +332,28 @@ export const BUILTIN_FOODS = [
 ];
 
 export function normalizeFoodForStorage(food) {
+  function deriveBaseFromServingLabel(label) {
+    const s = String(label || "");
+    // Tries to extract the first "number g" from the serving label, e.g. "100g cooked" or "1 oz (28g)".
+    const m = s.match(/(\d+(?:\.\d+)?)\s*g\b/i);
+    if (!m) return null;
+    const n = Number(m[1]);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  const explicitBaseAmount = Number(food.caloriesBaseAmount);
+  const baseAmountFromLabel = deriveBaseFromServingLabel(food.servingLabel);
+
+  const baseAmount =
+    Number.isFinite(explicitBaseAmount) && explicitBaseAmount > 0
+      ? explicitBaseAmount
+      : baseAmountFromLabel !== null
+        ? baseAmountFromLabel
+        : 1;
+
+  const baseUnit =
+    baseAmountFromLabel !== null || (Number.isFinite(explicitBaseAmount) && explicitBaseAmount > 0) ? "g" : "serving";
+
   // Ensures we store a predictable shape from user input.
   return {
     id: String(food.id || "").trim(),
@@ -341,6 +363,8 @@ export function normalizeFoodForStorage(food) {
     servingLabel: String(food.servingLabel || "").trim(),
     imageQuery: String(food.imageQuery || "").trim(),
     imageUrl: String(food.imageUrl || "").trim(),
+    caloriesBaseAmount: baseAmount,
+    caloriesBaseUnit: baseUnit,
     ingredients: Array.isArray(food.ingredients) ? food.ingredients : [],
     tags: Array.isArray(food.tags) ? food.tags : [],
   };

@@ -17,19 +17,23 @@
             <p class="brand-subtitle">Daily checkoff + goal countdown</p>
           </div>
         </div>
-        <div class="header-actions">
-          <button id="btn-export" class="btn btn-ghost" type="button">Export</button>
-          <button id="btn-import" class="btn btn-ghost" type="button">Import</button>
-          <button id="btn-reset-log" class="btn btn-danger" type="button" title="Clears only food logs (keeps schedule + goals).">
-            Reset today
-          </button>
-        </div>
+      </div>
+
+      <div class="tabs-wrap">
+        <nav class="tabs" aria-label="Sections">
+          <a class="tab" href="#/schedule" id="tab-schedule" aria-current="page">Schedule</a>
+          <a class="tab" href="#/library" id="tab-library">Food Library</a>
+          <a class="tab" href="#/log" id="tab-log">Log</a>
+          <a class="tab" href="#/settings" id="tab-settings">Data</a>
+        </nav>
       </div>
     </header>
 
     <main class="container">
-      <section class="grid grid-2">
-        <div class="card">
+      <!-- Schedule page -->
+      <section id="page-schedule" class="page is-active">
+        <section class="grid grid-2">
+          <div class="card">
           <h2>Schedule & Goals</h2>
           <form id="schedule-form" class="form">
             <label class="field">
@@ -62,9 +66,9 @@
             </div>
             <div id="date-strip" class="date-strip-list" aria-label="Schedule days"></div>
           </div>
-        </div>
+          </div>
 
-        <div class="card">
+          <div class="card">
           <h2>Daily Summary</h2>
           <div class="summary">
             <div class="summary-top">
@@ -94,10 +98,13 @@
             </p>
             <div id="suggestions-list" class="suggestions-list"></div>
           </div>
-        </div>
+          </div>
+        </section>
       </section>
 
-      <section class="card">
+      <!-- Food library page -->
+      <section id="page-library" class="page">
+        <section class="card">
         <div class="section-head">
           <div>
             <h2>Food Library</h2>
@@ -125,15 +132,15 @@
         </div>
 
         <div id="food-grid" class="food-grid" aria-live="polite"></div>
-      </section>
+        </section>
 
-      <section class="card grid grid-2" style="align-items:start;">
-        <div>
-          <h2>Selected Items</h2>
-          <div id="selected-items" class="selected-items"></div>
-        </div>
+        <section class="card grid grid-2" style="align-items:start;">
+          <div>
+            <h2>Selected Items</h2>
+            <div id="selected-items" class="selected-items"></div>
+          </div>
 
-        <div>
+          <div>
           <h2>Add Custom Food</h2>
           <form id="custom-food-form" class="form">
             <label class="field">
@@ -170,7 +177,44 @@
               Note: I cannot scrape “all foods on the internet” automatically. This MVP ships with a starter library, and you can add anything you eat.
             </p>
           </form>
-        </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Log page -->
+      <section id="page-log" class="page">
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <h2>Selected Items</h2>
+              <p class="muted">Everything you checked off for the selected day.</p>
+            </div>
+          </div>
+          <div id="selected-items-2" class="selected-items"></div>
+        </section>
+      </section>
+
+      <!-- Settings page -->
+      <section id="page-settings" class="page">
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <h2>Data</h2>
+              <p class="muted">Export/import your data and reset the selected day’s log.</p>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 12px;">
+            <button id="btn-export" class="btn btn-ghost" type="button">Export</button>
+            <button id="btn-import" class="btn btn-ghost" type="button">Import</button>
+            <button id="btn-reset-log" class="btn btn-danger" type="button" title="Clears only food logs (keeps schedule + goals).">
+              Reset selected day
+            </button>
+          </div>
+          <div class="separator"></div>
+          <p class="muted small">
+            Tip: Export lets you back up your plan + daily checkoffs. Import overwrites current data.
+          </p>
+        </section>
       </section>
     </main>
 
@@ -186,7 +230,7 @@
           <button id="modal-close" class="btn btn-ghost" type="button" aria-label="Close details">Close</button>
         </div>
         <div class="modal-body">
-          <img id="modal-image" class="modal-image" alt="" loading="lazy" />
+          <img id="modal-image" class="modal-image" alt="" loading="eager" />
           <div class="modal-meta">
             <div class="meta-row"><span class="muted">Calories</span> <strong id="modal-kcal">—</strong> <span class="muted">kcal per serving</span></div>
             <div class="meta-row" id="modal-serving-row"><span class="muted">Serving</span> <span id="modal-serving">—</span></div>

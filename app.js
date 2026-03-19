@@ -40,6 +40,25 @@ function loadState() {
     st.selectedDate = st.selectedDate || st.schedule.startDate;
     st.customFoods = Array.isArray(st.customFoods) ? st.customFoods : [];
     st.logs = st.logs && typeof st.logs === "object" ? st.logs : {};
+
+    // Migration: older versions stored log values as numbers. Now we store { qty, servingAmount? }.
+    for (const [dateYMD, dayLog] of Object.entries(st.logs)) {
+      if (!dayLog || typeof dayLog !== "object") continue;
+      for (const [foodId, v] of Object.entries(dayLog)) {
+        if (typeof v === "number") {
+          dayLog[foodId] = { qty: v };
+        } else if (v && typeof v === "object" && typeof v.qty !== "number") {
+          // Try to recover qty if it was stored under another key.
+          const recoveredQty = typeof v.quantity === "number" ? v.quantity : Number(v.qty);
+          dayLog[foodId] = { qty: Number.isFinite(recoveredQty) ? recoveredQty : 0, servingAmount: v.servingAmount };
+        } else if (v && typeof v === "object") {
+          if (v.servingAmount === undefined && v.servingGrams !== undefined) {
+            v.servingAmount = v.servingGrams;
+          }
+        }
+      }
+      st.logs[dateYMD] = dayLog;
+    }
     return st;
   } catch {
     return stateDefault();
@@ -100,6 +119,14 @@ function makeImageUrl(food) {
   const q = encodeURIComponent(query);
   const sig = hashCode(food.id || food.name || query);
   // `source.unsplash.com` returns a random image for the query; `sig` makes it more stable per food.
+  return `https://source.unsplash.com/400x300/?${q}&sig=${sig}`;
+}
+
+function makeImageFallbackUrl(food) {
+  // Same as `makeImageUrl`, but always ignores `imageUrl` (so we can recover when an image fails).
+  const query = (food.imageQuery || food.name || "food").trim();
+  const q = encodeURIComponent(query);
+  const sig = hashCode(food.id || food.name || query);
   return `https://source.unsplash.com/400x300/?${q}&sig=${sig}`;
 }
 
@@ -191,7 +218,7 @@ async function fetchOpenFoodFacts(query) {
         name,
         category: guessCategoryFromTags(p.categories_tags),
         caloriesPerServing: Number.isFinite(kcal) ? kcal : 0,
-        servingLabel: "per 100g",
+        servingLabel: "100g",
         imageUrl: p.image_front_small_url || p.image_front_url || "",
         ingredients: ingredients.length ? ingredients : [],
         tags: Array.isArray(p.categories_tags) ? p.categories_tags : [],
@@ -230,8 +257,10 @@ function scheduleWebSearch(query) {
 }
 
 function foodLibrary() {
+  const builtin = BUILTIN_FOODS.map(normalizeFoodForStorage);
   const custom = state.customFoods.map(normalizeFoodForStorage);
-  return [...BUILTIN_FOODS, ...custom, ...webFoods];
+  const web = webFoods.map(normalizeFoodForStorage);
+  return [...builtin, ...custom, ...web];
 }
 
 function foodById() {
@@ -250,8 +279,32 @@ function setQtyForFood(dateYMD, foodId, qty) {
   if (q <= 0) {
     delete log[foodId];
   } else {
-    log[foodId] = q;
+    const food = foodById().get(foodId);
+    if (food?.caloriesBaseUnit === "g") {
+      const base = Number(food.caloriesBaseAmount ?? 100);
+      const prev = log[foodId];
+      const prevAmount = prev && typeof prev === "object" ? prev.servingAmount : undefined;
+      const servingAmount = Number.isFinite(prevAmount) && prevAmount > 0 ? prevAmount : base;
+      log[foodId] = { qty: q, servingAmount: clampInt(servingAmount, 0, 5000) };
+    } else {
+      log[foodId] = { qty: q };
+    }
   }
+  state.logs[dateYMD] = log;
+  saveState();
+}
+
+function setServingAmountForFood(dateYMD, foodId, servingAmount) {
+  const log = getLogForDate(dateYMD);
+  const entry = log[foodId];
+  if (!entry || typeof entry !== "object") return;
+  if (!entry.qty || entry.qty <= 0) return;
+
+  const food = foodById().get(foodId);
+  if (food?.caloriesBaseUnit !== "g") return;
+
+  const amt = clampInt(servingAmount, 0, 5000);
+  log[foodId] = { ...entry, servingAmount: amt };
   state.logs[dateYMD] = log;
   saveState();
 }
@@ -261,12 +314,31 @@ function calcTotalsForDate(dateYMD) {
   const log = getLogForDate(dateYMD);
   let consumed = 0;
   const items = [];
-  for (const [foodId, qty] of Object.entries(log)) {
+  for (const [foodId, entry] of Object.entries(log)) {
     const food = byId.get(foodId);
-    if (!food || !Number.isFinite(food.caloriesPerServing)) continue;
-    const cals = food.caloriesPerServing * qty;
+    const qty = entry && typeof entry === "object" ? entry.qty : 0;
+    if (!food || !Number.isFinite(food.caloriesPerServing) || !qty) continue;
+
+    let cals = 0;
+    if (food.caloriesBaseUnit === "g") {
+      const base = Number(food.caloriesBaseAmount ?? 100);
+      const servingAmount = entry.servingAmount ?? base;
+      if (Number.isFinite(base) && base > 0 && Number.isFinite(servingAmount)) {
+        cals = (food.caloriesPerServing / base) * servingAmount * qty;
+      } else {
+        cals = food.caloriesPerServing * qty;
+      }
+    } else {
+      cals = food.caloriesPerServing * qty;
+    }
+
     consumed += cals;
-    items.push({ food, qty, calories: cals });
+    items.push({
+      food,
+      qty,
+      servingAmount: food.caloriesBaseUnit === "g" ? entry.servingAmount ?? food.caloriesBaseAmount : undefined,
+      calories: cals,
+    });
   }
   items.sort((a, b) => b.calories - a.calories);
   return { consumed, items };
@@ -298,7 +370,11 @@ function computeSuggestions(dateYMD) {
     .filter((f) => f && Number.isFinite(f.caloriesPerServing))
     .filter((f) => f.caloriesPerServing > 0)
     .filter((f) => ["Snack", "Drink"].includes(f.category))
-    .filter((f) => !(log[f.id] && log[f.id] > 0));
+    .filter((f) => {
+      const entry = log[f.id];
+      const qty = entry && typeof entry === "object" ? entry.qty : 0;
+      return !(qty > 0);
+    });
 
   const target = remaining;
   const suitable = allFoods
@@ -399,16 +475,24 @@ function renderSuggestions() {
     const el = document.createElement("div");
     el.className = "suggestion";
     el.innerHTML = `
-      <img alt="" loading="lazy" src="${makeImageUrl(food)}" />
+      <img alt="" loading="eager" src="${makeImageUrl(food)}" />
       <div>
         <div class="name">${escapeHtml(food.name)}</div>
         <div class="meta">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 serving")}</div>
       </div>
       <button class="btn btn-primary" type="button" data-add="${escapeHtml(food.id)}">Add</button>
     `;
+    const imgEl = el.querySelector("img");
+    if (imgEl) {
+      imgEl.onerror = () => {
+        imgEl.onerror = null;
+        imgEl.src = makeImageFallbackUrl(food);
+      };
+    }
     el.querySelector("button")?.addEventListener("click", () => {
       const log = getLogForDate(state.selectedDate);
-      const existing = log[food.id] || 0;
+      const entry = log[food.id];
+      const existing = entry && typeof entry === "object" ? entry.qty || 0 : 0;
       ensureFoodInCustom(food);
       setQtyForFood(state.selectedDate, food.id, existing + 1);
       renderAll();
@@ -418,35 +502,43 @@ function renderSuggestions() {
 }
 
 function renderSelectedItems() {
-  const wrap = $("#selected-items");
+  const wraps = [$("#selected-items"), $("#selected-items-2")].filter(Boolean);
+  if (!wraps.length) return;
+
   const { items } = calcTotalsForDate(state.selectedDate);
+
+  const emptyHtml = `<div class="muted">No items logged for this day yet.</div>`;
   if (!items.length) {
-    wrap.innerHTML = `<div class="muted">No items logged for this day yet.</div>`;
+    for (const wrap of wraps) wrap.innerHTML = emptyHtml;
     return;
   }
 
-  wrap.innerHTML = "";
-  for (const { food, qty, calories } of items) {
-    const row = document.createElement("div");
-    row.className = "selected-row";
-    row.innerHTML = `
-      <div>
-        <strong>${escapeHtml(food.name)}</strong>
-        <div class="muted small">${escapeHtml(food.category)} · Qty ${qty}</div>
-      </div>
-      <div class="muted" style="font-weight:900;">${Math.round(calories)} kcal</div>
-    `;
-    const btn = document.createElement("button");
-    btn.className = "btn btn-ghost";
-    btn.type = "button";
-    btn.textContent = "Remove";
-    btn.addEventListener("click", () => {
-      setQtyForFood(state.selectedDate, food.id, 0);
-      renderAll();
-    });
+  for (const wrap of wraps) {
+    wrap.innerHTML = "";
+    for (const { food, qty, servingAmount, calories } of items) {
+      const row = document.createElement("div");
+      row.className = "selected-row";
+      row.innerHTML = `
+        <div>
+          <strong>${escapeHtml(food.name)}</strong>
+          <div class="muted small">
+            ${escapeHtml(food.category)} · Qty ${qty}${food.caloriesBaseUnit === "g" ? ` · ${Math.round(servingAmount)}g each` : ""}
+          </div>
+        </div>
+        <div class="muted" style="font-weight:900;">${Math.round(calories)} kcal</div>
+      `;
+      const btn = document.createElement("button");
+      btn.className = "btn btn-ghost";
+      btn.type = "button";
+      btn.textContent = "Remove";
+      btn.addEventListener("click", () => {
+        setQtyForFood(state.selectedDate, food.id, 0);
+        renderAll();
+      });
 
-    row.appendChild(btn);
-    wrap.appendChild(row);
+      row.appendChild(btn);
+      wrap.appendChild(row);
+    }
   }
 }
 
@@ -468,9 +560,16 @@ function openModalForFood(food) {
 
   $("#modal-image").src = makeImageUrl(food);
   $("#modal-image").alt = `${food.name} photo`;
+  $("#modal-image").onerror = () => {
+    const imgEl = $("#modal-image");
+    if (!imgEl) return;
+    imgEl.onerror = null;
+    imgEl.src = makeImageFallbackUrl(food);
+  };
 
   const log = getLogForDate(state.selectedDate);
-  const qty = log[food.id] || 0;
+  const entry = log[food.id];
+  const qty = entry && typeof entry === "object" ? entry.qty || 0 : 0;
   $("#modal-toggle").dataset.foodId = food.id;
   $("#modal-toggle").textContent = qty > 0 ? `Remove (currently ${qty})` : "Add / Remove";
 
@@ -478,7 +577,9 @@ function openModalForFood(food) {
   modal.hidden = false;
 
   $("#modal-toggle").onclick = () => {
-    const current = getLogForDate(state.selectedDate)[food.id] || 0;
+    const dayLog = getLogForDate(state.selectedDate);
+    const currentEntry = dayLog[food.id];
+    const current = currentEntry && typeof currentEntry === "object" ? currentEntry.qty || 0 : 0;
     if (current > 0) {
       setQtyForFood(state.selectedDate, food.id, 0);
     } else {
@@ -524,14 +625,21 @@ function renderFoodGrid() {
   }
 
   for (const food of foods) {
-    const qty = log[food.id] || 0;
+    const entry = log[food.id];
+    const qty = entry && typeof entry === "object" ? entry.qty || 0 : 0;
+    const servingAmount =
+      food?.caloriesBaseUnit === "g"
+        ? Number.isFinite(entry?.servingAmount) && entry.servingAmount > 0
+          ? entry.servingAmount
+          : Number(food.caloriesBaseAmount ?? 100)
+        : undefined;
     const card = document.createElement("div");
     card.className = `food-card ${qty > 0 ? "is-done" : ""}`;
     card.tabIndex = 0;
 
     card.innerHTML = `
       <div class="food-thumb">
-        <img alt="" loading="lazy" src="${makeImageUrl(food)}" />
+        <img alt="" loading="eager" src="${makeImageUrl(food)}" />
       </div>
       <div class="food-main">
         <div>
@@ -540,25 +648,48 @@ function renderFoodGrid() {
         </div>
         <div class="food-actions">
           <div class="food-check">
-            <input type="checkbox" ${qty > 0 ? "checked" : ""} aria-label="Log ${escapeHtml(food.name)}" data-food-id="${escapeHtml(food.id)}" />
+            <input type="checkbox" ${qty > 0 ? "checked" : ""} aria-label="Log ${escapeHtml(food.name)}" data-food-id="${food.id}" />
             <span class="muted small">Log</span>
           </div>
           <div class="qty" aria-label="Quantity selector">
-            <button type="button" class="qty-minus" ${qty <= 0 ? "disabled" : ""} data-food-id="${escapeHtml(food.id)}" aria-label="Decrease quantity">-</button>
+            <button type="button" class="qty-minus" ${qty <= 0 ? "disabled" : ""} data-food-id="${food.id}" aria-label="Decrease quantity">-</button>
             <input
               type="number"
               min="0"
               step="1"
               value="${qty > 0 ? qty : 0}"
-              data-food-id="${escapeHtml(food.id)}"
+              data-food-id="${food.id}"
               class="qty-input"
               ${qty <= 0 ? "disabled" : ""}
             />
-            <button type="button" class="qty-plus" data-food-id="${escapeHtml(food.id)}" aria-label="Increase quantity" ${qty <= 0 ? "disabled" : ""}>+</button>
+            <button type="button" class="qty-plus" data-food-id="${food.id}" aria-label="Increase quantity" ${qty <= 0 ? "disabled" : ""}>+</button>
+            ${
+              food?.caloriesBaseUnit === "g"
+                ? `<input
+                    type="number"
+                    min="0"
+                    max="5000"
+                    step="1"
+                    value="${Math.round(servingAmount)}"
+                    data-serving-grams="${food.id}"
+                    class="grams-input"
+                    ${qty <= 0 ? "disabled" : ""}
+                    aria-label="Serving grams for ${escapeHtml(food.name)}"
+                  />`
+                : ""
+            }
           </div>
         </div>
       </div>
     `;
+
+    const imgEl = card.querySelector(".food-thumb img");
+    if (imgEl) {
+      imgEl.onerror = () => {
+        imgEl.onerror = null;
+        imgEl.src = makeImageFallbackUrl(food);
+      };
+    }
 
     card.addEventListener("click", (e) => {
       const target = e.target;
@@ -582,7 +713,9 @@ function renderFoodGrid() {
       const checked = e.target.checked;
       if (checked) {
         ensureFoodInCustom(food);
-        setQtyForFood(state.selectedDate, food.id, Math.max(1, log[food.id] || 1));
+        const entry = log[food.id];
+        const existingQty = entry && typeof entry === "object" ? entry.qty || 0 : 0;
+        setQtyForFood(state.selectedDate, food.id, Math.max(1, existingQty || 1));
       } else {
         setQtyForFood(state.selectedDate, food.id, 0);
       }
@@ -591,7 +724,9 @@ function renderFoodGrid() {
 
     const minus = card.querySelector(`button.qty-minus[data-food-id="${CSS.escape(food.id)}"]`);
     minus?.addEventListener("click", () => {
-      const current = getLogForDate(state.selectedDate)[food.id] || 0;
+      const dayLog = getLogForDate(state.selectedDate);
+      const entry = dayLog[food.id];
+      const current = entry && typeof entry === "object" ? entry.qty || 0 : 0;
       setQtyForFood(state.selectedDate, food.id, Math.max(0, current - 1));
       renderAll();
     });
@@ -599,7 +734,9 @@ function renderFoodGrid() {
     const plus = card.querySelector(`button.qty-plus[data-food-id="${CSS.escape(food.id)}"]`);
     plus?.addEventListener("click", () => {
       ensureFoodInCustom(food);
-      const current = getLogForDate(state.selectedDate)[food.id] || 0;
+      const dayLog = getLogForDate(state.selectedDate);
+      const entry = dayLog[food.id];
+      const current = entry && typeof entry === "object" ? entry.qty || 0 : 0;
       setQtyForFood(state.selectedDate, food.id, current + 1);
       renderAll();
     });
@@ -613,8 +750,70 @@ function renderFoodGrid() {
       renderAll();
     });
 
+    const gramsInput = card.querySelector(`input.grams-input[data-serving-grams="${CSS.escape(food.id)}"]`);
+    gramsInput?.addEventListener("change", () => {
+      if (food?.caloriesBaseUnit !== "g") return;
+      const dayLog = getLogForDate(state.selectedDate);
+      const entry = dayLog[food.id];
+      const currentQty = entry && typeof entry === "object" ? entry.qty || 0 : 0;
+      if (currentQty <= 0) return;
+      if (food?.caloriesBaseUnit === "g") ensureFoodInCustom(food);
+      const grams = clampInt(gramsInput.value, 0, 5000);
+      setServingAmountForFood(state.selectedDate, food.id, grams);
+      renderAll();
+    });
+
     grid.appendChild(card);
   }
+}
+
+function ensureImagesInActivePage() {
+  const imgs = document.querySelectorAll(".page.is-active img");
+  for (const img of imgs) {
+    img.loading = "eager";
+    if (typeof img.decode === "function") {
+      img.decode().catch(() => {});
+    }
+  }
+}
+
+function initRouting() {
+  const routeToPage = {
+    "#/schedule": "page-schedule",
+    "#/library": "page-library",
+    "#/log": "page-log",
+    "#/settings": "page-settings",
+  };
+
+  const tabToHash = [
+    { tabId: "tab-schedule", hash: "#/schedule" },
+    { tabId: "tab-library", hash: "#/library" },
+    { tabId: "tab-log", hash: "#/log" },
+    { tabId: "tab-settings", hash: "#/settings" },
+  ];
+
+  function applyRoute() {
+    const hash = location.hash && routeToPage[location.hash] ? location.hash : "#/schedule";
+    const pageId = routeToPage[hash];
+
+    document.querySelectorAll(".page").forEach((p) => {
+      p.classList.toggle("is-active", p.id === pageId);
+    });
+
+    for (const { tabId, hash: tHash } of tabToHash) {
+      const tab = document.getElementById(tabId);
+      if (!tab) continue;
+      const isActive = hash === tHash;
+      tab.classList.toggle("is-active", isActive);
+      tab.setAttribute("aria-current", isActive ? "page" : "false");
+    }
+
+    ensureImagesInActivePage();
+  }
+
+  window.addEventListener("hashchange", applyRoute);
+  if (!location.hash) location.hash = "#/schedule";
+  applyRoute();
 }
 
 function closeAllModals() {
@@ -719,7 +918,10 @@ function initCustomFoodForm() {
     saveState();
 
     // Also add 1 serving to the currently selected day.
-    setQtyForFood(state.selectedDate, food.id, (getLogForDate(state.selectedDate)[food.id] || 0) + 1);
+    const dayLog = getLogForDate(state.selectedDate);
+    const entry = dayLog[food.id];
+    const existingQty = entry && typeof entry === "object" ? entry.qty || 0 : 0;
+    setQtyForFood(state.selectedDate, food.id, existingQty + 1);
 
     // Clear form
     form.reset();
@@ -765,6 +967,18 @@ function initModals() {
       state.selectedDate = state.selectedDate || state.schedule.startDate;
       state.customFoods = Array.isArray(state.customFoods) ? state.customFoods : [];
       state.logs = state.logs && typeof state.logs === "object" ? state.logs : {};
+
+      // Migration: handle older imports where log values were stored as numbers.
+      for (const [dateYMD, dayLog] of Object.entries(state.logs)) {
+        if (!dayLog || typeof dayLog !== "object") continue;
+        for (const [foodId, v] of Object.entries(dayLog)) {
+          if (typeof v === "number") dayLog[foodId] = { qty: v };
+          else if (v && typeof v === "object") {
+            if (v.servingAmount === undefined && v.servingGrams !== undefined) v.servingAmount = v.servingGrams;
+            if (typeof v.qty !== "number" && typeof v.quantity === "number") v.qty = v.quantity;
+          }
+        }
+      }
       saveState();
       closeAllModals();
       renderAll();
@@ -799,6 +1013,7 @@ function initModals() {
 }
 
 // ---------- Boot ----------
+initRouting();
 initScheduleForm();
 initFoodSearch();
 initCustomFoodForm();
