@@ -195,7 +195,8 @@ export const ui = {
     duration7: "7 dagen",
     duration14: "14 dagen",
     generateBtn: "Nieuw plan genereren",
-    generateHint: "Elke klik geeft een andere willekeurige combinatie uit gezonde opties.",
+    generateHint:
+      "Elke klik kiest opnieuw willekeurig uit de beste passende maaltijden — je plan wordt dus elke keer anders.",
     dayTitle: (n) => `Dag ${n}`,
     dayTotals: (kcal, p) => `Totaal schatting: ~${kcal} kcal · ~${p} g eiwit`,
     drinkLine: "Drank",

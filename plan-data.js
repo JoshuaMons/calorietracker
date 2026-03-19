@@ -19,20 +19,23 @@ function shuffle(arr, rng) {
   return a;
 }
 
+/**
+ * Kiest willekeurig uit de beste passende opties (niet altijd exact dezelfde "winnaar"),
+ * zodat elke klik op "Nieuw plan" merkbaar andere combinaties geeft.
+ */
 function pickNear(pool, targetKcal, rng) {
   const shuffled = shuffle(pool, rng);
-  let best = shuffled[0];
-  let bestScore = Infinity;
-  for (const m of shuffled) {
+  const scored = shuffled.map((m) => {
     const diff = Math.abs(m.kcal - targetKcal);
     const proteinBias = -m.protein * 2;
     const score = diff + proteinBias;
-    if (score < bestScore) {
-      bestScore = score;
-      best = m;
-    }
-  }
-  return best;
+    return { m, score };
+  });
+  scored.sort((a, b) => a.score - b.score);
+  const poolSize = scored.length;
+  const topN = Math.max(1, Math.min(6, poolSize));
+  const pickIdx = Math.floor(rng() * topN);
+  return scored[pickIdx].m;
 }
 
 /**
@@ -69,7 +72,18 @@ export function buildMealPlan(durationDays, kcalPerDay, rng) {
 }
 
 export function makePlanRng() {
-  let s = (Date.now() % 2147483646) + 1;
+  let s;
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const u = new Uint32Array(2);
+    crypto.getRandomValues(u);
+    const hi = u[0];
+    const lo = u[1];
+    s = ((hi << 16) ^ lo) >>> 0;
+    if (s === 0) s = 1;
+    s = (s % 2147483646) + 1;
+  } else {
+    s = (Date.now() + Math.floor(Math.random() * 2147483645)) % 2147483646 + 1;
+  }
   return () => {
     s = (s * 16807) % 2147483647;
     return (s - 1) / 2147483646;

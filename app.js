@@ -252,7 +252,7 @@ let suggestionsOpenverseGen = 0;
 
 const ovWaiters = [];
 let ovInFlight = 0;
-const OV_MAX_CONCURRENT = 3;
+const OV_MAX_CONCURRENT = 6;
 
 async function ovAcquire() {
   if (ovInFlight < OV_MAX_CONCURRENT) {
@@ -301,6 +301,7 @@ function observeFoodThumb(img) {
 
 async function loadOpenverseIntoImg(img, queryText) {
   if (!img) return;
+  img.decoding = "async";
   const url = await fetchOpenverseThumbnailForQueryQueued(queryText || "food");
   if (!img.isConnected) return;
   if (url) {
@@ -328,7 +329,8 @@ async function fetchOpenverseThumbnailForQuery(query) {
     if (!res.ok) return null;
     const data = await res.json();
     const hit = data?.results?.[0];
-    const url = hit?.url || hit?.thumbnail || null;
+    // Liever thumbnail (kleiner bestand) = sneller laden; anders volledige url van Openverse/CDN.
+    const url = hit?.thumbnail || hit?.url || null;
     if (url) openverseImageCache.set(searchQ, url);
     return url;
   } catch {
@@ -338,18 +340,21 @@ async function fetchOpenverseThumbnailForQuery(query) {
 
 async function hydrateOpenverseSuggestionImages(container, gen) {
   if (!container) return;
-  const imgs = container.querySelectorAll('img[data-openverse="1"]');
-  for (const img of imgs) {
-    if (gen !== suggestionsOpenverseGen) return;
-    const foodQuery = img.dataset.imgQuery || "";
-    const url = await fetchOpenverseThumbnailForQueryQueued(foodQuery);
-    if (gen !== suggestionsOpenverseGen) return;
-    if (!img.isConnected) continue;
-    if (url) {
-      attachImageErrorFallback(img);
-      img.src = url;
-    }
-  }
+  const imgs = [...container.querySelectorAll('img[data-openverse="1"]')];
+  await Promise.all(
+    imgs.map(async (img) => {
+      if (gen !== suggestionsOpenverseGen) return;
+      img.decoding = "async";
+      const foodQuery = img.dataset.imgQuery || "";
+      const url = await fetchOpenverseThumbnailForQueryQueued(foodQuery);
+      if (gen !== suggestionsOpenverseGen) return;
+      if (!img.isConnected) return;
+      if (url) {
+        attachImageErrorFallback(img);
+        img.src = url;
+      }
+    }),
+  );
 }
 
 function getScheduleDays(schedule) {
@@ -790,7 +795,7 @@ function renderMealPlanOutput() {
     return;
   }
 
-  wrap.innerHTML = validDays
+  const daysHtml = validDays
     .map((day) => {
       const slotsHtml = day.slots
         .map((slot) => {
@@ -799,7 +804,7 @@ function renderMealPlanOutput() {
               ? `<ol class="meal-slot-steps">${slot.steps.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ol>`
               : "";
           return `
-            <div class="meal-slot">
+            <div class="meal-slot meal-slot--compact">
               <div class="meal-slot-head">
                 <strong>${escapeHtml(slot.label)}</strong>
                 <span class="meal-slot-meta">${Math.round(slot.kcal)} kcal · ~${Math.round(slot.protein)} g ${escapeHtml(ui.stats.protein)}</span>
@@ -821,6 +826,8 @@ function renderMealPlanOutput() {
         </article>`;
     })
     .join("");
+
+  wrap.innerHTML = `<div class="meal-plan-days-grid">${daysHtml}</div>`;
 }
 
 function syncSchemaPageCopy() {
@@ -1015,11 +1022,13 @@ function renderSuggestions() {
     return;
   }
 
-  for (const food of suggestions) {
+  for (let idx = 0; idx < suggestions.length; idx++) {
+    const food = suggestions[idx];
     const el = document.createElement("div");
     el.className = "suggestion";
+    const eager = idx < 3 ? ' fetchpriority="high"' : "";
     el.innerHTML = `
-      <img alt="" loading="lazy" src="${IMAGE_PLACEHOLDER_URL}" width="60" height="50" />
+      <img alt="" loading="lazy" decoding="async"${eager} src="${IMAGE_PLACEHOLDER_URL}" width="60" height="50" />
       <div>
         <div class="name">${escapeHtml(food.name)}</div>
         <div class="meta">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 portie")}</div>
@@ -1234,6 +1243,7 @@ function openModalForFood(food) {
   }
 
   const modalImg = $("#modal-image");
+  modalImg.decoding = "async";
   modalImg.src = IMAGE_PLACEHOLDER_URL;
   modalImg.alt = `${food.name || "Product"}`;
   attachImageErrorFallback(modalImg);
@@ -1360,6 +1370,7 @@ function renderFoodGrid() {
 
     const imgEl = card.querySelector(".food-thumb img");
     if (imgEl) {
+      imgEl.decoding = "async";
       imgEl.dataset.ovQ = makeImageQuery(food);
       attachImageErrorFallback(imgEl);
       observeFoodThumb(imgEl);
