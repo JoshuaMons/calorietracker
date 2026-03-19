@@ -1300,7 +1300,7 @@ textarea:focus {
   margin-top: 4px;
 }
 
-.library-combined-card + .library-dag-card {
+.library-dag-card + .library-combined-card {
   margin-top: 14px;
 }
 

@@ -406,8 +406,18 @@
         </section>
       </section>
 
-      <!-- Voeding & dagtotaal: zoeken + grid + logdag -->
+      <!-- Voeding & dagtotaal: eerst dagtotaal, daarna zoeken + grid -->
       <section id="page-library" class="page">
+        <section class="card library-dag-card">
+          <div class="section-head">
+            <div>
+              <h2 id="log-page-title"></h2>
+              <p class="muted" id="log-page-intro"></p>
+            </div>
+          </div>
+          <div id="selected-items" class="selected-items" aria-label="Dagtotaal gekozen logdag"></div>
+        </section>
+
         <section class="card library-combined-card">
           <div class="section-head">
             <div>
@@ -443,16 +453,6 @@
             </div>
             <p class="muted small library-custom-hint" id="library-custom-hint"></p>
           </div>
-        </section>
-
-        <section class="card library-dag-card">
-          <div class="section-head">
-            <div>
-              <h2 id="log-page-title"></h2>
-              <p class="muted" id="log-page-intro"></p>
-            </div>
-          </div>
-          <div id="selected-items" class="selected-items" aria-label="Dagtotaal gekozen logdag"></div>
         </section>
       </section>
 
