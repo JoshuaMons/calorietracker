@@ -996,6 +996,9 @@ function syncSchemaPageCopy() {
   const tabCf = $("#tab-custom-food");
   if (tabCf) tabCf.textContent = ui.tabs.customFood;
 
+  const tabLog = $("#tab-log");
+  if (tabLog) tabLog.textContent = ui.tabs.log;
+
   const cft = $("#custom-food-page-title");
   if (cft) cft.textContent = ui.customFoodPage.title;
   const cfi = $("#custom-food-page-intro");
@@ -1321,28 +1324,50 @@ function renderStatsPanel() {
   renderWeekStats();
 }
 
-function renderSelectedItems() {
-  const wraps = [$("#selected-items"), $("#selected-items-2")].filter(Boolean);
-  if (!wraps.length) return;
+function appendSelectedTotalRow(wrap, mode, consumed, goal, remaining) {
+  if (!wrap) return;
+  const totalRow = document.createElement("div");
+  totalRow.className = "selected-items-total";
+  totalRow.setAttribute("aria-live", "polite");
+  const c = Math.round(consumed);
+  if (mode === "log") {
+    totalRow.textContent = ui.log.dayTotalLine(consumed, goal, remaining);
+  } else {
+    totalRow.textContent = ui.library.selectedTotal(c);
+  }
+  wrap.appendChild(totalRow);
+}
 
-  const { items } = calcTotalsForDate(state.selectedDate);
+function renderSelectedItems() {
+  const wLib = $("#selected-items");
+  const wLog = $("#selected-items-2");
+  if (!wLib && !wLog) return;
+
+  const logTitle = $("#log-page-title");
+  if (logTitle) logTitle.textContent = ui.log.title;
+  const logIntro = $("#log-page-intro");
+  if (logIntro) logIntro.textContent = ui.log.intro(formatNiceDate(state.selectedDate));
+
+  const { items, consumed } = calcTotalsForDate(state.selectedDate);
+  const goal = dailyGoal();
+  const remaining = goal - consumed;
 
   const emptyHtml = `<div class="muted">${escapeHtml(ui.log.empty)}</div>`;
-  if (!items.length) {
-    for (const wrap of wraps) wrap.innerHTML = emptyHtml;
-    return;
-  }
 
-  for (const wrap of wraps) {
+  const fillWrap = (wrap, mode) => {
+    if (!wrap) return;
     wrap.innerHTML = "";
-    for (const { food, qty, servingAmount, calories } of items) {
-      const row = document.createElement("div");
-      row.className = "selected-row";
-      const gramsPart =
-        food.caloriesBaseUnit === "g" && Number.isFinite(servingAmount)
-          ? ` · ${escapeHtml(ui.common.eachGrams(Math.round(servingAmount)))}`
-          : "";
-      row.innerHTML = `
+    if (!items.length) {
+      wrap.innerHTML = emptyHtml;
+    } else {
+      for (const { food, qty, servingAmount, calories } of items) {
+        const row = document.createElement("div");
+        row.className = "selected-row";
+        const gramsPart =
+          food.caloriesBaseUnit === "g" && Number.isFinite(servingAmount)
+            ? ` · ${escapeHtml(ui.common.eachGrams(Math.round(servingAmount)))}`
+            : "";
+        row.innerHTML = `
         <div>
           <strong>${escapeHtml(food.name)}</strong>
           <div class="muted small">
@@ -1351,19 +1376,24 @@ function renderSelectedItems() {
         </div>
         <div class="muted" style="font-weight:900;">${Math.round(calories)} kcal</div>
       `;
-      const btn = document.createElement("button");
-      btn.className = "btn btn-ghost";
-      btn.type = "button";
-      btn.textContent = ui.common.remove;
-      btn.addEventListener("click", () => {
-        setQtyForFood(state.selectedDate, food.id, 0);
-        renderAll();
-      });
+        const btn = document.createElement("button");
+        btn.className = "btn btn-ghost";
+        btn.type = "button";
+        btn.textContent = ui.common.remove;
+        btn.addEventListener("click", () => {
+          setQtyForFood(state.selectedDate, food.id, 0);
+          renderAll();
+        });
 
-      row.appendChild(btn);
-      wrap.appendChild(row);
+        row.appendChild(btn);
+        wrap.appendChild(row);
+      }
     }
-  }
+    appendSelectedTotalRow(wrap, mode, consumed, goal, remaining);
+  };
+
+  fillWrap(wLib, "library");
+  fillWrap(wLog, "log");
 }
 
 function openModalForFood(food) {

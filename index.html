@@ -36,7 +36,7 @@
           <a class="tab" href="#/suggestions" id="tab-suggestions">Tips &amp; recepten</a>
           <a class="tab" href="#/library" id="tab-library">Voedingsdatabase</a>
           <a class="tab" href="#/custom-food" id="tab-custom-food"></a>
-          <a class="tab" href="#/log" id="tab-log">Dagboek</a>
+          <a class="tab" href="#/log" id="tab-log"></a>
           <a class="tab" href="#/stats" id="tab-stats">Macro's &amp; statistiek</a>
           <a class="tab" href="#/settings" id="tab-settings">Gegevens</a>
         </nav>
@@ -379,16 +379,16 @@
         </section>
       </section>
 
-      <!-- Dagboek -->
+      <!-- Dagtotaal / logboek -->
       <section id="page-log" class="page">
         <section class="card">
           <div class="section-head">
             <div>
-              <h2>Dagboek</h2>
-              <p class="muted">Alles wat je voor de gekozen dag hebt aangevinkt.</p>
+              <h2 id="log-page-title"></h2>
+              <p class="muted" id="log-page-intro"></p>
             </div>
           </div>
-          <div id="selected-items-2" class="selected-items"></div>
+          <div id="selected-items-2" class="selected-items" aria-label="Gelogde producten en dagtotaal"></div>
         </section>
       </section>
 

@@ -11,7 +11,7 @@ export const ui = {
     suggestions: "Tips & recepten",
     library: "Voedingsdatabase",
     customFood: "Eigen product",
-    log: "Dagboek",
+    log: "Dagtotaal",
     stats: "Macro's & statistiek",
     data: "Gegevens",
   },
@@ -24,7 +24,7 @@ export const ui = {
     dayGoalField: "Dagdoel (kcal)",
     weekGoalField: "Weekdoel (kcal)",
     monthGoalField: "Maanddoel (kcal)",
-    dayGoalHint: "Per gekozen dag (o.a. suggesties en dagboek).",
+    dayGoalHint: "Per gekozen dag (o.a. suggesties en dagtotaal).",
     weekGoalHint: "Kalenderweek (ma–zo) rond de gekozen dag.",
     monthGoalHint: "Hele kalendermaand van de gekozen dag.",
     progressTitle: "Voortgang",
@@ -57,7 +57,7 @@ export const ui = {
     title: "Maaltijdschema",
     intro:
       "Genereer een willekeurig stappenplan (hoog eiwit, beperkte kcal) dat aansluit op je gekozen doelbron op Start.",
-    logDayNote: "Je logdag stel je in op Start — die dag wordt gebruikt voor dagboek, suggesties en macro’s.",
+    logDayNote: "Je logdag stel je in op Start — die dag wordt gebruikt voor dagtotaal, suggesties en macro’s.",
   },
 
   summaryLines: {
@@ -231,7 +231,6 @@ export const ui = {
     loadingCore: "Basisdatabase laden…",
     loadingFull: "Volledige database wordt geladen…",
     noMatch: "Geen producten gevonden.",
-    selectedTitle: "Geselecteerd vandaag",
     addCustomTitle: "Eigen product toevoegen",
     name: "Naam",
     category: "Categorie",
@@ -248,12 +247,21 @@ export const ui = {
     addBtn: "Toevoegen aan database",
     addNote:
       "Je kunt alles handmatig toevoegen wat je eet. Er is geen live-scrape van het hele internet.",
+    selectedTotal: (c) => `Totaal: ${c} kcal`,
   },
 
   log: {
-    title: "Dagboek",
-    intro: "Alles wat je voor de gekozen dag hebt aangevinkt.",
+    title: "Dagtotaal",
+    intro: (d) => `Alles wat je voor ${d} hebt gelogd (zelfde dag als op Start).`,
     empty: "Nog niets gelogd voor deze dag.",
+    dayTotalLine: (c, goal, rem) => {
+      const cR = Math.round(c);
+      const gR = Math.round(goal);
+      const rR = Math.round(rem);
+      if (!(gR > 0)) return `Dagtotaal: ${cR} kcal`;
+      if (rR >= 0) return `Dagtotaal: ${cR} kcal · Doel: ${gR} kcal · Nog: ${rR} kcal`;
+      return `Dagtotaal: ${cR} kcal · Doel: ${gR} kcal · ${Math.abs(rR)} kcal boven doel`;
+    },
   },
 
   stats: {

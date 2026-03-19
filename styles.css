@@ -942,6 +942,20 @@ textarea:focus {
   gap: 10px;
 }
 
+.selected-items-total {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 2px solid rgba(37, 99, 235, 0.2);
+  font-weight: 900;
+  font-size: 15px;
+  color: rgba(17, 24, 39, 0.92);
+  line-height: 1.35;
+}
+
+.library-split-aside .selected-items-total {
+  font-size: 14px;
+}
+
 .selected-row {
   display: flex;
   justify-content: space-between;
