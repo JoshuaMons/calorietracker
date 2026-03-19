@@ -74,7 +74,7 @@ export const ui = {
     dayHint: (d) => `Gebruikt de dag die je op Start hebt gekozen: ${d}.`,
     snacksTitle: "Suggesties (tussendoortjes / drankjes)",
     snacksNote:
-      "Miniatuurafbeeldingen komen uit Openverse (CC-media) en sluiten zo goed mogelijk aan op je zoekterm.",
+      "Miniatuurafbeeldingen komen uit Openverse (CC) of anders Wikipedia; ze sluiten zo goed mogelijk aan op je zoekterm.",
     recipesTitle: "Gezonde recepten (wereldwijd + vlees / vis / rund)",
     recipesIntro:
       "Twee bekende gezonde stijlen wereldwijd, plus eenvoudige receptideeën voor gevogelte, vis en mager rund. Gebruik ze als inspiratie; kcal log je zelf in de database.",

@@ -239,7 +239,7 @@
                 <p class="muted small">
                   Afbeeldingen via
                   <a href="https://openverse.org/" target="_blank" rel="noopener noreferrer">Openverse</a>
-                  (CC-media), op basis van productnaam.
+                  (CC) en anders Wikipedia-thumbnails — op basis van productnaam.
                 </p>
                 <div id="suggestions-list" class="suggestions-list"></div>
               </div>
@@ -258,52 +258,55 @@
         </section>
       </section>
 
-      <!-- Voedingsdatabase -->
+      <!-- Voedingsdatabase: zoek/grid links, geselecteerd rechts -->
       <section id="page-library" class="page">
-        <section class="card">
-          <div class="section-head">
-            <div>
-              <h2>Voedingsdatabase</h2>
-              <p class="muted">
-                Vink af wat je at. Eerst laden we een compacte NL-set; bij zoeken wordt de volledige lijst opgehaald.
-                Calorieën zijn vaak per 100 g.
-              </p>
-            </div>
-            <div class="library-controls">
-              <label class="search">
-                <span class="sr-only">Zoek producten</span>
-                <input
-                  id="search"
-                  type="search"
-                  placeholder="Zoek NL of EN (bijv. rijst, rice, kip, chicken)"
-                  autocomplete="off"
-                />
-              </label>
-              <label class="field compact">
-                <span class="sr-only">Categorie</span>
-                <select id="category">
-                  <option value="all">Alle categorieën</option>
-                  <option value="Meal">Maaltijden</option>
-                  <option value="Snack">Tussendoortjes</option>
-                  <option value="Drink">Dranken</option>
-                  <option value="Ingredient">Ingrediënten</option>
-                </select>
-              </label>
-            </div>
-          </div>
+        <section class="card library-combined-card">
+          <div class="library-split">
+            <div class="library-split-main">
+              <div class="section-head">
+                <div>
+                  <h2>Voedingsdatabase</h2>
+                  <p class="muted">
+                    Vink af wat je at. Eerst laden we een compacte NL-set; bij zoeken wordt de volledige lijst opgehaald.
+                    Calorieën zijn vaak per 100 g.
+                  </p>
+                </div>
+                <div class="library-controls">
+                  <label class="search">
+                    <span class="sr-only">Zoek producten</span>
+                    <input
+                      id="search"
+                      type="search"
+                      placeholder="Zoek NL of EN (bijv. rijst, rice, kip, chicken)"
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="field compact">
+                    <span class="sr-only">Categorie</span>
+                    <select id="category">
+                      <option value="all">Alle categorieën</option>
+                      <option value="Meal">Maaltijden</option>
+                      <option value="Snack">Tussendoortjes</option>
+                      <option value="Drink">Dranken</option>
+                      <option value="Ingredient">Ingrediënten</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
 
-          <div id="food-grid" class="food-grid" aria-live="polite"></div>
+              <div id="food-grid" class="food-grid" aria-live="polite"></div>
+            </div>
+
+            <aside class="library-split-aside" aria-label="Geselecteerd voor vandaag">
+              <h2 class="library-aside-title">Geselecteerd vandaag</h2>
+              <div id="selected-items" class="selected-items"></div>
+            </aside>
+          </div>
         </section>
 
-        <section class="card grid grid-2" style="align-items: start">
-          <div>
-            <h2>Geselecteerd vandaag</h2>
-            <div id="selected-items" class="selected-items"></div>
-          </div>
-
-          <div>
-            <h2>Eigen product toevoegen</h2>
-            <form id="custom-food-form" class="form">
+        <section class="card">
+          <h2>Eigen product toevoegen</h2>
+          <form id="custom-food-form" class="form">
               <label class="field">
                 <span>Naam</span>
                 <input id="custom-name" type="text" required maxlength="80" />
@@ -354,7 +357,6 @@
                 Voeg handmatig toe wat je eet; er wordt niet automatisch het hele internet ingeladen.
               </p>
             </form>
-          </div>
         </section>
       </section>
 

@@ -245,8 +245,8 @@ function attachImageErrorFallback(imgEl) {
   };
 }
 
-/** Openverse (https://openverse.org/) image search — CC-licensed catalog */
-const OPENVERSE_IMAGES_API = "https://api.openverse.engineering/v1/images/";
+/** Openverse — officiële API (engineering-domein is verouderd / faalt vaak in de browser) */
+const OPENVERSE_IMAGES_API = "https://api.openverse.org/v1/images/";
 const openverseImageCache = new Map();
 let suggestionsOpenverseGen = 0;
 
@@ -310,32 +310,72 @@ async function loadOpenverseIntoImg(img, queryText) {
   }
 }
 
+async function fetchWikipediaThumbForQuery(query) {
+  const raw = String(query || "")
+    .trim()
+    .slice(0, 72);
+  if (!raw) return null;
+  const tries = [
+    { host: "nl.wikipedia.org", suffix: " eten" },
+    { host: "en.wikipedia.org", suffix: " food" },
+  ];
+  for (const { host, suffix } of tries) {
+    const searchQ = encodeURIComponent(`${raw}${suffix}`);
+    try {
+      const apiUrl =
+        `https://${host}/w/api.php?action=query&format=json&origin=*` +
+        `&generator=search&gsrsearch=${searchQ}&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=320`;
+      const res = await fetch(apiUrl);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const pages = data?.query?.pages;
+      if (!pages) continue;
+      const first = Object.values(pages)[0];
+      const src = first?.thumbnail?.source;
+      if (src) return src;
+    } catch {
+      /* volgende wiki */
+    }
+  }
+  return null;
+}
+
 async function fetchOpenverseThumbnailForQuery(query) {
+  const wikiHint = String(query || "")
+    .trim()
+    .slice(0, 72);
   const qBase = (query || "healthy food")
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/[^a-z0-9\u00C0-\u024f ]+/gi, " ")
     .replace(/\s+/g, " ");
   const searchQ = `${qBase || "healthy"} food`.slice(0, 120);
   if (openverseImageCache.has(searchQ)) {
     return openverseImageCache.get(searchQ);
   }
+  let url = null;
   try {
     const params = new URLSearchParams({
       q: searchQ,
       page_size: "1",
     });
-    const res = await fetch(`${OPENVERSE_IMAGES_API}?${params}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const hit = data?.results?.[0];
-    // Liever thumbnail (kleiner bestand) = sneller laden; anders volledige url van Openverse/CDN.
-    const url = hit?.thumbnail || hit?.url || null;
-    if (url) openverseImageCache.set(searchQ, url);
-    return url;
+    const res = await fetch(`${OPENVERSE_IMAGES_API}?${params}`, {
+      headers: { Accept: "application/json" },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const hit = data?.results?.[0];
+      // Proxy-thumb van Openverse eerst, dan directe bron-URL.
+      url = hit?.thumbnail || hit?.url || null;
+    }
   } catch {
-    return null;
+    /* Openverse onbereikbaar */
   }
+  if (!url) {
+    url = await fetchWikipediaThumbForQuery(wikiHint || qBase || "maaltijd");
+  }
+  if (url) openverseImageCache.set(searchQ, url);
+  return url;
 }
 
 async function hydrateOpenverseSuggestionImages(container, gen) {
