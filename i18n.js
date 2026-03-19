@@ -219,7 +219,7 @@ export const ui = {
   schemaPlan: {
     title: "Maaltijdschema (hoog eiwit, beperkt kcal)",
     intro:
-      "Dit schema sluit aan op je dag- of weekdoel van Start. De planlengte stel je op Start in (1–7 dagen). Genereer een geshud stappenplan. Drink vooral water/thee; beperk suiker en alcohol.",
+      "Dit schema sluit aan op je dag- of weekdoel van Start. De planlengte stel je op Start in (1–7 dagen). Bij genereren worden ook willekeurige recepten van het internet gemixt (TheMealDB), net als bij het vrije schema. Online maaltijden: tik erop voor ingrediënten — die worden naar het Nederlands vertaald (automatisch).",
     targetLine: (kcal, basis) =>
       `Rekening gehouden met ca. ${kcal} kcal per dag (bron: ${basis}).`,
     basisDaily: "dagdoel",
@@ -230,8 +230,9 @@ export const ui = {
     duration7: "7 dagen",
     duration14: "14 dagen",
     generateBtn: "Nieuw plan genereren",
+    generating: "Bezig met genereren… ook internet-recepten (TheMealDB) worden toegevoegd waar mogelijk.",
     generateHint:
-      "Elke klik kiest opnieuw willekeurig uit de beste passende maaltijden — je plan wordt dus elke keer anders. Tik of klik op een maaltijd voor ingrediënten (en bereiding).",
+      "Elke klik kiest opnieuw willekeurig uit de beste passende maaltijden — ook van het web — en verdeelt ze op je dagbudget. Tik of klik op een maaltijd: ingrediënten en bereiding, met vertaling naar het Nederlands voor online recepten.",
     mealSlotClickHint: "Klik voor ingrediënten",
     mealSlotModalAria: "Maaltijd uit schema",
     mealSlotIngredientsTitle: "Ingrediënten",
@@ -239,6 +240,10 @@ export const ui = {
     mealSlotNoIngredients: "Geen aparte ingrediëntenlijst — zie bereiding.",
     mealSlotFootnote:
       "Hoeveelheden zijn indicatief; je dagtotaal in het plan is wel exact op je kcal-doel afgestemd. Log echte producten in je dagboek.",
+    translatingHint: "Bezig met vertalen naar het Nederlands…",
+    translationNote:
+      "Automatische vertaling (MyMemory). Controleer bij twijfel de bedoeling van het recept; de brontekst kan Engels zijn.",
+    translationFailed: "Vertaling is niet gelukt; je ziet de originele tekst.",
     dayTitle: (n) => `Dag ${n}`,
     dayTotals: (kcal, p) => `Totaal: ${kcal} kcal (gelijk aan je dagbudget) · ~${p} g eiwit (schatting)`,
     drinkLine: "Drank",

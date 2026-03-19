@@ -1,6 +1,6 @@
 /**
  * Willekeurige recepten van TheMealDB (publieke API, geen key).
- * Gebruikt voor het vrije schema-tabblad; bij fout/CORS val je terug op null.
+ * Gebruikt voor doelenplan en vrij schema; bij fout/CORS val je terug op null.
  */
 
 const THEMEALDB_RANDOM = "https://www.themealdb.com/api/json/v1/1/random.php";
@@ -87,4 +87,49 @@ export async function fetchTheMealDbMeal() {
   } catch {
     return null;
   }
+}
+
+function sleepMs(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+const MYMEMORY_URL = "https://api.mymemory.translated.net/get";
+
+/**
+ * Vertaalt korte tekst EN→NL via MyMemory (gratis, geen key).
+ * Faalt stil: geeft origineel terug bij CORS/netwerk/rate-limit.
+ */
+export async function translateTextEnToNl(text, pauseMs = 0) {
+  const raw = String(text || "").trim();
+  if (!raw) return "";
+  if (pauseMs > 0) await sleepMs(pauseMs);
+  const q = raw.length > 480 ? `${raw.slice(0, 477)}…` : raw;
+  try {
+    const url = `${MYMEMORY_URL}?${new URLSearchParams({ q, langpair: "en|nl" })}`;
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) return raw;
+    const data = await res.json();
+    const out = data?.responseData?.translatedText;
+    if (typeof out !== "string" || !out.trim()) return raw;
+    if (data?.responseStatus && Number(data.responseStatus) !== 200) return raw;
+    return out.trim();
+  } catch {
+    return raw;
+  }
+}
+
+/**
+ * Titel, ingrediënten en stappen vertalen (sequentieel i.v.m. rate limits).
+ */
+export async function translateMealSlotToNl({ title, ingredients, steps }) {
+  const titleNl = await translateTextEnToNl(title, 0);
+  const ingNl = [];
+  for (const line of ingredients || []) {
+    ingNl.push(await translateTextEnToNl(line, 90));
+  }
+  const stepsNl = [];
+  for (const line of steps || []) {
+    stepsNl.push(await translateTextEnToNl(line, 90));
+  }
+  return { title: titleNl, ingredients: ingNl, steps: stepsNl };
 }

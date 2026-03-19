@@ -1,14 +1,13 @@
 import { BUILTIN_FOODS, normalizeFoodForStorage } from "./foods.js";
 import { ui } from "./i18n.js";
 import {
-  buildMealPlan,
   finalizeDaySlotsFromPicks,
   makePlanRng,
   pickDrinkTip,
   pickNearSlot,
   SLOT_FRACS,
 } from "./plan-data.js";
-import { fetchTheMealDbMeal } from "./plan-web.js";
+import { fetchTheMealDbMeal, translateMealSlotToNl } from "./plan-web.js";
 import { matchesFoodSearchQuery } from "./search-synonyms.js";
 
 const STORAGE_KEY = "calorieTracker.v1";
@@ -930,6 +929,7 @@ function renderMealPlanInto(wrapSel, snap, emptyText, planType) {
       const slotsHtml = day.slots
         .map((slot, slotIdx) => {
           const webPart = slot.fromWeb ? ` · ${escapeHtml(ui.freePlan.fromWebTag)}` : "";
+          const cardTitle = (slot.translationNl && String(slot.translationNl.title || "").trim()) || slot.title;
           return `
             <div
               class="meal-slot meal-slot--compact meal-slot--clickable"
@@ -938,13 +938,13 @@ function renderMealPlanInto(wrapSel, snap, emptyText, planType) {
               data-plan="${planType === "free" ? "free" : "goal"}"
               data-day="${dayIdx}"
               data-slot="${slotIdx}"
-              aria-label="${escapeHtml(`${slot.label}: ${slot.title}. ${ui.schemaPlan.mealSlotClickHint}`)}"
+              aria-label="${escapeHtml(`${slot.label}: ${cardTitle}. ${ui.schemaPlan.mealSlotClickHint}`)}"
             >
               <div class="meal-slot-head">
                 <strong>${escapeHtml(slot.label)}</strong>
                 <span class="meal-slot-meta">${Math.round(slot.kcal)} kcal · ~${Math.round(slot.protein)} g ${escapeHtml(ui.stats.protein)}${webPart}</span>
               </div>
-              <div class="meal-slot-title">${escapeHtml(slot.title)}</div>
+              <div class="meal-slot-title">${escapeHtml(cardTitle)}</div>
               <div class="muted small meal-slot-click-hint">${escapeHtml(ui.schemaPlan.mealSlotClickHint)}</div>
             </div>`;
         })
@@ -977,18 +977,26 @@ function listsDifferAsJson(a, b) {
   return JSON.stringify(a || []) !== JSON.stringify(b || []);
 }
 
-function openMealSlotModal(planAttr, dayIndex, slotIndex) {
-  const snap = planAttr === "free" ? state.freeMealPlan : state.mealPlan;
-  const day = snap?.days?.[dayIndex];
-  const slot = day?.slots?.[slotIndex];
-  if (!slot) return;
+let mealSlotModalSession = 0;
 
-  const ingredients = Array.isArray(slot.ingredients) && slot.ingredients.length ? slot.ingredients : slot.steps || [];
-  const steps = Array.isArray(slot.steps) ? slot.steps : [];
-  const showPrep = listsDifferAsJson(ingredients, steps) && steps.length > 0;
+function slotNeedsNlTranslation(slot) {
+  if (!slot) return false;
+  return !!(slot.fromWeb || /\bTheMealDB\b/i.test(String(slot.title || "")));
+}
 
-  const backdrop = $("#meal-slot-modal-backdrop");
-  const modal = $("#meal-slot-modal");
+/** @param {object} slot @param {null | { title: string, ingredients: string[], steps: string[] }} tr */
+function paintMealSlotModal(slot, tr) {
+  const title =
+    tr && String(tr.title || "").trim() ? tr.title : String(slot.title || "").trim() || "—";
+  const ingredientsSrc =
+    tr && Array.isArray(tr.ingredients)
+      ? tr.ingredients
+      : Array.isArray(slot.ingredients) && slot.ingredients.length
+        ? slot.ingredients
+        : slot.steps || [];
+  const stepsSrc = tr && Array.isArray(tr.steps) ? tr.steps : Array.isArray(slot.steps) ? slot.steps : [];
+  const showPrep = listsDifferAsJson(ingredientsSrc, stepsSrc) && stepsSrc.length > 0;
+
   const kicker = $("#meal-slot-modal-kicker");
   const titleEl = $("#meal-slot-modal-title");
   const metaEl = $("#meal-slot-modal-meta");
@@ -996,18 +1004,17 @@ function openMealSlotModal(planAttr, dayIndex, slotIndex) {
   const ingList = $("#meal-slot-modal-ingredients");
   const prepWrap = $("#meal-slot-modal-prep-wrap");
   const prepList = $("#meal-slot-modal-steps");
-  const foot = $("#meal-slot-modal-footnote");
 
   if (kicker) kicker.textContent = slot.label || "—";
-  if (titleEl) titleEl.textContent = slot.title || "—";
+  if (titleEl) titleEl.textContent = title;
   if (metaEl) {
     const webPart = slot.fromWeb ? ` · ${ui.freePlan.fromWebTag}` : "";
     metaEl.textContent = `${Math.round(slot.kcal)} kcal · ~${Math.round(slot.protein)} g ${ui.stats.protein}${webPart}`;
   }
   if (ingTitle) ingTitle.textContent = ui.schemaPlan.mealSlotIngredientsTitle;
   if (ingList) {
-    ingList.innerHTML = ingredients.length
-      ? ingredients.map((s) => `<li>${escapeHtml(s)}</li>`).join("")
+    ingList.innerHTML = ingredientsSrc.length
+      ? ingredientsSrc.map((s) => `<li>${escapeHtml(s)}</li>`).join("")
       : `<li class="muted">${escapeHtml(ui.schemaPlan.mealSlotNoIngredients)}</li>`;
   }
   const prepTitle = $("#meal-slot-modal-steps-title");
@@ -1015,16 +1022,73 @@ function openMealSlotModal(planAttr, dayIndex, slotIndex) {
   if (prepWrap) prepWrap.hidden = !showPrep;
   if (prepList) {
     prepList.innerHTML = showPrep
-      ? steps.map((s) => `<li>${escapeHtml(s)}</li>`).join("")
+      ? stepsSrc.map((s) => `<li>${escapeHtml(s)}</li>`).join("")
       : "";
   }
-  if (foot) foot.textContent = ui.schemaPlan.mealSlotFootnote;
+}
+
+function openMealSlotModal(planAttr, dayIndex, slotIndex) {
+  mealSlotModalSession += 1;
+  const session = mealSlotModalSession;
+  const snap = planAttr === "free" ? state.freeMealPlan : state.mealPlan;
+  const slot = snap?.days?.[dayIndex]?.slots?.[slotIndex];
+  if (!slot) return;
+
+  const backdrop = $("#meal-slot-modal-backdrop");
+  const modal = $("#meal-slot-modal");
+  const foot = $("#meal-slot-modal-footnote");
 
   if (backdrop) backdrop.hidden = false;
   if (modal) {
     modal.hidden = false;
     modal.setAttribute("aria-label", ui.schemaPlan.mealSlotModalAria);
   }
+
+  paintMealSlotModal(slot, slot.translationNl || null);
+
+  const needs = slotNeedsNlTranslation(slot);
+  if (!needs) {
+    if (foot) foot.textContent = ui.schemaPlan.mealSlotFootnote;
+    return;
+  }
+  if (slot.translationNl) {
+    if (foot) foot.textContent = `${ui.schemaPlan.mealSlotFootnote}\n\n${ui.schemaPlan.translationNote}`;
+    return;
+  }
+
+  if (foot) foot.textContent = ui.schemaPlan.translatingHint;
+
+  void (async () => {
+    try {
+      const ingBase = Array.isArray(slot.ingredients) && slot.ingredients.length ? slot.ingredients : slot.steps || [];
+      const stepsBase = Array.isArray(slot.steps) ? slot.steps : [];
+      const sameLists = !listsDifferAsJson(ingBase, stepsBase);
+      const tr = await translateMealSlotToNl({
+        title: String(slot.title || ""),
+        ingredients: ingBase,
+        steps: sameLists ? [] : stepsBase,
+      });
+      if (session !== mealSlotModalSession) return;
+      slot.translationNl = sameLists
+        ? { title: tr.title, ingredients: tr.ingredients, steps: [...tr.ingredients] }
+        : tr;
+      saveState();
+      paintMealSlotModal(slot, tr);
+      renderMealPlanOutput();
+      renderFreeMealPlanOutput();
+      const footEl = $("#meal-slot-modal-footnote");
+      if (footEl) {
+        footEl.textContent = `${ui.schemaPlan.mealSlotFootnote}\n\n${ui.schemaPlan.translationNote}`;
+      }
+    } catch (e) {
+      console.error(e);
+      if (session !== mealSlotModalSession) return;
+      const footEl = $("#meal-slot-modal-footnote");
+      if (footEl) {
+        footEl.textContent = `${ui.schemaPlan.mealSlotFootnote}\n\n${ui.schemaPlan.translationFailed}`;
+      }
+    }
+  })();
 }
 
 function closeMealSlotModal() {
@@ -1081,7 +1145,7 @@ function sleepMs(ms) {
 
 const FREE_PICK_OPTS = { jitter: 90, topNMin: 5, topNMax: 22 };
 
-async function buildFreeMealPlanDays(durationDays, kcalPerDay) {
+async function buildHybridMealPlanDays(durationDays, kcalPerDay) {
   const rng = makePlanRng();
   const meta = [
     { key: "breakfast", label: "Ontbijt", frac: SLOT_FRACS.breakfast },
@@ -2223,20 +2287,35 @@ function initSchemaPage() {
     });
   }
 
-  $("#btn-generate-meal-plan")?.addEventListener("click", () => {
+  $("#btn-generate-meal-plan")?.addEventListener("click", async () => {
+    const btn = $("#btn-generate-meal-plan");
     const duration = clampInt(state.goalPlanDays, 1, 7);
     const kcal = effectivePlanKcalPerDay();
-    const rng = makePlanRng();
-    const days = buildMealPlan(duration, kcal, rng);
-    state.mealPlan = {
-      duration,
-      kcalPerDay: kcal,
-      basis: planBasisKey(),
-      days,
-    };
-    saveState();
-    renderMealPlanTargetLine();
-    renderMealPlanOutput();
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = ui.schemaPlan.generating;
+    }
+    try {
+      const days = await buildHybridMealPlanDays(duration, kcal);
+      state.mealPlan = {
+        duration,
+        kcalPerDay: kcal,
+        basis: planBasisKey(),
+        days,
+        hybridWeb: true,
+      };
+      saveState();
+      renderMealPlanTargetLine();
+      renderMealPlanOutput();
+    } catch (e) {
+      console.error(e);
+      alert(String(e?.message || e));
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = ui.schemaPlan.generateBtn;
+      }
+    }
   });
 
   $("#btn-schema-reset-plan")?.addEventListener("click", () => {
@@ -2257,7 +2336,7 @@ function initSchemaPage() {
       btn.textContent = ui.freePlan.generating;
     }
     try {
-      const days = await buildFreeMealPlanDays(duration, kcal);
+      const days = await buildHybridMealPlanDays(duration, kcal);
       state.freeMealPlan = {
         duration,
         kcalPerDay: kcal,

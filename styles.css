@@ -1454,6 +1454,10 @@ a.inline-link-btn {
   line-height: 1.45;
 }
 
+#meal-slot-modal-footnote {
+  white-space: pre-line;
+}
+
 .meal-slot-meta {
   font-size: 11px;
   font-weight: 800;
