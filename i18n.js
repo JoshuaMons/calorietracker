@@ -73,6 +73,9 @@ export const ui = {
     intro:
       "Tussendoortjes en drankjes op basis van je resterende kcal (alleen standaard- en eigen items). Daarnaast: wereldwijd gezonde receptideeën met vlees, vis en rund.",
     dayHint: (d) => `Gebruikt de dag die je op Start hebt gekozen: ${d}.`,
+    shuffleHint:
+      "Suggesties komen uit een willekeurige mix van opties die binnen je ruimte passen — elke verversing of wijziging in je log kan een andere volgorde tonen.",
+    recipesShuffleHint: "Recepten staan in willekeurige volgorde.",
     snacksTitle: "Suggesties (tussendoortjes / drankjes)",
     snacksNote:
       "Miniatuurafbeeldingen komen uit Openverse (CC) of anders Wikipedia; ze sluiten zo goed mogelijk aan op je zoekterm.",

@@ -654,9 +654,24 @@ textarea:focus {
   min-width: 260px;
 }
 
-/* Voedingsdatabase: scrollbaar grid, geselecteerd eronder (links uitgelijnd) */
+/* Voedingsdatabase: twee kolommen — producten links, geselecteerd rechts */
+.library-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  gap: 20px 24px;
+  align-items: start;
+  margin-top: 4px;
+}
+
+.library-split-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .library-food-scroll {
-  margin-top: 12px;
+  margin-top: 8px;
   max-height: min(78vh, 920px);
   min-height: 200px;
   padding: 8px 6px 8px 2px;
@@ -679,30 +694,49 @@ textarea:focus {
 }
 
 .library-custom-hint {
-  margin: 14px 0 0;
+  margin: 12px 0 0;
 }
 
-.library-selected-block {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-  max-height: min(42vh, 520px);
+.library-split-aside {
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.55);
+  position: sticky;
+  top: 84px;
+  max-height: min(78vh, 920px);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
-.library-selected-title {
+.library-aside-title {
   margin: 0 0 10px;
   font-size: 1.05rem;
 }
 
-@media (max-width: 620px) {
+@media (max-width: 960px) {
+  .library-split {
+    grid-template-columns: 1fr;
+  }
+
+  .library-split-aside {
+    position: static;
+    max-height: min(46vh, 480px);
+  }
+
   .library-food-scroll {
     max-height: min(65vh, 640px);
   }
+}
 
-  .library-selected-block {
-    max-height: min(38vh, 420px);
+@media (max-width: 620px) {
+  .library-food-scroll {
+    max-height: min(58vh, 560px);
+  }
+
+  .library-split-aside {
+    max-height: min(40vh, 400px);
   }
 }
 

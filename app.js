@@ -810,6 +810,24 @@ function suggestionFoodPool() {
   );
 }
 
+function suggestionsShuffleRng() {
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const u = new Uint32Array(1);
+    crypto.getRandomValues(u);
+    return (u[0] >>> 0) / 0x100000000;
+  }
+  return Math.random();
+}
+
+function shuffleArrayCopy(arr, rng = suggestionsShuffleRng) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function computeSuggestions(dateYMD) {
   const goal = dailyGoal();
   const { consumed } = calcTotalsForDate(dateYMD);
@@ -827,36 +845,46 @@ function computeSuggestions(dateYMD) {
   });
 
   const target = remaining;
-  const suitable = allFoods
+  const rng = suggestionsShuffleRng;
+
+  const underSorted = allFoods
     .filter((f) => f.caloriesPerServing <= target)
     .sort((a, b) => Math.abs(a.caloriesPerServing - target) - Math.abs(b.caloriesPerServing - target));
 
-  const suggestions = [];
-  for (const f of suitable) {
-    suggestions.push(f);
-    if (suggestions.length >= 5) break;
-  }
+  const underPool = underSorted.slice(0, Math.min(28, underSorted.length));
+  const shuffledUnder = shuffleArrayCopy(underPool, rng);
 
-  if (suggestions.length < 5) {
-    const above = allFoods
-      .filter((f) => f.caloriesPerServing > target)
-      .sort((a, b) => Math.abs(a.caloriesPerServing - target) - Math.abs(b.caloriesPerServing - target));
-    for (const f of above) {
-      suggestions.push(f);
-      if (suggestions.length >= 5) break;
+  const picks = [];
+  const seen = new Set();
+  for (const f of shuffledUnder) {
+    if (picks.length >= 5) break;
+    if (!seen.has(f.id)) {
+      seen.add(f.id);
+      picks.push(f);
     }
   }
 
-  if (suggestions.length === 0) {
-    const fallback = suggestionFoodPool().filter((f) => {
-      const entry = log[f.id];
-      const qty = entry && typeof entry === "object" ? entry.qty : 0;
-      return !(qty > 0);
-    });
+  if (picks.length < 5) {
+    const overSorted = allFoods
+      .filter((f) => f.caloriesPerServing > target)
+      .sort((a, b) => Math.abs(a.caloriesPerServing - target) - Math.abs(b.caloriesPerServing - target));
+    const overPool = overSorted.slice(0, Math.min(20, overSorted.length));
+    const shuffledOver = shuffleArrayCopy(overPool, rng);
+    for (const f of shuffledOver) {
+      if (picks.length >= 5) break;
+      if (!seen.has(f.id)) {
+        seen.add(f.id);
+        picks.push(f);
+      }
+    }
+  }
+
+  if (picks.length === 0) {
+    const fallback = shuffleArrayCopy(allFoods, rng);
     return { remaining, suggestions: fallback.slice(0, 5) };
   }
 
-  return { remaining, suggestions };
+  return { remaining, suggestions: picks };
 }
 
 function escapeHtml(str) {
@@ -948,7 +976,9 @@ function syncSchemaPageCopy() {
   if (hint) hint.textContent = ui.schemaPlan.generateHint;
 
   const rh = $("#recipe-click-hint");
-  if (rh) rh.textContent = ui.recipeModal.clickHint;
+  if (rh) {
+    rh.textContent = `${ui.recipeModal.clickHint} ${ui.suggestionsPage.recipesShuffleHint}`;
+  }
 
   const rm = $("#recipe-modal");
   if (rm) rm.setAttribute("aria-label", ui.recipeModal.aria);
@@ -1119,6 +1149,8 @@ function renderSuggestions() {
   if (hint) {
     hint.textContent = ui.suggestionsPage.dayHint(formatNiceDate(state.selectedDate));
   }
+  const shuffleHint = $("#suggestions-shuffle-hint");
+  if (shuffleHint) shuffleHint.textContent = ui.suggestionsPage.shuffleHint;
 
   const { remaining, suggestions } = computeSuggestions(state.selectedDate);
 
@@ -1167,7 +1199,8 @@ function renderRecipes() {
   const wrap = $("#recipe-cards");
   if (!wrap) return;
   wrap.innerHTML = "";
-  const list = ui.recipes || [];
+  const rng = makePlanRng();
+  const list = shuffleArrayCopy([...(ui.recipes || [])], rng);
   for (let i = 0; i < list.length; i++) {
     const r = list[i];
     const art = document.createElement("article");

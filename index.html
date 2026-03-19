@@ -230,6 +230,7 @@
           </div>
 
           <div class="date-hint muted small" id="suggestions-day-hint"></div>
+          <p class="muted small" id="suggestions-shuffle-hint"></p>
 
           <p class="muted small recipe-click-hint" id="recipe-click-hint"></p>
 
@@ -259,7 +260,7 @@
         </section>
       </section>
 
-      <!-- Voedingsdatabase: producten + geselecteerd (links uitgelijnd, onder elkaar) -->
+      <!-- Voedingsdatabase: grid links, geselecteerd rechts -->
       <section id="page-library" class="page">
         <section class="card library-combined-card">
           <div class="section-head">
@@ -294,19 +295,22 @@
             </div>
           </div>
 
-          <div
-            class="library-food-scroll"
-            tabindex="0"
-            aria-label="Scrollbare productenlijst"
-          >
-            <div id="food-grid" class="food-grid" aria-live="polite"></div>
-          </div>
+          <div class="library-split">
+            <div class="library-split-main">
+              <div
+                class="library-food-scroll"
+                tabindex="0"
+                aria-label="Scrollbare productenlijst"
+              >
+                <div id="food-grid" class="food-grid" aria-live="polite"></div>
+              </div>
+              <p class="muted small library-custom-hint" id="library-custom-hint"></p>
+            </div>
 
-          <p class="muted small library-custom-hint" id="library-custom-hint"></p>
-
-          <div class="library-selected-block" aria-label="Geselecteerd voor vandaag">
-            <h2 class="library-selected-title">Geselecteerd vandaag</h2>
-            <div id="selected-items" class="selected-items"></div>
+            <aside class="library-split-aside" aria-label="Geselecteerd voor vandaag">
+              <h2 class="library-aside-title">Geselecteerd vandaag</h2>
+              <div id="selected-items" class="selected-items"></div>
+            </aside>
           </div>
         </section>
       </section>
