@@ -9,11 +9,8 @@ export const ui = {
     home: "Start",
     schema: "Schema",
     suggestions: "Tips & recepten",
-    library: "Voedingsdatabase",
+    library: "Voeding & dagtotaal",
     customFood: "Eigen product",
-    log: "Dagtotaal",
-    stats: "Macro's & statistiek",
-    data: "Gegevens",
   },
 
   tabsAria: "Hoofdonderdelen",
@@ -41,13 +38,18 @@ export const ui = {
     eaten: "kcal gegeten",
     remaining: "kcal resterend",
     openSuggestions: "Open tips & recepten →",
-    openSuggestionsHint: "voor tussendoortjes, gezonde receptideeën en macro’s op de juiste pagina.",
+    openSuggestionsHint: "voor tussendoortjes en gezonde receptideeën.",
+    goalsSchemaLegend: "Schema & planlengte",
     planBasisLabel: "Schema op basis van",
     planBasisDaily: "Dagdoel (kcal/dag)",
     planBasisWeekly: "Weekdoel ÷ 7",
     planBasisHint: "Het maaltijdschema gebruikt deze kcal per dag (tab Doelenplan op Schema).",
+    planSchemaCompactHint:
+      "Kies dag- of weekdoel als bron voor het schema en hoeveel dagen je stappenplan duurt (1–7). Na opslaan zie je het op Schema onder Doelenplan.",
     planDaysLabel: "Lengte doelenplan (dagen)",
+    planDaysLabelShort: "Dagen schema",
     planDaysHint: "Aantal dagen voor je stappenplan op Schema (1–7). Pas je doelen of lengte aan en sla opnieuw op om te wijzigen.",
+    linkVoeding: "Voeding & dagtotaal →",
     logDayTitle: "Logdag",
     logDayHint: "Welke dag je invult in dagboek en database.",
     logToday: "Vandaag",
@@ -57,7 +59,7 @@ export const ui = {
     title: "Maaltijdschema",
     intro:
       "Genereer een willekeurig stappenplan (hoog eiwit, beperkte kcal) dat aansluit op je gekozen doelbron op Start.",
-    logDayNote: "Je logdag stel je in op Start — die dag wordt gebruikt voor dagtotaal, suggesties en macro’s.",
+    logDayNote: "Je logdag stel je in op Start — die dag wordt gebruikt voor dagtotaal en suggesties.",
     subTabGoalPlan: "Doelenplan",
     subTabFreePlan: "Vrij schema",
     subTabStatus: "Huidige stand",
@@ -70,8 +72,7 @@ export const ui = {
     statusTitle: "Huidige stand",
     statusIntro: "Zelfde voortgang als op Start: dag- en weekdoel voor je gekozen logdag (zonder maanddoel).",
     linkHome: "Start →",
-    linkLibrary: "Voedingsdatabase →",
-    linkLog: "Dagtotaal →",
+    linkLibrary: "Voeding & dagtotaal →",
   },
 
   summaryLines: {
@@ -254,14 +255,17 @@ export const ui = {
   customFoodPage: {
     title: "Eigen product toevoegen",
     intro:
-      "Voeg iets toe dat nog niet in de database staat. Na opslag ga je terug naar de voedingsdatabase om het te loggen.",
+      "Voeg iets toe dat nog niet in de database staat. Na opslag ga je terug naar Voeding & dagtotaal om het te loggen.",
     formNote: "Handmatige invoer; er wordt niet automatisch het hele internet ingeladen.",
-    backToLibrary: "← Terug naar voedingsdatabase",
+    backToLibrary: "← Terug naar Voeding & dagtotaal",
     addHint: "Eigen product toevoegen →",
     addHintLead: "Staat je product er niet tussen?",
   },
 
   library: {
+    pageTitle: "Voeding & dagtotaal",
+    mergedIntro:
+      "Zoek producten en vink af wat je at; hieronder zie je het dagtotaal voor je logdag op Start. Bij opstart een compacte NL-set; bij zoeken wordt de volledige lijst geladen. Kcal vaak per 100 g.",
     title: "Voedingsdatabase",
     intro:
       "Vink af wat je at. Bij start laden we een compacte NL-set; tijdens zoeken wordt de volledige lijst opgehaald. Kcal vaak per 100 g.",
@@ -308,26 +312,7 @@ export const ui = {
   },
 
   stats: {
-    title: "Macro's & statistiek",
-    intro: "Macro’s voor de geselecteerde dag en je calorieën van de laatste 7 dagen (t.o.v. je doel).",
-    macrosTitle: "Macroverdeling",
-    macrosNote: "Macro’s komen uit Open Food Facts / je eigen invoer waar beschikbaar.",
-    macrosEmpty: "Nog geen macrogegevens voor gelogde producten. Voeg waarden toe of kies producten met nutriënten.",
-    weekTitle: "Laatste 7 dagen (kcal)",
-    weekGoal: (g) => `Doel per dag: ${g} kcal`,
     protein: "Eiwit",
-    carbs: "Koolhydraten",
-    fat: "Vet",
-  },
-
-  data: {
-    title: "Gegevens",
-    intro: "Exporteren, importeren of het logboek van de gekozen dag wissen.",
-    export: "Exporteren",
-    import: "Importeren",
-    resetDay: "Dag wissen",
-    resetTitle: "Wist alleen logs (schema en doelen blijven).",
-    tip: "Tip: export is je back-up. Import overschrijft de huidige app-gegevens.",
   },
 
   modal: {
@@ -340,15 +325,6 @@ export const ui = {
     toggle: "Toevoegen / verwijderen",
     toggleQty: (n) => `Verwijderen (nu ${n})`,
     tipQty: "Tip: gebruik de hoeveelheid op de kaart voor meerdere porties.",
-  },
-
-  importModal: {
-    aria: "Gegevens importeren",
-    title: "Exporteren / importeren",
-    paste: "Plak JSON",
-    importBtn: "Importeren",
-    note: "Import overschrijft je huidige app-status.",
-    close: "Sluiten",
   },
 
   common: {
@@ -367,11 +343,6 @@ export const ui = {
     goalMet: "Goed zo — je doel voor deze dag is gehaald.",
     none: "Geen suggesties. Voeg een eigen tussendoortje of drank toe.",
     add: "Loggen",
-  },
-
-  alerts: {
-    importFailed: (m) => `Importeren mislukt: ${m}`,
-    resetConfirm: "Alle gelogde producten voor deze dag wissen?",
   },
 
   categories: {

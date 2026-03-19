@@ -1269,6 +1269,45 @@ textarea:focus {
   margin: 0;
 }
 
+.goals-schema-compact-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px 20px;
+  margin-top: 4px;
+}
+
+.goals-schema-basis-block {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.goal-plan-days-field {
+  flex: 0 0 auto;
+  min-width: 120px;
+  margin: 0 !important;
+}
+
+.goal-plan-days-field select {
+  max-width: 100px;
+}
+
+.library-main-block {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 4px;
+}
+
+.library-combined-card + .library-dag-card {
+  margin-top: 14px;
+}
+
+.library-dag-card .selected-items {
+  margin-top: 4px;
+}
+
 /* Schema: maaltijdplan */
 .schema-subtabs-wrap {
   margin-bottom: 14px;

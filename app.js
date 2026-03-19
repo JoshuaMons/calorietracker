@@ -1273,7 +1273,14 @@ function syncSchemaPageCopy() {
 
   $("#schema-link-home")?.replaceChildren(document.createTextNode(ui.schemaPage.linkHome));
   $("#schema-link-library")?.replaceChildren(document.createTextNode(ui.schemaPage.linkLibrary));
-  $("#schema-link-log")?.replaceChildren(document.createTextNode(ui.schemaPage.linkLog));
+
+  const tabLib = $("#tab-library");
+  if (tabLib) tabLib.textContent = ui.tabs.library;
+
+  const libTitle = $("#library-page-title");
+  if (libTitle) libTitle.textContent = ui.library.pageTitle;
+  const libIntro = $("#library-page-intro");
+  if (libIntro) libIntro.textContent = ui.library.mergedIntro;
 
   const rh = $("#recipe-click-hint");
   if (rh) {
@@ -1300,9 +1307,6 @@ function syncSchemaPageCopy() {
 
   const tabCf = $("#tab-custom-food");
   if (tabCf) tabCf.textContent = ui.tabs.customFood;
-
-  const tabLog = $("#tab-log");
-  if (tabLog) tabLog.textContent = ui.tabs.log;
 
   const cft = $("#custom-food-page-title");
   if (cft) cft.textContent = ui.customFoodPage.title;
@@ -1498,56 +1502,6 @@ function renderSchemaSubTabsUi() {
   }
 }
 
-function renderMacrosPanel() {
-  const ymd = state.selectedDate;
-  const { consumed, macros } = calcTotalsForDate(ymd);
-  const goal = dailyGoal();
-  const remaining = goal - consumed;
-  renderMacroBreakdown(macros, remaining);
-}
-
-function renderMacroBreakdown(macros, remaining) {
-  const wrap = $("#macro-breakdown");
-  if (!wrap) return;
-
-  if (!macros || !macros.hasAnyMacro) {
-    wrap.innerHTML = `<div class="muted">${escapeHtml(ui.stats.macrosEmpty)}</div>`;
-    return;
-  }
-
-  const macroCalories = Number.isFinite(macros.macroCalories) ? macros.macroCalories : undefined;
-  const proteinPct = macroCalories ? Math.round((macros.proteinGrams * 4 * 100) / macroCalories) : 0;
-  const carbsPct = macroCalories ? Math.round((macros.carbsGrams * 4 * 100) / macroCalories) : 0;
-  const fatPct = macroCalories ? Math.round((macros.fatGrams * 9 * 100) / macroCalories) : 0;
-
-  wrap.innerHTML = `
-    <div class="macro-row">
-      <div class="macro-row-top">
-        <span>${escapeHtml(ui.stats.protein)}</span>
-        <span>${macros.proteinGrams.toFixed(0)}g</span>
-      </div>
-      <div class="macro-bar-wrap"><div class="macro-bar" style="--w:${proteinPct}%"></div></div>
-      <div class="macro-row-top"><span class="muted">~${Math.round(macros.proteinGrams * 4)} kcal</span><span class="muted">${proteinPct}%</span></div>
-    </div>
-    <div class="macro-row">
-      <div class="macro-row-top">
-        <span>${escapeHtml(ui.stats.carbs)}</span>
-        <span>${macros.carbsGrams.toFixed(0)}g</span>
-      </div>
-      <div class="macro-bar-wrap"><div class="macro-bar" style="--w:${carbsPct}%"></div></div>
-      <div class="macro-row-top"><span class="muted">~${Math.round(macros.carbsGrams * 4)} kcal</span><span class="muted">${carbsPct}%</span></div>
-    </div>
-    <div class="macro-row">
-      <div class="macro-row-top">
-        <span>${escapeHtml(ui.stats.fat)}</span>
-        <span>${macros.fatGrams.toFixed(0)}g</span>
-      </div>
-      <div class="macro-bar-wrap"><div class="macro-bar" style="--w:${fatPct}%"></div></div>
-      <div class="macro-row-top"><span class="muted">~${Math.round(macros.fatGrams * 9)} kcal</span><span class="muted">${fatPct}%</span></div>
-    </div>
-  `;
-}
-
 function renderSuggestions() {
   const wrap = $("#suggestions-list");
   if (!wrap) return;
@@ -1692,42 +1646,6 @@ function closeRecipeModal() {
   if (modal) modal.hidden = true;
 }
 
-function renderWeekStats() {
-  const wrap = $("#week-stats-bars");
-  const goalEl = $("#week-stats-goal");
-  if (!wrap || !goalEl) return;
-  const goal = dailyGoal();
-  goalEl.textContent = ui.stats.weekGoal(goal);
-  const end = state.selectedDate;
-  const rows = [];
-  for (let i = 6; i >= 0; i--) {
-    const ymd = addDaysYMD(end, -i);
-    const { consumed } = calcTotalsForDate(ymd);
-    const pct = goal > 0 ? Math.min(100, Math.round((consumed / goal) * 100)) : 0;
-    rows.push({ ymd, consumed, pct });
-  }
-  wrap.innerHTML = rows
-    .map(
-      (r) => `
-    <div class="week-stat-row">
-      <span>${escapeHtml(formatShortDay(r.ymd))}</span>
-      <div class="week-stat-bar-wrap" aria-hidden="true"><div class="week-stat-bar" style="width:${r.pct}%"></div></div>
-      <span>${Math.round(r.consumed)}</span>
-    </div>`,
-    )
-    .join("");
-}
-
-function renderStatsPanel() {
-  if (!document.getElementById("page-stats")) return;
-  const hint = $("#stats-day-hint");
-  if (hint) {
-    hint.textContent = ui.suggestionsPage.dayHint(formatNiceDate(state.selectedDate));
-  }
-  renderMacrosPanel();
-  renderWeekStats();
-}
-
 function appendSelectedTotalRow(wrap, mode, consumed, goal, remaining) {
   if (!wrap) return;
   const totalRow = document.createElement("div");
@@ -1744,8 +1662,7 @@ function appendSelectedTotalRow(wrap, mode, consumed, goal, remaining) {
 
 function renderSelectedItems() {
   const wLib = $("#selected-items");
-  const wLog = $("#selected-items-2");
-  if (!wLib && !wLog) return;
+  if (!wLib) return;
 
   const logTitle = $("#log-page-title");
   if (logTitle) logTitle.textContent = ui.log.title;
@@ -1796,8 +1713,7 @@ function renderSelectedItems() {
     appendSelectedTotalRow(wrap, mode, consumed, goal, remaining);
   };
 
-  fillWrap(wLib, "library");
-  fillWrap(wLog, "log");
+  fillWrap(wLib, "log");
 }
 
 function openModalForFood(food) {
@@ -2048,9 +1964,6 @@ function initRouting() {
     "#/suggestions": "page-suggestions",
     "#/library": "page-library",
     "#/custom-food": "page-custom-food",
-    "#/log": "page-log",
-    "#/stats": "page-stats",
-    "#/settings": "page-settings",
   };
 
   const tabToHash = [
@@ -2059,13 +1972,17 @@ function initRouting() {
     { tabId: "tab-suggestions", hash: "#/suggestions" },
     { tabId: "tab-library", hash: "#/library" },
     { tabId: "tab-custom-food", hash: "#/custom-food" },
-    { tabId: "tab-log", hash: "#/log" },
-    { tabId: "tab-stats", hash: "#/stats" },
-    { tabId: "tab-settings", hash: "#/settings" },
   ];
 
   function applyRoute() {
-    const raw = location.hash || "#/home";
+    let raw = location.hash || "#/home";
+    if (raw === "#/log") {
+      history.replaceState(null, "", "#/library");
+      raw = "#/library";
+    } else if (raw === "#/stats" || raw === "#/settings") {
+      history.replaceState(null, "", "#/home");
+      raw = "#/home";
+    }
     const hash = routeToPage[raw] ? raw : "#/home";
     const pageId = routeToPage[hash];
 
@@ -2095,8 +2012,8 @@ function closeAllModals() {
   closeMealSlotModal();
   const ib = $("#import-backdrop");
   const im = $("#import-modal");
-  ib.hidden = true;
-  im.hidden = true;
+  if (ib) ib.hidden = true;
+  if (im) im.hidden = true;
 }
 
 function renderAll() {
@@ -2119,7 +2036,6 @@ function renderAll() {
   renderSchemaSubTabsUi();
   renderSuggestions();
   renderRecipes();
-  renderStatsPanel();
   renderSelectedItems();
   renderFoodGrid();
 }
@@ -2150,9 +2066,16 @@ function syncHomePageCopy() {
   if (saveBtn) saveBtn.textContent = ui.home.goalsSave;
 
   const gpdLabel = $("#goal-plan-days-label");
-  if (gpdLabel) gpdLabel.textContent = ui.home.planDaysLabel;
-  const gpdHint = $("#goal-plan-days-hint");
-  if (gpdHint) gpdHint.textContent = ui.home.planDaysHint;
+  if (gpdLabel) gpdLabel.textContent = ui.home.planDaysLabelShort;
+
+  const leg = $("#goals-schema-legend");
+  if (leg) leg.textContent = ui.home.goalsSchemaLegend;
+
+  const gsh = document.querySelector("#goals-form .goals-schema-hint");
+  if (gsh) gsh.textContent = ui.home.planSchemaCompactHint;
+
+  const hv = $("#home-link-voeding");
+  if (hv) hv.textContent = ui.home.linkVoeding;
 }
 
 function initGoalsForm() {
@@ -2171,10 +2094,10 @@ function initGoalsForm() {
     renderMealPlanTargetLine();
   });
 
-  const legend = form.querySelector(".plan-basis-legend");
-  if (legend) legend.textContent = ui.home.planBasisLabel;
-  const basisHint = form.querySelector(".plan-basis-hint");
-  if (basisHint) basisHint.textContent = ui.home.planBasisHint;
+  const legend = $("#goals-schema-legend") || form.querySelector(".plan-basis-legend");
+  if (legend) legend.textContent = ui.home.goalsSchemaLegend;
+  const basisHint = form.querySelector(".goals-schema-hint") || form.querySelector(".plan-basis-hint");
+  if (basisHint) basisHint.textContent = ui.home.planSchemaCompactHint;
 
   const radios = form.querySelectorAll('input[name="plan-basis"]');
   const basis = planBasisKey();
@@ -2457,89 +2380,6 @@ function initModals() {
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeAllModals();
-  });
-
-  $("#btn-import").addEventListener("click", () => {
-    $("#import-backdrop").hidden = false;
-    $("#import-modal").hidden = false;
-    $("#import-text").focus();
-  });
-  $("#import-close")?.addEventListener("click", closeAllModals);
-  $("#import-backdrop")?.addEventListener("click", closeAllModals);
-
-  $("#btn-do-import").addEventListener("click", () => {
-    const raw = $("#import-text").value;
-    try {
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== "object") throw new Error("Invalid JSON");
-      // Minimal validation: expected keys.
-      state = { ...stateDefault(), ...parsed };
-      state.schedule = state.schedule || stateDefault().schedule;
-      state.selectedDate = state.selectedDate || state.schedule.startDate;
-      state.customFoods = Array.isArray(state.customFoods) ? state.customFoods : [];
-      state.logs = state.logs && typeof state.logs === "object" ? state.logs : {};
-      state.goals = state.goals && typeof state.goals === "object" ? state.goals : {};
-      const legacyDailyImp = Number(state.schedule?.dailyGoal);
-      const baseDailyImp = Number.isFinite(legacyDailyImp) && legacyDailyImp > 0 ? legacyDailyImp : 2000;
-      if (!Number.isFinite(Number(state.goals.daily)) || Number(state.goals.daily) <= 0) state.goals.daily = baseDailyImp;
-      if (!Number.isFinite(Number(state.goals.weekly)) || Number(state.goals.weekly) <= 0) {
-        state.goals.weekly = Number(state.goals.daily) * 7;
-      }
-      if ("monthly" in state.goals) delete state.goals.monthly;
-      if (state.planGoalBasis === "monthly") state.planGoalBasis = "daily";
-      const okBasisImp = ["daily", "weekly"];
-      if (!okBasisImp.includes(state.planGoalBasis)) state.planGoalBasis = "daily";
-      if (state.schemaSubTab === "plan") state.schemaSubTab = "goalPlan";
-      const okTabImp = ["goalPlan", "freePlan", "status"];
-      if (!okTabImp.includes(state.schemaSubTab)) state.schemaSubTab = "goalPlan";
-      state.goalPlanDays = clampInt(Number(state.goalPlanDays) || Number(state.schedule?.days) || 7, 1, 7);
-      state.freePlanKcalPerDay = clampInt(Number(state.freePlanKcalPerDay) || 2000, 100, 5000);
-      state.freePlanDurationDays = clampInt(Number(state.freePlanDurationDays) || 3, 1, 7);
-      if (state.mealPlan != null && typeof state.mealPlan !== "object") state.mealPlan = null;
-      if (state.freeMealPlan != null && typeof state.freeMealPlan !== "object") state.freeMealPlan = null;
-
-      // Migration: handle older imports where log values were stored as numbers.
-      for (const [dateYMD, dayLog] of Object.entries(state.logs)) {
-        if (!dayLog || typeof dayLog !== "object") continue;
-        for (const [foodId, v] of Object.entries(dayLog)) {
-          if (typeof v === "number") dayLog[foodId] = { qty: v };
-          else if (v && typeof v === "object") {
-            if (v.servingAmount === undefined && v.servingGrams !== undefined) v.servingAmount = v.servingGrams;
-            if (typeof v.qty !== "number" && typeof v.quantity === "number") v.qty = v.quantity;
-          }
-        }
-      }
-      markFoodsDirty();
-      saveState();
-      closeAllModals();
-      renderAll();
-    } catch (err) {
-      alert(ui.alerts.importFailed(err?.message || String(err)));
-    }
-  });
-
-  $("#btn-export").addEventListener("click", async () => {
-    const exportState = { ...state };
-    const json = JSON.stringify(exportState, null, 2);
-
-    // Download JSON for convenience.
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `calorie-tracker-export-${state.selectedDate || "data"}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  });
-
-  $("#btn-reset-log").addEventListener("click", () => {
-    if (!state?.selectedDate) return;
-    if (!confirm(ui.alerts.resetConfirm)) return;
-    state.logs[state.selectedDate] = {};
-    saveState();
-    renderAll();
   });
 }
 
