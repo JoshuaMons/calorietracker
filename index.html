@@ -49,8 +49,8 @@
           <div class="card">
             <h2>Doelen</h2>
             <p class="muted small" style="margin-top: 0">
-              Stel je calorie-limieten in. De geselecteerde dag voor je logboek kies je op
-              <a class="inline-link" href="#/schema">Schema →</a>.
+              Stel je calorie-limieten in. Kies welk doel het <strong>maaltijdschema</strong> moet volgen. Je logdag voor
+              dagboek en suggesties staat rechts bij Voortgang.
             </p>
             <form id="goals-form" class="form">
               <label class="field">
@@ -68,6 +68,21 @@
                 <input id="goal-monthly" type="number" min="1000" max="2000000" step="100" required />
                 <span class="hint">Hele kalendermaand van de gekozen dag.</span>
               </label>
+              <fieldset class="field plan-basis-fieldset">
+                <legend class="plan-basis-legend">Schema op basis van</legend>
+                <div class="plan-basis-options">
+                  <label class="radio-label"
+                    ><input type="radio" name="plan-basis" value="daily" checked /> Dagdoel (kcal/dag)</label
+                  >
+                  <label class="radio-label"><input type="radio" name="plan-basis" value="weekly" /> Weekdoel ÷ 7</label>
+                  <label class="radio-label"
+                    ><input type="radio" name="plan-basis" value="monthly" /> Maanddoel ÷ 30</label
+                  >
+                </div>
+                <p class="hint plan-basis-hint" style="margin: 0">
+                  Het maaltijdschema op de pagina Schema gebruikt deze kcal per dag.
+                </p>
+              </fieldset>
               <button class="btn btn-primary" type="submit">Doelen opslaan</button>
             </form>
           </div>
@@ -75,9 +90,19 @@
           <div class="card summary-compact-card">
             <h2>Voortgang</h2>
             <div class="summary summary-compact">
+              <div class="log-day-row">
+                <label class="field log-day-field">
+                  <span>Logdag</span>
+                  <div class="row log-day-controls">
+                    <input id="log-date-input" type="date" required />
+                    <button id="btn-log-today" class="btn" type="button" title="Vandaag">Vandaag</button>
+                  </div>
+                  <span class="hint">Welke dag je invult in dagboek en database.</span>
+                </label>
+              </div>
               <div class="summary-top summary-compact-top" style="align-items: flex-start">
                 <div>
-                  <div class="muted small">Geselecteerde dag (zie Schema)</div>
+                  <div class="muted small" id="selected-day-caption">Geselecteerde logdag</div>
                   <div class="summary-day" id="selected-day-label">—</div>
                 </div>
               </div>
@@ -166,37 +191,27 @@
         </section>
       </section>
 
-      <!-- Schema: periode + dagkiezer -->
+      <!-- Schema: maaltijdplan randomizer -->
       <section id="page-schema" class="page">
         <section class="card">
-          <h2>Schema</h2>
-          <p class="muted small">
-            Startdatum en lengte van je plan. Klik een dag om die overal in de app te gebruiken voor je logboek.
-          </p>
-          <form id="schedule-form" class="form">
-            <label class="field">
-              <span>Startdatum</span>
-              <input id="schedule-start" type="date" required />
+          <h2 id="schema-heading">Maaltijdschema</h2>
+          <p class="muted small" id="schema-intro"></p>
+          <p class="muted small" id="schema-logday-note"></p>
+          <p class="schema-target-line" id="meal-plan-target" aria-live="polite"></p>
+          <div class="meal-plan-toolbar row">
+            <label class="field compact meal-plan-duration-field">
+              <span id="meal-plan-duration-label">Duur van het plan</span>
+              <select id="meal-plan-duration" aria-labelledby="meal-plan-duration-label">
+                <option value="1">1 dag</option>
+                <option value="3">3 dagen</option>
+                <option value="7" selected>7 dagen</option>
+                <option value="14">14 dagen</option>
+              </select>
             </label>
-            <label class="field">
-              <span>Aantal dagen</span>
-              <input id="schedule-days" type="number" min="1" max="365" value="7" required />
-            </label>
-            <div class="row">
-              <button class="btn btn-primary" type="submit">Schema opslaan</button>
-              <button id="btn-use-today" class="btn" type="button" title="Selecteert vandaag in je schema.">
-                Vandaag
-              </button>
-            </div>
-          </form>
-          <div class="separator"></div>
-          <div class="date-strip">
-            <div class="date-strip-head">
-              <h3>Kies een dag</h3>
-              <div class="muted" id="schedule-meta"></div>
-            </div>
-            <div id="date-strip" class="date-strip-list" aria-label="Dagen in schema"></div>
+            <button id="btn-generate-meal-plan" class="btn btn-primary" type="button">Nieuw plan genereren</button>
           </div>
+          <p class="muted small" id="meal-plan-generate-hint"></p>
+          <div id="meal-plan-output" class="meal-plan-output" aria-live="polite"></div>
         </section>
       </section>
 
@@ -215,24 +230,30 @@
 
           <div class="date-hint muted small" id="suggestions-day-hint"></div>
 
-          <div class="suggestions">
-            <h3>Suggesties (tussendoortjes / drankjes)</h3>
-            <p class="muted small">
-              Afbeeldingen via
-              <a href="https://openverse.org/" target="_blank" rel="noopener noreferrer">Openverse</a>
-              (CC-media), op basis van productnaam.
-            </p>
-            <div id="suggestions-list" class="suggestions-list"></div>
-          </div>
+          <p class="muted small recipe-click-hint" id="recipe-click-hint"></p>
 
-          <div class="separator"></div>
+          <div class="tips-recipes-grid">
+            <div class="tips-recipes-col suggestions-col">
+              <div class="suggestions">
+                <h3>Suggesties (tussendoortjes / drankjes)</h3>
+                <p class="muted small">
+                  Afbeeldingen via
+                  <a href="https://openverse.org/" target="_blank" rel="noopener noreferrer">Openverse</a>
+                  (CC-media), op basis van productnaam.
+                </p>
+                <div id="suggestions-list" class="suggestions-list"></div>
+              </div>
+            </div>
 
-          <div class="recipes-block">
-            <h3>Gezonde recepten</h3>
-            <p class="muted small">
-              Twee bekende gezonde eetpatronen wereldwijd, plus receptideeën voor kip, vis en rund — ter inspiratie.
-            </p>
-            <div id="recipe-cards" class="recipe-cards" aria-label="Receptideeën"></div>
+            <div class="tips-recipes-col recipes-col">
+              <div class="recipes-block">
+                <h3>Gezonde recepten</h3>
+                <p class="muted small">
+                  Twee bekende gezonde eetpatronen wereldwijd, plus receptideeën voor kip, vis en rund — ter inspiratie.
+                </p>
+                <div id="recipe-cards" class="recipe-cards" aria-label="Receptideeën"></div>
+              </div>
+            </div>
           </div>
         </section>
       </section>
@@ -465,6 +486,49 @@
             <button id="btn-do-import" class="btn btn-primary" type="button">Importeren</button>
           </div>
           <p class="muted small">Import overschrijft je huidige app-status.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recept-modal (geen product uit database) -->
+    <div id="recipe-modal-backdrop" class="modal-backdrop" hidden></div>
+    <div
+      id="recipe-modal"
+      class="modal recipe-modal"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-label="Receptdetails"
+    >
+      <div class="modal-inner">
+        <div class="modal-head">
+          <div>
+            <div class="modal-kicker" id="recipe-modal-tag">—</div>
+            <h3 id="recipe-modal-title">—</h3>
+          </div>
+          <button id="recipe-modal-close" class="btn btn-ghost" type="button" aria-label="Sluiten">Sluiten</button>
+        </div>
+        <div class="modal-body recipe-modal-body">
+          <div class="modal-meta recipe-modal-meta">
+            <div class="meta-row recipe-modal-stats">
+              <span class="muted" id="recipe-modal-serving-label">Portie</span>
+              <strong id="recipe-modal-serving">—</strong>
+            </div>
+            <div class="meta-row recipe-modal-stats">
+              <span class="muted" id="recipe-modal-kcal-label">kcal per portie</span>
+              <strong id="recipe-modal-kcal">—</strong>
+            </div>
+            <div class="meta-row recipe-modal-stats">
+              <span class="muted" id="recipe-modal-protein-label">eiwit</span>
+              <strong id="recipe-modal-protein">—</strong>
+            </div>
+            <div>
+              <h4 class="recipe-modal-ingredients-heading" id="recipe-modal-ingredients-title">Ingrediënten</h4>
+              <ul id="recipe-modal-ingredients" class="recipe-modal-ingredients-list"></ul>
+            </div>
+            <p class="muted small" id="recipe-modal-description"></p>
+            <p class="muted small" id="recipe-modal-footnote"></p>
+          </div>
         </div>
       </div>
     </div>

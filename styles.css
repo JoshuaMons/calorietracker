@@ -999,10 +999,34 @@ textarea:focus {
 }
 
 /* Receptkaarten + weekstatistiek */
+/* Tips + recepten naast elkaar */
+.tips-recipes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .tips-recipes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tips-recipes-col .suggestions h3,
+.tips-recipes-col .recipes-block h3 {
+  margin-top: 0;
+}
+
+.recipe-click-hint {
+  margin: 0 0 12px;
+}
+
 .recipe-cards {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   margin-top: 10px;
 }
 
@@ -1011,6 +1035,27 @@ textarea:focus {
   border-radius: 14px;
   padding: 12px 14px;
   background: rgba(255, 255, 255, 0.65);
+}
+
+.recipe-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.08s ease;
+}
+
+.recipe-card--clickable:hover {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.1);
+  transform: translateY(-1px);
+}
+
+.recipe-card--clickable:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.65);
+  outline-offset: 2px;
+}
+
+.recipe-card-cta {
+  margin-top: 10px;
+  font-weight: 750;
 }
 
 .recipe-card .recipe-tag {
@@ -1069,5 +1114,180 @@ textarea:focus {
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg, rgba(31, 157, 85, 0.95), rgba(37, 99, 235, 0.95));
+}
+
+/* Start: logdag + plan-basis */
+.log-day-row {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.log-day-controls {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.log-day-controls input[type="date"] {
+  flex: 1;
+  min-width: 140px;
+}
+
+.plan-basis-fieldset {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px 14px;
+  margin: 12px 0 0;
+  background: rgba(37, 99, 235, 0.04);
+}
+
+.plan-basis-legend {
+  padding: 0 6px;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.plan-basis-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.radio-label input {
+  width: auto;
+  margin: 0;
+}
+
+/* Schema: maaltijdplan */
+.schema-target-line {
+  margin: 10px 0 14px;
+  font-weight: 800;
+  color: rgba(17, 24, 39, 0.88);
+}
+
+.meal-plan-toolbar {
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.meal-plan-duration-field {
+  margin: 0;
+  min-width: 200px;
+}
+
+.meal-plan-output {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.meal-plan-empty {
+  margin: 0;
+}
+
+.meal-plan-day-card {
+  margin: 0;
+  padding: 14px 16px;
+}
+
+.meal-plan-day-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.meal-plan-day-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.meal-plan-slots {
+  display: grid;
+  gap: 12px;
+}
+
+.meal-slot {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border);
+}
+
+.meal-slot-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.meal-slot-title {
+  font-weight: 750;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.meal-slot-meta {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.meal-slot-steps-title {
+  margin: 6px 0 4px;
+}
+
+.meal-slot-steps {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.meal-plan-drink {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+/* Recept-modal (tekst) */
+.recipe-modal .modal-body.recipe-modal-body {
+  grid-template-columns: 1fr;
+}
+
+.recipe-modal-ingredients-heading {
+  margin: 12px 0 8px;
+  font-size: 14px;
+}
+
+.recipe-modal-ingredients-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-weight: 650;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.recipe-modal-stats strong {
+  font-weight: 900;
 }
 

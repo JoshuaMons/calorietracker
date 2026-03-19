@@ -1,5 +1,6 @@
 import { BUILTIN_FOODS, normalizeFoodForStorage } from "./foods.js";
 import { ui } from "./i18n.js";
+import { buildMealPlan, makePlanRng } from "./plan-data.js";
 import { matchesFoodSearchQuery } from "./search-synonyms.js";
 
 const STORAGE_KEY = "calorieTracker.v1";
@@ -67,6 +68,10 @@ const stateDefault = () => {
       weekly: 14000,
       monthly: 60000,
     },
+    /** Welk doel het maaltijdschema gebruikt: dag / week÷7 / maand÷30 */
+    planGoalBasis: "daily",
+    /** Laatst gegenereerd plan (voor weergave na refresh) */
+    mealPlan: null,
     selectedDate: today,
     customFoods: [],
     logs: {}, // { "YYYY-MM-DD": { [foodId]: quantity } }
@@ -93,6 +98,10 @@ function loadState() {
     if (!Number.isFinite(Number(st.goals.monthly)) || Number(st.goals.monthly) <= 0) {
       st.goals.monthly = Number(st.goals.daily) * 30;
     }
+
+    const okBasis = ["daily", "weekly", "monthly"];
+    if (!okBasis.includes(st.planGoalBasis)) st.planGoalBasis = "daily";
+    if (st.mealPlan != null && typeof st.mealPlan !== "object") st.mealPlan = null;
 
     // Migration: older versions stored log values as numbers. Now we store { qty, servingAmount? }.
     for (const [dateYMD, dayLog] of Object.entries(st.logs)) {
@@ -361,6 +370,25 @@ function weeklyGoal() {
 
 function monthlyGoal() {
   return clampInt(state.goals?.monthly ?? dailyGoal() * 30, 500, 20000000);
+}
+
+function planBasisKey() {
+  const b = state.planGoalBasis;
+  return b === "weekly" || b === "monthly" ? b : "daily";
+}
+
+function effectivePlanKcalPerDay() {
+  const b = planBasisKey();
+  if (b === "weekly") return clampInt(Math.round(weeklyGoal() / 7), 100, 200000);
+  if (b === "monthly") return clampInt(Math.round(monthlyGoal() / 30), 100, 200000);
+  return dailyGoal();
+}
+
+function planBasisUiLabel() {
+  const b = planBasisKey();
+  if (b === "weekly") return ui.schemaPlan.basisWeekly;
+  if (b === "monthly") return ui.schemaPlan.basisMonthly;
+  return ui.schemaPlan.basisDaily;
 }
 
 function ensureFoodInCustom(food) {
@@ -739,29 +767,103 @@ function escapeHtml(str) {
   return String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
-function renderSchedule() {
-  const strip = $("#date-strip");
-  if (!strip) return;
-  const days = getScheduleDays(state.schedule);
-  strip.innerHTML = "";
+function renderMealPlanTargetLine() {
+  const el = $("#meal-plan-target");
+  if (!el) return;
+  const kcal = effectivePlanKcalPerDay();
+  el.textContent = ui.schemaPlan.targetLine(kcal, planBasisUiLabel());
+}
 
-  const meta = $("#schedule-meta");
-  if (meta) meta.textContent = ui.home.daysCount(state.schedule.days);
-
-  for (const ymd of days) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "date-btn";
-    btn.textContent = formatShortDay(ymd);
-    btn.dataset.ymd = ymd;
-    if (ymd === state.selectedDate) btn.classList.add("is-active");
-    btn.addEventListener("click", () => {
-      state.selectedDate = ymd;
-      saveState();
-      renderAll();
-    });
-    strip.appendChild(btn);
+function renderMealPlanOutput() {
+  const wrap = $("#meal-plan-output");
+  if (!wrap) return;
+  const snap = state.mealPlan;
+  if (!snap || !Array.isArray(snap.days) || snap.days.length === 0) {
+    wrap.innerHTML = `<p class="muted meal-plan-empty">${escapeHtml(ui.schemaPlan.empty)}</p>`;
+    return;
   }
+
+  const sp = ui.schemaPlan;
+  const validDays = snap.days.filter((day) => day && Array.isArray(day.slots));
+  if (validDays.length === 0) {
+    wrap.innerHTML = `<p class="muted meal-plan-empty">${escapeHtml(ui.schemaPlan.empty)}</p>`;
+    return;
+  }
+
+  wrap.innerHTML = validDays
+    .map((day) => {
+      const slotsHtml = day.slots
+        .map((slot) => {
+          const steps =
+            Array.isArray(slot.steps) && slot.steps.length
+              ? `<ol class="meal-slot-steps">${slot.steps.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ol>`
+              : "";
+          return `
+            <div class="meal-slot">
+              <div class="meal-slot-head">
+                <strong>${escapeHtml(slot.label)}</strong>
+                <span class="meal-slot-meta">${Math.round(slot.kcal)} kcal · ~${Math.round(slot.protein)} g ${escapeHtml(ui.stats.protein)}</span>
+              </div>
+              <div class="meal-slot-title">${escapeHtml(slot.title)}</div>
+              ${steps ? `<div class="muted small meal-slot-steps-title">${escapeHtml(sp.stepsTitle)}</div>${steps}` : ""}
+            </div>`;
+        })
+        .join("");
+
+      return `
+        <article class="meal-plan-day card meal-plan-day-card">
+          <header class="meal-plan-day-head">
+            <h3 class="meal-plan-day-title">${escapeHtml(sp.dayTitle(day.day))}</h3>
+            <span class="muted small meal-plan-day-totals">${escapeHtml(sp.dayTotals(Math.round(day.totalKcal), Math.round(day.totalProtein)))}</span>
+          </header>
+          <div class="meal-plan-slots">${slotsHtml}</div>
+          <div class="meal-plan-drink muted small"><strong>${escapeHtml(sp.drinkLine)}:</strong> ${escapeHtml(day.drinkTip || "—")}</div>
+        </article>`;
+    })
+    .join("");
+}
+
+function syncSchemaPageCopy() {
+  const h = $("#schema-heading");
+  if (h) h.textContent = ui.schemaPlan.title;
+  const intro = $("#schema-intro");
+  if (intro) intro.textContent = ui.schemaPlan.intro;
+  const note = $("#schema-logday-note");
+  if (note) note.textContent = ui.schemaPage.logDayNote;
+
+  const durLabel = $("#meal-plan-duration-label");
+  if (durLabel) durLabel.textContent = ui.schemaPlan.durationLabel;
+
+  const sel = $("#meal-plan-duration");
+  if (sel) {
+    const opts = sel.querySelectorAll("option");
+    const labels = [ui.schemaPlan.duration1, ui.schemaPlan.duration3, ui.schemaPlan.duration7, ui.schemaPlan.duration14];
+    opts.forEach((opt, i) => {
+      if (labels[i]) opt.textContent = labels[i];
+    });
+  }
+
+  const genBtn = $("#btn-generate-meal-plan");
+  if (genBtn) genBtn.textContent = ui.schemaPlan.generateBtn;
+
+  const hint = $("#meal-plan-generate-hint");
+  if (hint) hint.textContent = ui.schemaPlan.generateHint;
+
+  const rh = $("#recipe-click-hint");
+  if (rh) rh.textContent = ui.recipeModal.clickHint;
+
+  const rm = $("#recipe-modal");
+  if (rm) rm.setAttribute("aria-label", ui.recipeModal.aria);
+
+  const rclose = $("#recipe-modal-close");
+  if (rclose) rclose.setAttribute("aria-label", ui.recipeModal.close);
+
+  $("#recipe-modal-serving-label")?.replaceChildren(document.createTextNode(ui.recipeModal.serving));
+  $("#recipe-modal-kcal-label")?.replaceChildren(document.createTextNode(ui.recipeModal.kcal));
+  $("#recipe-modal-protein-label")?.replaceChildren(document.createTextNode(ui.recipeModal.protein));
+  const ingTitle = $("#recipe-modal-ingredients-title");
+  if (ingTitle) ingTitle.textContent = ui.recipeModal.ingredientsTitle;
+  $("#recipe-modal-footnote")?.replaceChildren(document.createTextNode(ui.recipeModal.hint));
 }
 
 function setProgressBar(barEl, consumed, goal) {
@@ -773,12 +875,14 @@ function setProgressBar(barEl, consumed, goal) {
 
 function renderSummary() {
   const dayLabel = $("#selected-day-label");
+  const dayCaption = $("#selected-day-caption");
   const consumedEl = $("#consumed-label");
   const remainingEl = $("#remaining-label");
   const ringEl = $("#calorie-ring");
   const ringPercentEl = $("#ring-percent");
 
   const ymd = state.selectedDate;
+  if (dayCaption) dayCaption.textContent = ui.home.selectedDaySchema;
   const { consumed } = calcTotalsForDate(ymd);
   const dg = dailyGoal();
   const wg = weeklyGoal();
@@ -946,16 +1050,90 @@ function renderSuggestions() {
 function renderRecipes() {
   const wrap = $("#recipe-cards");
   if (!wrap) return;
-  wrap.innerHTML = (ui.recipes || [])
-    .map(
-      (r) => `
-    <article class="recipe-card">
+  wrap.innerHTML = "";
+  const list = ui.recipes || [];
+  for (let i = 0; i < list.length; i++) {
+    const r = list[i];
+    const art = document.createElement("article");
+    art.className = "recipe-card recipe-card--clickable";
+    art.tabIndex = 0;
+    art.setAttribute("role", "button");
+    art.dataset.recipeIndex = String(i);
+    const kcalLine =
+      Number.isFinite(r.caloriesPerServing) && r.caloriesPerServing > 0
+        ? `Ca. ${Math.round(r.caloriesPerServing)} kcal / portie · `
+        : "";
+    art.innerHTML = `
       <div class="recipe-tag">${escapeHtml(r.tag)}</div>
       <h4>${escapeHtml(r.title)}</h4>
       <p>${escapeHtml(r.body)}</p>
-    </article>`,
-    )
-    .join("");
+      <div class="recipe-card-cta muted small">${escapeHtml(kcalLine)}${escapeHtml(ui.recipeModal.clickHint)}</div>
+    `;
+    const open = () => openRecipeModal(r);
+    art.addEventListener("click", open);
+    art.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        open();
+      }
+    });
+    wrap.appendChild(art);
+  }
+}
+
+function openRecipeModal(r) {
+  const backdrop = $("#recipe-modal-backdrop");
+  const modal = $("#recipe-modal");
+  if (!backdrop || !modal || !r) return;
+
+  $("#recipe-modal-tag").textContent = r.tag || "—";
+  $("#recipe-modal-title").textContent = r.title || "—";
+  $("#recipe-modal-description").textContent = r.body || "";
+
+  const serving = r.servingLabel || "—";
+  $("#recipe-modal-serving").textContent = serving;
+
+  const kcalEl = $("#recipe-modal-kcal");
+  if (Number.isFinite(r.caloriesPerServing) && r.caloriesPerServing > 0) {
+    kcalEl.textContent = `${Math.round(r.caloriesPerServing)} kcal`;
+  } else {
+    kcalEl.textContent = "—";
+  }
+
+  const pEl = $("#recipe-modal-protein");
+  if (Number.isFinite(r.proteinGrams) && r.proteinGrams > 0) {
+    pEl.textContent = `~${Math.round(r.proteinGrams)} g`;
+  } else {
+    pEl.textContent = "—";
+  }
+
+  const ul = $("#recipe-modal-ingredients");
+  if (ul) {
+    ul.innerHTML = "";
+    const ing = Array.isArray(r.ingredients) ? r.ingredients : [];
+    if (ing.length) {
+      for (const line of ing) {
+        const li = document.createElement("li");
+        li.textContent = line;
+        ul.appendChild(li);
+      }
+    } else {
+      const li = document.createElement("li");
+      li.className = "muted";
+      li.textContent = "—";
+      ul.appendChild(li);
+    }
+  }
+
+  backdrop.hidden = false;
+  modal.hidden = false;
+}
+
+function closeRecipeModal() {
+  const backdrop = $("#recipe-modal-backdrop");
+  const modal = $("#recipe-modal");
+  if (backdrop) backdrop.hidden = true;
+  if (modal) modal.hidden = true;
 }
 
 function renderWeekStats() {
@@ -1332,6 +1510,7 @@ function initRouting() {
 
 function closeAllModals() {
   closeModal();
+  closeRecipeModal();
   const ib = $("#import-backdrop");
   const im = $("#import-modal");
   ib.hidden = true;
@@ -1344,9 +1523,8 @@ function renderAll() {
   state.goals = state.goals && typeof state.goals === "object" ? state.goals : { ...stateDefault().goals };
   if (!state.selectedDate) state.selectedDate = state.schedule.startDate;
 
-  // If selectedDate falls outside the schedule, keep it (so user can still log),
-  // but date strip will highlight schedule days only.
-  renderSchedule();
+  renderMealPlanTargetLine();
+  renderMealPlanOutput();
   renderSummary();
   renderSuggestions();
   renderRecipes();
@@ -1370,6 +1548,36 @@ function initGoalsForm() {
   w.value = String(weeklyGoal());
   m.value = String(monthlyGoal());
 
+  const legend = form.querySelector(".plan-basis-legend");
+  if (legend) legend.textContent = ui.home.planBasisLabel;
+  const basisHint = form.querySelector(".plan-basis-hint");
+  if (basisHint) basisHint.textContent = ui.home.planBasisHint;
+
+  const radios = form.querySelectorAll('input[name="plan-basis"]');
+  const basis = planBasisKey();
+  for (const input of radios) {
+    if (input.value === basis) input.checked = true;
+    input.addEventListener("change", () => {
+      const checked = form.querySelector('input[name="plan-basis"]:checked');
+      state.planGoalBasis = checked?.value === "weekly" || checked?.value === "monthly" ? checked.value : "daily";
+      saveState();
+      renderAll();
+    });
+  }
+
+  const labels = form.querySelectorAll(".plan-basis-options .radio-label");
+  const labelTexts = [ui.home.planBasisDaily, ui.home.planBasisWeekly, ui.home.planBasisMonthly];
+  labels.forEach((lab, i) => {
+    const text = labelTexts[i];
+    if (!text) return;
+    const input = lab.querySelector("input");
+    lab.replaceChildren();
+    if (input) {
+      lab.appendChild(input);
+      lab.append(` ${text}`);
+    }
+  });
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     state.goals = {
@@ -1377,37 +1585,64 @@ function initGoalsForm() {
       weekly: clampInt(w.value, 200, 5000000),
       monthly: clampInt(m.value, 500, 20000000),
     };
+    const checked = form.querySelector('input[name="plan-basis"]:checked');
+    state.planGoalBasis = checked?.value === "weekly" || checked?.value === "monthly" ? checked.value : "daily";
     saveState();
     renderAll();
   });
 }
 
-function initScheduleForm() {
-  const startInput = $("#schedule-start");
-  const daysInput = $("#schedule-days");
-  if (!startInput || !daysInput) return;
+function initLogDay() {
+  const input = $("#log-date-input");
+  if (!input) return;
+  input.value = state.selectedDate || toYMD(new Date());
 
-  const today = toYMD(new Date());
-  startInput.value = state.schedule?.startDate || today;
-  daysInput.value = state.schedule?.days ?? 7;
+  const logField = input.closest(".log-day-field");
+  if (logField) {
+    const lab = logField.querySelector(":scope > span");
+    if (lab) lab.textContent = ui.home.logDayTitle;
+    const hint = logField.querySelector(".hint");
+    if (hint) hint.textContent = ui.home.logDayHint;
+  }
 
-  const form = $("#schedule-form");
-  if (!form) return;
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const start = startInput.value || today;
-    const days = clampInt(daysInput.value, 1, 365);
-
-    state.schedule = { ...state.schedule, startDate: start, days };
-    state.selectedDate = start;
+  input.addEventListener("change", () => {
+    const v = input.value;
+    if (!v) return;
+    state.selectedDate = v;
     saveState();
     renderAll();
   });
 
-  $("#btn-use-today")?.addEventListener("click", () => {
-    state.selectedDate = toYMD(new Date());
+  const btnToday = $("#btn-log-today");
+  if (btnToday) {
+    btnToday.textContent = ui.home.logToday;
+    btnToday.title = ui.home.logToday;
+    btnToday.addEventListener("click", () => {
+      const today = toYMD(new Date());
+      state.selectedDate = today;
+      input.value = today;
+      saveState();
+      renderAll();
+    });
+  }
+}
+
+function initSchemaPage() {
+  $("#btn-generate-meal-plan")?.addEventListener("click", () => {
+    const sel = $("#meal-plan-duration");
+    const duration = clampInt(sel?.value ?? 7, 1, 365);
+    const kcal = effectivePlanKcalPerDay();
+    const rng = makePlanRng();
+    const days = buildMealPlan(duration, kcal, rng);
+    state.mealPlan = {
+      duration,
+      kcalPerDay: kcal,
+      basis: planBasisKey(),
+      days,
+    };
     saveState();
-    renderAll();
+    renderMealPlanTargetLine();
+    renderMealPlanOutput();
   });
 }
 
@@ -1494,6 +1729,9 @@ function initModals() {
   $("#modal-close")?.addEventListener("click", closeAllModals);
   $("#modal-backdrop")?.addEventListener("click", closeAllModals);
 
+  $("#recipe-modal-close")?.addEventListener("click", closeAllModals);
+  $("#recipe-modal-backdrop")?.addEventListener("click", closeAllModals);
+
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeAllModals();
   });
@@ -1527,6 +1765,10 @@ function initModals() {
       if (!Number.isFinite(Number(state.goals.monthly)) || Number(state.goals.monthly) <= 0) {
         state.goals.monthly = Number(state.goals.daily) * 30;
       }
+
+      const okBasisImp = ["daily", "weekly", "monthly"];
+      if (!okBasisImp.includes(state.planGoalBasis)) state.planGoalBasis = "daily";
+      if (state.mealPlan != null && typeof state.mealPlan !== "object") state.mealPlan = null;
 
       // Migration: handle older imports where log values were stored as numbers.
       for (const [dateYMD, dayLog] of Object.entries(state.logs)) {
@@ -1576,10 +1818,13 @@ function initModals() {
 // ---------- Boot ----------
 initRouting();
 initGoalsForm();
-initScheduleForm();
+initLogDay();
+initSchemaPage();
 initFoodSearch();
 initCustomFoodForm();
 initModals();
+
+syncSchemaPageCopy();
 
 loadNlFoodsCore();
 renderAll();
