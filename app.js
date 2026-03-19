@@ -116,26 +116,26 @@ function hashCode(str) {
 function makeImageQuery(food) {
   const base = (food?.imageQuery || food?.name || "food").trim();
   const cat = food?.category ? String(food.category).trim() : "";
+  const tags = Array.isArray(food?.tags) ? food.tags.slice(0, 2).join(" ") : "";
 
-  // categories_tags from OFF are often stored as `tags`. We take a small prefix to avoid overly long keywords.
-  const tags = Array.isArray(food?.tags) ? food.tags.slice(0, 3).join(" ") : "";
-
-  // Put the most identifying words first.
-  return [base, cat, tags].filter(Boolean).join(" ");
+  const raw = [base, cat, tags].filter(Boolean).join(" ");
+  // Unsplash “source” works best with clean keyword strings.
+  return raw
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function makeImageUrl(food) {
   const query = makeImageQuery(food);
-  const sig = hashCode(food?.id || food?.name || query);
-  // `source.unsplash.com` returns a random image for the query; adding `sig` helps keep it stable per food.
-  const q = encodeURIComponent(`${query} ${sig}`);
+  const q = encodeURIComponent(query || "food");
   return `https://source.unsplash.com/400x300/?${q}`;
 }
 
 function makeImageFallbackUrl(food) {
   const query = makeImageQuery(food) || "food";
-  const sig = hashCode(`${food?.id || food?.name || query}|fallback`);
-  const q = encodeURIComponent(`${query} food ${sig}`);
+  const q = encodeURIComponent(`${query} food`);
   return `https://source.unsplash.com/400x300/?${q}`;
 }
 

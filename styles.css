@@ -1,13 +1,13 @@
 :root {
-  --bg: #0b1220;
-  --card: rgba(255, 255, 255, 0.06);
-  --card-2: rgba(255, 255, 255, 0.08);
-  --text: rgba(255, 255, 255, 0.92);
-  --muted: rgba(255, 255, 255, 0.68);
-  --border: rgba(255, 255, 255, 0.12);
-  --accent: #7cdb86;
-  --accent-2: #62b8ff;
-  --danger: #ff5c7a;
+  --bg: #f3f4f7;
+  --card: rgba(255, 255, 255, 0.82);
+  --card-2: rgba(255, 255, 255, 0.94);
+  --text: rgba(17, 24, 39, 0.96);
+  --muted: rgba(17, 24, 39, 0.65);
+  --border: rgba(17, 24, 39, 0.12);
+  --accent: #1f9d55;
+  --accent-2: #2563eb;
+  --danger: #e11d48;
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
   --radius: 16px;
 }
@@ -25,8 +25,8 @@ body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
     "Segoe UI Emoji";
-  background: radial-gradient(1200px 500px at 20% -10%, rgba(98, 184, 255, 0.25), transparent 55%),
-    radial-gradient(900px 500px at 90% 10%, rgba(124, 219, 134, 0.18), transparent 55%), var(--bg);
+  background: radial-gradient(1200px 500px at 20% -10%, rgba(37, 99, 235, 0.16), transparent 55%),
+    radial-gradient(900px 500px at 90% 10%, rgba(31, 157, 85, 0.12), transparent 55%), var(--bg);
   color: var(--text);
 }
 
@@ -41,13 +41,13 @@ body {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(11, 18, 32, 0.78);
+  background: rgba(255, 255, 255, 0.74);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
 
 .tabs-wrap {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(17, 24, 39, 0.06);
 }
 
 .tabs {
@@ -61,9 +61,9 @@ body {
 
 .tab {
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.86);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
+  color: rgba(17, 24, 39, 0.84);
+  border: 1px solid rgba(17, 24, 39, 0.14);
+  background: rgba(17, 24, 39, 0.03);
   border-radius: 999px;
   padding: 9px 14px;
   font-weight: 800;
@@ -72,13 +72,13 @@ body {
 
 .tab:hover {
   transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.26);
+  border-color: rgba(17, 24, 39, 0.22);
 }
 
 .tab.is-active {
-  border-color: rgba(98, 184, 255, 0.65);
-  background: rgba(98, 184, 255, 0.16);
-  color: rgba(255, 255, 255, 0.98);
+  border-color: rgba(37, 99, 235, 0.55);
+  background: rgba(37, 99, 235, 0.12);
+  color: rgba(17, 24, 39, 0.96);
 }
 
 .page {
@@ -107,7 +107,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(124, 219, 134, 0.9), rgba(98, 184, 255, 0.9));
+  background: linear-gradient(135deg, rgba(31, 157, 85, 0.9), rgba(37, 99, 235, 0.9));
   display: grid;
   place-items: center;
   font-weight: 900;
@@ -183,8 +183,8 @@ h3 {
 .btn {
   appearance: none;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text);
+  background: rgba(17, 24, 39, 0.03);
+  color: rgba(17, 24, 39, 0.92);
   padding: 9px 12px;
   border-radius: 12px;
   font-weight: 700;
@@ -195,7 +195,7 @@ h3 {
 
 .btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(17, 24, 39, 0.22);
 }
 
 .btn:active {
@@ -203,19 +203,19 @@ h3 {
 }
 
 .btn-primary {
-  border-color: rgba(124, 219, 134, 0.4);
-  background: rgba(124, 219, 134, 0.18);
-  color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(31, 157, 85, 0.45);
+  background: rgba(31, 157, 85, 0.16);
+  color: rgba(17, 24, 39, 0.96);
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
 }
 
 .btn-danger {
-  border-color: rgba(255, 92, 122, 0.45);
-  background: rgba(255, 92, 122, 0.16);
-  color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(225, 29, 72, 0.45);
+  background: rgba(225, 29, 72, 0.16);
+  color: rgba(17, 24, 39, 0.96);
 }
 
 .form {
@@ -242,7 +242,7 @@ input,
 select,
 textarea {
   width: 100%;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.04);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 10px 12px;
@@ -257,7 +257,7 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: rgba(98, 184, 255, 0.55);
+  border-color: rgba(37, 99, 235, 0.45);
 }
 
 .row {
@@ -297,7 +297,7 @@ textarea:focus {
 
 .date-btn {
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(17, 24, 39, 0.03);
   color: var(--text);
   border-radius: 12px;
   padding: 10px 8px;
@@ -308,12 +308,12 @@ textarea:focus {
 
 .date-btn:hover {
   transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(17, 24, 39, 0.22);
 }
 
 .date-btn.is-active {
-  border-color: rgba(98, 184, 255, 0.62);
-  background: rgba(98, 184, 255, 0.18);
+  border-color: rgba(37, 99, 235, 0.55);
+  background: rgba(37, 99, 235, 0.12);
 }
 
 .summary {
@@ -337,9 +337,9 @@ textarea:focus {
   border: 1px solid var(--border);
   padding: 8px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(17, 24, 39, 0.04);
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(17, 24, 39, 0.9);
 }
 
 .progress {
@@ -350,7 +350,7 @@ textarea:focus {
 .progress-bar-wrap {
   height: 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(17, 24, 39, 0.05);
   border: 1px solid var(--border);
   overflow: hidden;
 }
@@ -358,7 +358,7 @@ textarea:focus {
 .progress-bar {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, rgba(124, 219, 134, 0.95), rgba(98, 184, 255, 0.95));
+  background: linear-gradient(90deg, rgba(31, 157, 85, 0.95), rgba(37, 99, 235, 0.95));
 }
 
 .progress-nums {
@@ -409,7 +409,7 @@ textarea:focus {
 }
 
 .food-card {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.62);
   border: 1px solid var(--border);
   border-radius: 14px;
   overflow: hidden;
@@ -421,7 +421,7 @@ textarea:focus {
 }
 
 .food-card:hover {
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(17, 24, 39, 0.22);
 }
 
 .food-thumb {
@@ -429,8 +429,8 @@ textarea:focus {
   height: 72px;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .food-thumb img {
@@ -484,7 +484,7 @@ textarea:focus {
   width: 28px;
   height: 28px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(17, 24, 39, 0.04);
   border: 1px solid var(--border);
   color: var(--text);
   cursor: pointer;
@@ -496,7 +496,7 @@ textarea:focus {
   padding: 8px 10px;
   border-radius: 12px;
   text-align: center;
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .grams-input {
@@ -504,11 +504,11 @@ textarea:focus {
   padding: 8px 10px;
   border-radius: 12px;
   text-align: center;
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .food-card.is-done {
-  border-color: rgba(124, 219, 134, 0.55);
+  border-color: rgba(31, 157, 85, 0.55);
 }
 
 .selected-items {
@@ -523,7 +523,7 @@ textarea:focus {
   align-items: center;
   padding: 10px 12px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.62);
   border: 1px solid var(--border);
 }
 
@@ -544,7 +544,7 @@ textarea:focus {
   padding: 10px;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.55);
 }
 
 .suggestion img {
@@ -552,7 +552,7 @@ textarea:focus {
   height: 50px;
   object-fit: cover;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(17, 24, 39, 0.12);
 }
 
 .suggestion .name {
@@ -583,8 +583,8 @@ textarea:focus {
   max-height: min(86vh, 900px);
   overflow: auto;
   z-index: 70;
-  background: rgba(10, 16, 28, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(17, 24, 39, 0.14);
   border-radius: 18px;
 }
 
@@ -625,7 +625,7 @@ textarea:focus {
   height: 220px;
   object-fit: cover;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(17, 24, 39, 0.12);
 }
 
 .modal-meta {
