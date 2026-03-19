@@ -664,6 +664,34 @@ textarea:focus {
 
 .library-split-main {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: min(78vh, 920px);
+  min-height: 280px;
+}
+
+/* Alleen het productgrid scrollt; zoek/kop blijven zichtbaar — kortere pagina */
+.library-food-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 12px;
+  padding: 8px 6px 8px 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.45);
+  outline: none;
+}
+
+.library-food-scroll:focus-visible {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+}
+
+.library-food-scroll .food-grid {
+  margin-top: 0;
 }
 
 .library-split-aside {
@@ -674,7 +702,7 @@ textarea:focus {
   background: rgba(255, 255, 255, 0.55);
   position: sticky;
   top: 84px;
-  max-height: min(82vh, 920px);
+  max-height: min(78vh, 920px);
   overflow: auto;
 }
 
@@ -688,9 +716,14 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  .library-split-main {
+    max-height: min(70vh, 720px);
+  }
+
   .library-split-aside {
     position: static;
-    max-height: none;
+    max-height: min(50vh, 420px);
+    overflow-y: auto;
   }
 }
 
