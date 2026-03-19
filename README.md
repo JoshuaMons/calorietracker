@@ -6,7 +6,7 @@ Open `calorie-tracker/index.html` in de browser (liefst via een lokale server of
 
 - **Start** (`#/home`): schema, doelen, dagen kiezen, compacte dag-samenvatting.
 - **Tips & recepten** (`#/suggestions`): suggesties voor tussendoortjes/drank (standaard + eigen producten) + vaste gezonde receptideeën (wereldwijd + kip, vis, rund).
-- **Voedingsdatabase** (`#/library`): producten zoeken en loggen. Bij opstart wordt alleen een **compacte NL-set** (`data/nl-foods-core.json`) geladen; de **volledige lijst** (`data/nl-foods.json`) start bij **focus op het zoekveld** of vanaf **2+ zoektekens**.
+- **Voedingsdatabase** (`#/library`): producten zoeken en loggen. Bij opstart wordt alleen een **compacte NL-set** (`data/nl-foods-core.json`) geladen; de **volledige lijst** (`data/nl-foods.json`) wordt opgehaald zodra je **2 of meer tekens** in het zoekveld typt.
 - **Dagboek** (`#/log`): overzicht van de gekozen dag.
 - **Macro's & statistiek** (`#/stats`): macroverdeling + laatste 7 dagen kcal vs. doel.
 - **Gegevens** (`#/settings`): export / import (JSON), dag wissen.

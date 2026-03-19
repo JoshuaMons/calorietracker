@@ -1306,9 +1306,6 @@ function initFoodSearch() {
     if (q.length >= 2) scheduleNlFoodsFullLoad();
     renderFoodGrid();
   });
-  $("#search")?.addEventListener("focus", () => {
-    scheduleNlFoodsFullLoad();
-  });
   $("#category")?.addEventListener("change", () => renderFoodGrid());
 }
 
