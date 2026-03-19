@@ -19,22 +19,29 @@ function shuffle(arr, rng) {
   return a;
 }
 
+/** Meer spreiding: grotere top-N + score-jitter zodat je niet steeds dezelfde winnaar krijgt. */
+const DEFAULT_PICK_OPTS = { jitter: 72, topNMin: 4 };
+
 /**
  * Kiest willekeurig uit de beste passende opties (niet altijd exact dezelfde "winnaar"),
  * zodat elke klik op "Nieuw plan" merkbaar andere combinaties geeft.
  */
-function pickNear(pool, targetKcal, rng) {
+function pickNear(pool, targetKcal, rng, options = {}) {
+  const jitter = Number.isFinite(options.jitter) ? options.jitter : DEFAULT_PICK_OPTS.jitter;
+  const topNMin = Number.isFinite(options.topNMin) ? options.topNMin : DEFAULT_PICK_OPTS.topNMin;
+  const topNMax = Number.isFinite(options.topNMax) ? options.topNMax : pool.length;
+
   const shuffled = shuffle(pool, rng);
   const scored = shuffled.map((m) => {
     const diff = Math.abs(m.kcal - targetKcal);
     const proteinBias = -m.protein * 2;
-    const score = diff + proteinBias;
+    const score = diff + proteinBias + rng() * jitter;
     return { m, score };
   });
   scored.sort((a, b) => a.score - b.score);
   const poolSize = scored.length;
-  const topN = Math.max(1, Math.min(6, poolSize));
-  const pickIdx = Math.floor(rng() * topN);
+  const topN = Math.min(poolSize, topNMax, Math.max(topNMin, poolSize));
+  const pickIdx = Math.floor(rng() * Math.max(1, topN));
   return scored[pickIdx].m;
 }
 
@@ -58,13 +65,13 @@ function distributeKcalToSlots(total, weights) {
   return out;
 }
 
-function buildDaySlots(kcalPerDay, rng) {
+function buildDaySlots(kcalPerDay, rng, pickOpts = DEFAULT_PICK_OPTS) {
   const target = Math.max(100, Math.round(Number(kcalPerDay) || 0));
-  const b = pickNear(BREAKFAST_POOL, target * SLOT_FRACS.breakfast, rng);
-  const l = pickNear(LUNCH_POOL, target * SLOT_FRACS.lunch, rng);
-  const di = pickNear(DINNER_POOL, target * SLOT_FRACS.dinner, rng);
-  const s = pickNear(SNACK_POOL, target * SLOT_FRACS.snack, rng);
-  const dr = pickNear(DRINK_POOL, 0, rng);
+  const b = pickNear(BREAKFAST_POOL, target * SLOT_FRACS.breakfast, rng, pickOpts);
+  const l = pickNear(LUNCH_POOL, target * SLOT_FRACS.lunch, rng, pickOpts);
+  const di = pickNear(DINNER_POOL, target * SLOT_FRACS.dinner, rng, pickOpts);
+  const s = pickNear(SNACK_POOL, target * SLOT_FRACS.snack, rng, pickOpts);
+  const dr = pickNear(DRINK_POOL, 0, rng, { jitter: 24, topNMin: 2, topNMax: DRINK_POOL.length });
 
   const picked = [
     { label: "Ontbijt", title: b.title, kcal: b.kcal, protein: b.protein, steps: b.steps },
@@ -94,6 +101,52 @@ function buildDaySlots(kcalPerDay, rng) {
 }
 
 /**
+ * Zet ruwe slot-keuzes om naar exact dagbudget (zelfde logica als doelenplan).
+ * @param {Array<{label:string,title:string,kcal:number,protein:number,steps:string[],fromWeb?:boolean}>} picked
+ */
+export function finalizeDaySlotsFromPicks(picked, kcalPerDay) {
+  const target = Math.max(100, Math.round(Number(kcalPerDay) || 0));
+  const weights = picked.map((x) => x.kcal);
+  const kcals = distributeKcalToSlots(target, weights);
+  const slots = picked.map((slot, i) => {
+    const baseK = slot.kcal > 0 ? slot.kcal : 1;
+    const ratio = kcals[i] / baseK;
+    const out = {
+      label: slot.label,
+      title: slot.title,
+      steps: slot.steps,
+      kcal: kcals[i],
+      protein: Math.max(0, Math.round(slot.protein * ratio)),
+    };
+    if (slot.fromWeb) out.fromWeb = true;
+    return out;
+  });
+  const totalKcal = slots.reduce((sum, x) => sum + x.kcal, 0);
+  const totalProtein = slots.reduce((sum, x) => sum + x.protein, 0);
+  return { slots, totalKcal, totalProtein };
+}
+
+/**
+ * @param {"breakfast"|"lunch"|"dinner"|"snack"} poolKey
+ */
+export function pickNearSlot(poolKey, targetKcal, rng, options) {
+  const pool =
+    poolKey === "breakfast"
+      ? BREAKFAST_POOL
+      : poolKey === "lunch"
+        ? LUNCH_POOL
+        : poolKey === "dinner"
+          ? DINNER_POOL
+          : SNACK_POOL;
+  return pickNear(pool, targetKcal, rng, options || DEFAULT_PICK_OPTS);
+}
+
+export function pickDrinkTip(rng) {
+  const dr = pickNear(DRINK_POOL, 0, rng, { jitter: 24, topNMin: 2, topNMax: DRINK_POOL.length });
+  return dr.title;
+}
+
+/**
  * @param {number} durationDays
  * @param {number} kcalPerDay
  * @param {() => number} rng 0..1
@@ -101,7 +154,7 @@ function buildDaySlots(kcalPerDay, rng) {
 export function buildMealPlan(durationDays, kcalPerDay, rng) {
   const days = [];
   for (let d = 1; d <= durationDays; d++) {
-    const { slots, drinkTip, totalKcal, totalProtein } = buildDaySlots(kcalPerDay, rng);
+    const { slots, drinkTip, totalKcal, totalProtein } = buildDaySlots(kcalPerDay, rng, DEFAULT_PICK_OPTS);
     days.push({
       day: d,
       slots,
@@ -173,6 +226,53 @@ const BREAKFAST_POOL = [
       "Eventueel kaneel of vanille-extract.",
     ],
   },
+  {
+    title: "Cottage cheese met ananas en chia",
+    kcal: 265,
+    protein: 30,
+    steps: [
+      "200 g magere cottage cheese in een kom.",
+      "50 g ananasstukjes (vers of uit blik op sap), 1 el chiazaad erdoor.",
+      "Laat 10 min intrekken of meteen eten.",
+    ],
+  },
+  {
+    title: "Volkorenwrap met eiwitspread en rucola",
+    kcal: 320,
+    protein: 28,
+    steps: [
+      "1 kleine volkorentortilla licht verwarmen.",
+      "Magere eiwitspread of hummus light, tomatenreepjes, rucola.",
+      "Op rollen en halveren.",
+    ],
+  },
+  {
+    title: "Paprika gevuld met ei en feta light",
+    kcal: 300,
+    protein: 26,
+    steps: [
+      "Halve paprika uitgehold, 2 opgeklopte eieren + beetje feta light gieten.",
+      "25 min op 180 °C tot gestold; peper en bieslook.",
+    ],
+  },
+  {
+    title: "Proteïnepannenkoek met banaan",
+    kcal: 335,
+    protein: 32,
+    steps: [
+      "1 banaan prakken, 1 ei + eiwit, schep eiwitpoeder, beetje kaneel.",
+      "Als dik beslag in koekenpan bakken in kleine pannenkoekjes.",
+    ],
+  },
+  {
+    title: "Rookzalm met volkorencrackers en komkommer",
+    kcal: 295,
+    protein: 29,
+    steps: [
+      "60 g gerookte zalm op 3 volkorencrackers.",
+      "Komkommerschijfjes, citroen, dille; geen roomkaas of spaarzaam light.",
+    ],
+  },
 ];
 
 const LUNCH_POOL = [
@@ -214,6 +314,53 @@ const LUNCH_POOL = [
       "150–200 g bruine linzen (pot, afgespoeld) verwarmd.",
       "30 g feta light verkruimeld, handje rucola, cherrytomaatjes.",
       "Balsamico + beetje olie.",
+    ],
+  },
+  {
+    title: "Griekse yoghurtkom met kip en tabouleh-stijl",
+    kcal: 410,
+    protein: 40,
+    steps: [
+      "100 g gegrilde kip in blokjes.",
+      "150 g magere Griekse yoghurt 0% met knoflook, munt, peterselie, tomaat, komkommer fijn.",
+      "Meng of serveer naast elkaar.",
+    ],
+  },
+  {
+    title: "Bonen-chili met mager gehakt",
+    kcal: 435,
+    protein: 35,
+    steps: [
+      "120 g mager runder- of kipgehakt aanbakken, uitgebakken vet weg.",
+      "1 blik bruine bonen, passata, paprikapoeder, komijn; 20 min pruttelen.",
+      "Lichte topping: 1 el magere yoghurt.",
+    ],
+  },
+  {
+    title: "Zalmsalade met peulen en aardappel",
+    kcal: 395,
+    protein: 34,
+    steps: [
+      "120 g gerookte of gepocheerde zalm in vlokken.",
+      "150 g gekookte krieltjes, sperziebonen, dille, citroen, beetje crème fraîche light.",
+    ],
+  },
+  {
+    title: "Eiwitrijke soep met kip en groente",
+    kcal: 360,
+    protein: 32,
+    steps: [
+      "500 ml heldere bouillon, wortel, bleekselderij, kipreepjes koken tot gaar.",
+      "Optioneel: beetje volkorenpasta of linzen voor volume.",
+    ],
+  },
+  {
+    title: "Couscoussalade met falafel uit oven",
+    kcal: 445,
+    protein: 22,
+    steps: [
+      "3 kleine ovenfalafel (of zelfgemaakt met kikkererwten, gebakken met sprayolie).",
+      "80 g couscous, tomaten, komkommer, peterselie, citroen.",
     ],
   },
 ];
@@ -259,6 +406,51 @@ const DINNER_POOL = [
       "Groene salade erbij.",
     ],
   },
+  {
+    title: "Kalkoengebraad met spruitjes en zoete aardappel",
+    kcal: 455,
+    protein: 42,
+    steps: [
+      "130 g plakjes mager kalkoengebraad uit de oven.",
+      "200 g spruitjes + 120 g zoete aardappelblokjes roosteren met rozemarijn.",
+    ],
+  },
+  {
+    title: "Vegetarische linzenbolognese met courgetteslierten",
+    kcal: 385,
+    protein: 24,
+    steps: [
+      "200 g linzen in saus (zelf: ui, knoflook, wortel, passata, Italiaanse kruiden).",
+      "Courgette-spiralen kort meewarmen; geen room, spaarzaam kaas.",
+    ],
+  },
+  {
+    title: "Schelvis met kappertjes en sperziebonen",
+    kcal: 370,
+    protein: 38,
+    steps: [
+      "180 g schelvis of koolvis in de pan met citroen, kappertjes, beetje witte wijn laten reduceren.",
+      "150 g sperziebonen gestoomd.",
+    ],
+  },
+  {
+    title: "Gevulde portobello met spinazie en feta light",
+    kcal: 340,
+    protein: 22,
+    steps: [
+      "2 grote portobello’s, vullen met spinazie, knoflook, 40 g feta light.",
+      "Oven 15–18 min; salade erbij.",
+    ],
+  },
+  {
+    title: "Thaise groene curry light met garnalen",
+    kcal: 425,
+    protein: 36,
+    steps: [
+      "150 g garnalen kort meebakken met groene currypasta (spaarzaam) en kokosmelk light.",
+      "Broccoli, sugar snaps; serveer zonder rijst of 60 g gekookte basmati.",
+    ],
+  },
 ];
 
 const SNACK_POOL = [
@@ -285,6 +477,36 @@ const SNACK_POOL = [
     kcal: 150,
     protein: 14,
     steps: ["150 g edamame ontdooien/koken", "Snuf zeezout", "Eventueel chilivlokken"],
+  },
+  {
+    title: "Appel met pindakaas light",
+    kcal: 155,
+    protein: 8,
+    steps: ["½ appel in partjes", "1 el pindakaas light als dip", "Kaneel optioneel"],
+  },
+  {
+    title: "Roerei met kruiden (1 ei + 2 eiwitten)",
+    kcal: 135,
+    protein: 16,
+    steps: ["1 heel ei + 2 eiwitten loskloppen", "Kort roeren op laag vuur", "Bieslook, peper"],
+  },
+  {
+    title: "Komkommer-tomatenkom met mozzarella light",
+    kcal: 145,
+    protein: 12,
+    steps: ["Komkommer en tomaat in blokjes", "40 g mozzarella light", "Basilicum, balsamico"],
+  },
+  {
+    title: "Proteïnereep (check label) + koffie",
+    kcal: 175,
+    protein: 20,
+    steps: ["Kies een reep binnen je macro’s", "Lees suiker op verpakking", "Combineer met water of koffie"],
+  },
+  {
+    title: "Blauwe bessen met kwark",
+    kcal: 125,
+    protein: 14,
+    steps: ["125 g magere kwark", "Handje blauwe bessen", "Optioneel vanille"],
   },
 ];
 

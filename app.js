@@ -1,6 +1,14 @@
 import { BUILTIN_FOODS, normalizeFoodForStorage } from "./foods.js";
 import { ui } from "./i18n.js";
-import { buildMealPlan, makePlanRng } from "./plan-data.js";
+import {
+  buildMealPlan,
+  finalizeDaySlotsFromPicks,
+  makePlanRng,
+  pickDrinkTip,
+  pickNearSlot,
+  SLOT_FRACS,
+} from "./plan-data.js";
+import { fetchTheMealDbMeal } from "./plan-web.js";
 import { matchesFoodSearchQuery } from "./search-synonyms.js";
 
 const STORAGE_KEY = "calorieTracker.v1";
@@ -69,9 +77,15 @@ const stateDefault = () => {
     },
     /** Welk doel het maaltijdschema gebruikt: dag / week÷7 */
     planGoalBasis: "daily",
-    /** Subtab op Schema: "plan" | "status" */
-    schemaSubTab: "plan",
-    /** Laatst gegenereerd plan (voor weergave na refresh) */
+    /** Subtab op Schema: "goalPlan" | "freePlan" | "status" */
+    schemaSubTab: "goalPlan",
+    /** Dagen voor doelenplan (1–7), gekozen op Start */
+    goalPlanDays: 7,
+    /** Vrij schema: eigen kcal/dag en lengte (los van doelen) */
+    freePlanKcalPerDay: 2000,
+    freePlanDurationDays: 3,
+    freeMealPlan: null,
+    /** Laatst gegenereerd doelenplan (voor weergave na refresh) */
     mealPlan: null,
     selectedDate: today,
     customFoods: [],
@@ -101,8 +115,14 @@ function loadState() {
     const okBasis = ["daily", "weekly"];
     if (st.planGoalBasis === "monthly") st.planGoalBasis = "daily";
     if (!okBasis.includes(st.planGoalBasis)) st.planGoalBasis = "daily";
-    if (st.schemaSubTab !== "plan" && st.schemaSubTab !== "status") st.schemaSubTab = "plan";
+    if (st.schemaSubTab === "plan") st.schemaSubTab = "goalPlan";
+    const okTabs = ["goalPlan", "freePlan", "status"];
+    if (!okTabs.includes(st.schemaSubTab)) st.schemaSubTab = "goalPlan";
+    st.goalPlanDays = clampInt(Number(st.goalPlanDays) || Number(st.schedule?.days) || 7, 1, 7);
+    st.freePlanKcalPerDay = clampInt(Number(st.freePlanKcalPerDay) || 2000, 100, 5000);
+    st.freePlanDurationDays = clampInt(Number(st.freePlanDurationDays) || 3, 1, 7);
     if (st.mealPlan != null && typeof st.mealPlan !== "object") st.mealPlan = null;
+    if (st.freeMealPlan != null && typeof st.freeMealPlan !== "object") st.freeMealPlan = null;
 
     // Migration: older versions stored log values as numbers. Now we store { qty, servingAmount? }.
     for (const [dateYMD, dayLog] of Object.entries(st.logs)) {
@@ -880,24 +900,28 @@ function escapeHtml(str) {
 
 function renderMealPlanTargetLine() {
   const el = $("#meal-plan-target");
-  if (!el) return;
-  const kcal = effectivePlanKcalPerDay();
-  el.textContent = ui.schemaPlan.targetLine(kcal, planBasisUiLabel());
+  if (el) {
+    const kcal = effectivePlanKcalPerDay();
+    el.textContent = ui.schemaPlan.targetLine(kcal, planBasisUiLabel());
+  }
+  const durNote = $("#schema-goal-duration-note");
+  if (durNote) {
+    durNote.textContent = ui.schemaPage.goalPlanDaysNote(clampInt(state.goalPlanDays, 1, 7));
+  }
 }
 
-function renderMealPlanOutput() {
-  const wrap = $("#meal-plan-output");
+function renderMealPlanInto(wrapSel, snap, emptyText) {
+  const wrap = $(wrapSel);
   if (!wrap) return;
-  const snap = state.mealPlan;
   if (!snap || !Array.isArray(snap.days) || snap.days.length === 0) {
-    wrap.innerHTML = `<p class="muted meal-plan-empty">${escapeHtml(ui.schemaPlan.empty)}</p>`;
+    wrap.innerHTML = `<p class="muted meal-plan-empty">${escapeHtml(emptyText)}</p>`;
     return;
   }
 
   const sp = ui.schemaPlan;
   const validDays = snap.days.filter((day) => day && Array.isArray(day.slots));
   if (validDays.length === 0) {
-    wrap.innerHTML = `<p class="muted meal-plan-empty">${escapeHtml(ui.schemaPlan.empty)}</p>`;
+    wrap.innerHTML = `<p class="muted meal-plan-empty">${escapeHtml(emptyText)}</p>`;
     return;
   }
 
@@ -909,11 +933,12 @@ function renderMealPlanOutput() {
             Array.isArray(slot.steps) && slot.steps.length
               ? `<ol class="meal-slot-steps">${slot.steps.map((s) => `<li>${escapeHtml(s)}</li>`).join("")}</ol>`
               : "";
+          const webPart = slot.fromWeb ? ` · ${escapeHtml(ui.freePlan.fromWebTag)}` : "";
           return `
             <div class="meal-slot meal-slot--compact">
               <div class="meal-slot-head">
                 <strong>${escapeHtml(slot.label)}</strong>
-                <span class="meal-slot-meta">${Math.round(slot.kcal)} kcal · ~${Math.round(slot.protein)} g ${escapeHtml(ui.stats.protein)}</span>
+                <span class="meal-slot-meta">${Math.round(slot.kcal)} kcal · ~${Math.round(slot.protein)} g ${escapeHtml(ui.stats.protein)}${webPart}</span>
               </div>
               <div class="meal-slot-title">${escapeHtml(slot.title)}</div>
               ${steps ? `<div class="muted small meal-slot-steps-title">${escapeHtml(sp.stepsTitle)}</div>${steps}` : ""}
@@ -936,6 +961,106 @@ function renderMealPlanOutput() {
   wrap.innerHTML = `<div class="meal-plan-days-grid">${daysHtml}</div>`;
 }
 
+function renderMealPlanOutput() {
+  renderMealPlanInto("#meal-plan-output", state.mealPlan, ui.schemaPlan.empty);
+}
+
+function renderFreeMealPlanOutput() {
+  renderMealPlanInto("#free-meal-plan-output", state.freeMealPlan, ui.freePlan.empty);
+}
+
+function renderFreePlanTargetLine() {
+  const el = $("#free-plan-target-line");
+  if (!el) return;
+  const snap = state.freeMealPlan;
+  if (snap && Number.isFinite(Number(snap.kcalPerDay)) && Number.isFinite(Number(snap.duration))) {
+    el.textContent = ui.freePlan.targetLine(
+      Math.round(snap.kcalPerDay),
+      clampInt(snap.duration, 1, 7),
+    );
+    return;
+  }
+  const k = clampInt($("#free-plan-kcal")?.value ?? state.freePlanKcalPerDay, 100, 5000);
+  const d = clampInt($("#free-plan-duration")?.value ?? state.freePlanDurationDays, 1, 7);
+  el.textContent = ui.freePlan.targetLine(k, d);
+}
+
+function sleepMs(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+const FREE_PICK_OPTS = { jitter: 90, topNMin: 5, topNMax: 22 };
+
+async function buildFreeMealPlanDays(durationDays, kcalPerDay) {
+  const rng = makePlanRng();
+  const meta = [
+    { key: "breakfast", label: "Ontbijt", frac: SLOT_FRACS.breakfast },
+    { key: "lunch", label: "Lunch", frac: SLOT_FRACS.lunch },
+    { key: "dinner", label: "Diner", frac: SLOT_FRACS.dinner },
+    { key: "snack", label: "Tussendoortje", frac: SLOT_FRACS.snack },
+  ];
+  const days = [];
+  const dur = clampInt(durationDays, 1, 7);
+  const targetBase = Math.max(100, Math.round(Number(kcalPerDay) || 0));
+
+  for (let d = 1; d <= dur; d++) {
+    const shuffledIdx = [0, 1, 2, 3];
+    for (let si = shuffledIdx.length - 1; si > 0; si--) {
+      const j = Math.floor(rng() * (si + 1));
+      [shuffledIdx[si], shuffledIdx[j]] = [shuffledIdx[j], shuffledIdx[si]];
+    }
+    const webCount = 1 + Math.floor(rng() * 3);
+    const webSlots = new Set(shuffledIdx.slice(0, webCount));
+
+    const picked = [];
+    for (let i = 0; i < 4; i++) {
+      const m = meta[i];
+      if (webSlots.has(i)) {
+        const ext = await fetchTheMealDbMeal();
+        await sleepMs(60);
+        if (ext) {
+          picked.push({
+            label: m.label,
+            title: ext.title,
+            kcal: ext.kcal,
+            protein: ext.protein,
+            steps: ext.steps,
+            fromWeb: true,
+          });
+        } else {
+          const loc = pickNearSlot(m.key, targetBase * m.frac, rng, FREE_PICK_OPTS);
+          picked.push({
+            label: m.label,
+            title: loc.title,
+            kcal: loc.kcal,
+            protein: loc.protein,
+            steps: loc.steps,
+          });
+        }
+      } else {
+        const loc = pickNearSlot(m.key, targetBase * m.frac, rng, FREE_PICK_OPTS);
+        picked.push({
+          label: m.label,
+          title: loc.title,
+          kcal: loc.kcal,
+          protein: loc.protein,
+          steps: loc.steps,
+        });
+      }
+    }
+
+    const { slots, totalKcal, totalProtein } = finalizeDaySlotsFromPicks(picked, targetBase);
+    days.push({
+      day: d,
+      slots,
+      drinkTip: pickDrinkTip(rng),
+      totalKcal,
+      totalProtein,
+    });
+  }
+  return days;
+}
+
 function syncSchemaPageCopy() {
   const h = $("#schema-heading");
   if (h) h.textContent = ui.schemaPlan.title;
@@ -943,18 +1068,6 @@ function syncSchemaPageCopy() {
   if (intro) intro.textContent = ui.schemaPlan.intro;
   const note = $("#schema-logday-note");
   if (note) note.textContent = ui.schemaPage.logDayNote;
-
-  const durLabel = $("#meal-plan-duration-label");
-  if (durLabel) durLabel.textContent = ui.schemaPlan.durationLabel;
-
-  const sel = $("#meal-plan-duration");
-  if (sel) {
-    const opts = sel.querySelectorAll("option");
-    const labels = [ui.schemaPlan.duration1, ui.schemaPlan.duration3, ui.schemaPlan.duration7, ui.schemaPlan.duration14];
-    opts.forEach((opt, i) => {
-      if (labels[i]) opt.textContent = labels[i];
-    });
-  }
 
   const genBtn = $("#btn-generate-meal-plan");
   if (genBtn) genBtn.textContent = ui.schemaPlan.generateBtn;
@@ -970,10 +1083,29 @@ function syncSchemaPageCopy() {
   const resetHint = $("#schema-reset-hint");
   if (resetHint) resetHint.textContent = ui.schemaPage.resetPlanHint;
 
-  const subPlan = $("#schema-subtab-plan");
-  if (subPlan) subPlan.textContent = ui.schemaPage.subTabPlan;
+  const subGoal = $("#schema-subtab-goal-plan");
+  if (subGoal) subGoal.textContent = ui.schemaPage.subTabGoalPlan;
+  const subFree = $("#schema-subtab-free-plan");
+  if (subFree) subFree.textContent = ui.schemaPage.subTabFreePlan;
   const subStatus = $("#schema-subtab-status");
   if (subStatus) subStatus.textContent = ui.schemaPage.subTabStatus;
+
+  const fh = $("#free-plan-heading");
+  if (fh) fh.textContent = ui.freePlan.title;
+  const fi = $("#free-plan-intro");
+  if (fi) fi.textContent = ui.freePlan.intro;
+  const fwn = $("#free-plan-web-note");
+  if (fwn) fwn.textContent = ui.freePlan.webNote;
+  const fk = $("#free-plan-kcal-label");
+  if (fk) fk.textContent = ui.freePlan.kcalLabel;
+  const fd = $("#free-plan-duration-label");
+  if (fd) fd.textContent = ui.freePlan.durationLabel;
+  const fgen = $("#btn-generate-free-plan");
+  if (fgen) fgen.textContent = ui.freePlan.generateBtn;
+  const frst = $("#btn-reset-free-plan");
+  if (frst) frst.textContent = ui.freePlan.resetBtn;
+  const fhint = $("#free-plan-generate-hint");
+  if (fhint) fhint.textContent = ui.freePlan.generateHint;
 
   const statusHead = $("#schema-status-heading");
   if (statusHead) statusHead.textContent = ui.schemaPage.statusTitle;
@@ -1162,22 +1294,39 @@ function renderSummary() {
 }
 
 function renderSchemaSubTabsUi() {
-  const tab = state.schemaSubTab === "status" ? "status" : "plan";
-  const planBtn = $("#schema-subtab-plan");
+  const tab =
+    state.schemaSubTab === "freePlan"
+      ? "freePlan"
+      : state.schemaSubTab === "status"
+        ? "status"
+        : "goalPlan";
+
+  const goalBtn = $("#schema-subtab-goal-plan");
+  const freeBtn = $("#schema-subtab-free-plan");
   const statusBtn = $("#schema-subtab-status");
-  const planPanel = $("#schema-panel-plan");
+  const goalPanel = $("#schema-panel-goal-plan");
+  const freePanel = $("#schema-panel-free-plan");
   const statusPanel = $("#schema-panel-status");
-  if (planBtn) {
-    planBtn.classList.toggle("is-active", tab === "plan");
-    planBtn.setAttribute("aria-selected", tab === "plan" ? "true" : "false");
+
+  if (goalBtn) {
+    goalBtn.classList.toggle("is-active", tab === "goalPlan");
+    goalBtn.setAttribute("aria-selected", tab === "goalPlan" ? "true" : "false");
+  }
+  if (freeBtn) {
+    freeBtn.classList.toggle("is-active", tab === "freePlan");
+    freeBtn.setAttribute("aria-selected", tab === "freePlan" ? "true" : "false");
   }
   if (statusBtn) {
     statusBtn.classList.toggle("is-active", tab === "status");
     statusBtn.setAttribute("aria-selected", tab === "status" ? "true" : "false");
   }
-  if (planPanel) {
-    planPanel.classList.toggle("is-active", tab === "plan");
-    planPanel.hidden = tab !== "plan";
+  if (goalPanel) {
+    goalPanel.classList.toggle("is-active", tab === "goalPlan");
+    goalPanel.hidden = tab !== "goalPlan";
+  }
+  if (freePanel) {
+    freePanel.classList.toggle("is-active", tab === "freePlan");
+    freePanel.hidden = tab !== "freePlan";
   }
   if (statusPanel) {
     statusPanel.classList.toggle("is-active", tab === "status");
@@ -1793,6 +1942,14 @@ function renderAll() {
 
   renderMealPlanTargetLine();
   renderMealPlanOutput();
+  renderFreeMealPlanOutput();
+  renderFreePlanTargetLine();
+  const gpd = $("#goal-plan-days");
+  if (gpd) gpd.value = String(clampInt(state.goalPlanDays, 1, 7));
+  const fkEl = $("#free-plan-kcal");
+  if (fkEl) fkEl.value = String(clampInt(state.freePlanKcalPerDay, 100, 5000));
+  const fdEl = $("#free-plan-duration");
+  if (fdEl) fdEl.value = String(clampInt(state.freePlanDurationDays, 1, 7));
   renderSummary();
   renderSchemaSubTabsUi();
   renderSuggestions();
@@ -1826,6 +1983,11 @@ function syncHomePageCopy() {
 
   const saveBtn = $("#btn-goals-save");
   if (saveBtn) saveBtn.textContent = ui.home.goalsSave;
+
+  const gpdLabel = $("#goal-plan-days-label");
+  if (gpdLabel) gpdLabel.textContent = ui.home.planDaysLabel;
+  const gpdHint = $("#goal-plan-days-hint");
+  if (gpdHint) gpdHint.textContent = ui.home.planDaysHint;
 }
 
 function initGoalsForm() {
@@ -1833,9 +1995,16 @@ function initGoalsForm() {
   if (!form) return;
   const d = $("#goal-daily");
   const w = $("#goal-weekly");
-  if (!d || !w) return;
+  const planDays = $("#goal-plan-days");
+  if (!d || !w || !planDays) return;
   d.value = String(dailyGoal());
   w.value = String(weeklyGoal());
+  planDays.value = String(clampInt(state.goalPlanDays, 1, 7));
+  planDays.addEventListener("change", () => {
+    state.goalPlanDays = clampInt(planDays.value, 1, 7);
+    saveState();
+    renderMealPlanTargetLine();
+  });
 
   const legend = form.querySelector(".plan-basis-legend");
   if (legend) legend.textContent = ui.home.planBasisLabel;
@@ -1875,7 +2044,8 @@ function initGoalsForm() {
     };
     const checked = form.querySelector('input[name="plan-basis"]:checked');
     state.planGoalBasis = checked?.value === "weekly" ? "weekly" : "daily";
-    state.schemaSubTab = "plan";
+    state.goalPlanDays = clampInt(planDays.value, 1, 7);
+    state.schemaSubTab = "goalPlan";
     saveState();
     renderAll();
     location.hash = "#/schema";
@@ -1921,7 +2091,9 @@ function initSchemaSubTabs() {
   document.querySelectorAll("[data-schema-subtab]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const v = btn.getAttribute("data-schema-subtab");
-      state.schemaSubTab = v === "status" ? "status" : "plan";
+      if (v === "status") state.schemaSubTab = "status";
+      else if (v === "freePlan") state.schemaSubTab = "freePlan";
+      else state.schemaSubTab = "goalPlan";
       saveState();
       renderSchemaSubTabsUi();
     });
@@ -1931,9 +2103,27 @@ function initSchemaSubTabs() {
 function initSchemaPage() {
   initSchemaSubTabs();
 
+  const freeK = $("#free-plan-kcal");
+  const freeD = $("#free-plan-duration");
+  if (freeK) {
+    freeK.value = String(clampInt(state.freePlanKcalPerDay, 100, 5000));
+    freeK.addEventListener("change", () => {
+      state.freePlanKcalPerDay = clampInt(freeK.value, 100, 5000);
+      saveState();
+      renderFreePlanTargetLine();
+    });
+  }
+  if (freeD) {
+    freeD.value = String(clampInt(state.freePlanDurationDays, 1, 7));
+    freeD.addEventListener("change", () => {
+      state.freePlanDurationDays = clampInt(freeD.value, 1, 7);
+      saveState();
+      renderFreePlanTargetLine();
+    });
+  }
+
   $("#btn-generate-meal-plan")?.addEventListener("click", () => {
-    const sel = $("#meal-plan-duration");
-    const duration = clampInt(sel?.value ?? 7, 1, 365);
+    const duration = clampInt(state.goalPlanDays, 1, 7);
     const kcal = effectivePlanKcalPerDay();
     const rng = makePlanRng();
     const days = buildMealPlan(duration, kcal, rng);
@@ -1953,6 +2143,45 @@ function initSchemaPage() {
     saveState();
     renderMealPlanTargetLine();
     renderMealPlanOutput();
+  });
+
+  $("#btn-generate-free-plan")?.addEventListener("click", async () => {
+    const btn = $("#btn-generate-free-plan");
+    const kcal = clampInt(freeK?.value ?? state.freePlanKcalPerDay, 100, 5000);
+    const duration = clampInt(freeD?.value ?? state.freePlanDurationDays, 1, 7);
+    state.freePlanKcalPerDay = kcal;
+    state.freePlanDurationDays = duration;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = ui.freePlan.generating;
+    }
+    try {
+      const days = await buildFreeMealPlanDays(duration, kcal);
+      state.freeMealPlan = {
+        duration,
+        kcalPerDay: kcal,
+        days,
+        kind: "free",
+      };
+      saveState();
+      renderFreeMealPlanOutput();
+      renderFreePlanTargetLine();
+    } catch (e) {
+      console.error(e);
+      alert(String(e?.message || e));
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = ui.freePlan.generateBtn;
+      }
+    }
+  });
+
+  $("#btn-reset-free-plan")?.addEventListener("click", () => {
+    state.freeMealPlan = null;
+    saveState();
+    renderFreeMealPlanOutput();
+    renderFreePlanTargetLine();
   });
 }
 
@@ -2078,8 +2307,14 @@ function initModals() {
       if (state.planGoalBasis === "monthly") state.planGoalBasis = "daily";
       const okBasisImp = ["daily", "weekly"];
       if (!okBasisImp.includes(state.planGoalBasis)) state.planGoalBasis = "daily";
-      if (state.schemaSubTab !== "plan" && state.schemaSubTab !== "status") state.schemaSubTab = "plan";
+      if (state.schemaSubTab === "plan") state.schemaSubTab = "goalPlan";
+      const okTabImp = ["goalPlan", "freePlan", "status"];
+      if (!okTabImp.includes(state.schemaSubTab)) state.schemaSubTab = "goalPlan";
+      state.goalPlanDays = clampInt(Number(state.goalPlanDays) || Number(state.schedule?.days) || 7, 1, 7);
+      state.freePlanKcalPerDay = clampInt(Number(state.freePlanKcalPerDay) || 2000, 100, 5000);
+      state.freePlanDurationDays = clampInt(Number(state.freePlanDurationDays) || 3, 1, 7);
       if (state.mealPlan != null && typeof state.mealPlan !== "object") state.mealPlan = null;
+      if (state.freeMealPlan != null && typeof state.freeMealPlan !== "object") state.freeMealPlan = null;
 
       // Migration: handle older imports where log values were stored as numbers.
       for (const [dateYMD, dayLog] of Object.entries(state.logs)) {

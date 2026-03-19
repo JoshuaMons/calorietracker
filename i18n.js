@@ -45,7 +45,9 @@ export const ui = {
     planBasisLabel: "Schema op basis van",
     planBasisDaily: "Dagdoel (kcal/dag)",
     planBasisWeekly: "Weekdoel ÷ 7",
-    planBasisHint: "Het maaltijdschema gebruikt deze kcal per dag (zie tab Stappenplan op Schema).",
+    planBasisHint: "Het maaltijdschema gebruikt deze kcal per dag (tab Doelenplan op Schema).",
+    planDaysLabel: "Lengte doelenplan (dagen)",
+    planDaysHint: "Aantal dagen voor je stappenplan op Schema (1–7). Pas je doelen of lengte aan en sla opnieuw op om te wijzigen.",
     logDayTitle: "Logdag",
     logDayHint: "Welke dag je invult in dagboek en database.",
     logToday: "Vandaag",
@@ -56,8 +58,11 @@ export const ui = {
     intro:
       "Genereer een willekeurig stappenplan (hoog eiwit, beperkte kcal) dat aansluit op je gekozen doelbron op Start.",
     logDayNote: "Je logdag stel je in op Start — die dag wordt gebruikt voor dagtotaal, suggesties en macro’s.",
-    subTabPlan: "Stappenplan",
+    subTabGoalPlan: "Doelenplan",
+    subTabFreePlan: "Vrij schema",
     subTabStatus: "Huidige stand",
+    goalPlanDaysNote: (n) =>
+      `Je doelenplan is ${n} ${n === 1 ? "dag" : "dagen"} — stel de lengte in op Start.`,
     resetPlanBtn: "Plan wissen",
     otherGoalBtn: "Ander doel kiezen",
     resetPlanHint:
@@ -193,10 +198,28 @@ export const ui = {
     clickHint: "Klik op een recept voor ingrediënten en calorieën.",
   },
 
+  freePlan: {
+    title: "Vrij schema (los van je doelen)",
+    intro:
+      "Genereer een apart stappenplan met eigen kcal per dag en lengte. Dit plan staat los van je doelen op Start en verandert je Doelenplan-tab niet. Er worden willekeurig recepten gemixt: uit de app én (als het lukt) van TheMealDB op internet.",
+    webNote:
+      "Internet-recepten: titels en stappen komen van TheMealDB (Engels mogelijk). Kcal/eiwit zijn grove schattingen per categorie; check altijd je porties.",
+    kcalLabel: "Kcal per dag (vrij)",
+    durationLabel: "Aantal dagen",
+    generateBtn: "Vrij schema genereren",
+    resetBtn: "Vrij plan wissen",
+    generateHint:
+      "Elke run haalt opnieuw willekeurige maaltijden binnen — ook van het web als de verbinding het toelaat.",
+    generating: "Bezig met genereren… even geduld.",
+    targetLine: (kcal, days) => `Doel voor dit plan: ${kcal} kcal/dag · ${days} ${days === 1 ? "dag" : "dagen"}.`,
+    empty: "Kies kcal en dagen en klik op genereren.",
+    fromWebTag: "online",
+  },
+
   schemaPlan: {
     title: "Maaltijdschema (hoog eiwit, beperkt kcal)",
     intro:
-      "Dit schema sluit aan op je dag- of weekdoel van Start. Kies hoeveel dagen je wilt plannen en genereer een geshud stappenplan. Drink vooral water/thee; beperk suiker en alcohol.",
+      "Dit schema sluit aan op je dag- of weekdoel van Start. De planlengte stel je op Start in (1–7 dagen). Genereer een geshud stappenplan. Drink vooral water/thee; beperk suiker en alcohol.",
     targetLine: (kcal, basis) =>
       `Rekening gehouden met ca. ${kcal} kcal per dag (bron: ${basis}).`,
     basisDaily: "dagdoel",

@@ -73,6 +73,19 @@
                   Het maaltijdschema gebruikt deze kcal per dag. Na opslag ga je naar Schema voor je stappenplan.
                 </p>
               </fieldset>
+              <label class="field">
+                <span id="goal-plan-days-label">Lengte doelenplan (dagen)</span>
+                <select id="goal-plan-days" aria-labelledby="goal-plan-days-label">
+                  <option value="1">1 dag</option>
+                  <option value="2">2 dagen</option>
+                  <option value="3">3 dagen</option>
+                  <option value="4">4 dagen</option>
+                  <option value="5">5 dagen</option>
+                  <option value="6">6 dagen</option>
+                  <option value="7" selected>7 dagen</option>
+                </select>
+                <span class="hint" id="goal-plan-days-hint"></span>
+              </label>
               <button class="btn btn-primary" type="submit" id="btn-goals-save">Doelen opslaan</button>
             </form>
           </div>
@@ -163,7 +176,7 @@
         </section>
       </section>
 
-      <!-- Schema: subtab Stappenplan | Huidige stand -->
+      <!-- Schema: Doelenplan | Vrij schema | Huidige stand -->
       <section id="page-schema" class="page">
         <div class="card schema-subtabs-wrap">
           <div class="schema-subtabs" role="tablist" aria-label="Schema">
@@ -171,10 +184,19 @@
               type="button"
               class="schema-subtab is-active"
               role="tab"
-              id="schema-subtab-plan"
+              id="schema-subtab-goal-plan"
               aria-selected="true"
-              aria-controls="schema-panel-plan"
-              data-schema-subtab="plan"
+              aria-controls="schema-panel-goal-plan"
+              data-schema-subtab="goalPlan"
+            ></button>
+            <button
+              type="button"
+              class="schema-subtab"
+              role="tab"
+              id="schema-subtab-free-plan"
+              aria-selected="false"
+              aria-controls="schema-panel-free-plan"
+              data-schema-subtab="freePlan"
             ></button>
             <button
               type="button"
@@ -188,11 +210,17 @@
           </div>
         </div>
 
-        <div id="schema-panel-plan" class="schema-subpanel is-active" role="tabpanel" aria-labelledby="schema-subtab-plan">
+        <div
+          id="schema-panel-goal-plan"
+          class="schema-subpanel is-active"
+          role="tabpanel"
+          aria-labelledby="schema-subtab-goal-plan"
+        >
           <section class="card">
             <h2 id="schema-heading">Maaltijdschema</h2>
             <p class="muted small" id="schema-intro"></p>
             <p class="muted small" id="schema-logday-note"></p>
+            <p class="muted small" id="schema-goal-duration-note" aria-live="polite"></p>
             <p class="schema-target-line" id="meal-plan-target" aria-live="polite"></p>
 
             <div class="schema-plan-actions row" style="flex-wrap: wrap; gap: 10px; margin-bottom: 12px">
@@ -201,20 +229,50 @@
               <a class="btn btn-ghost inline-link-btn" href="#/home" id="btn-schema-other-goal"></a>
             </div>
 
-            <div class="meal-plan-toolbar row">
-              <label class="field compact meal-plan-duration-field">
-                <span id="meal-plan-duration-label">Duur van het plan</span>
-                <select id="meal-plan-duration" aria-labelledby="meal-plan-duration-label">
-                  <option value="1">1 dag</option>
-                  <option value="3">3 dagen</option>
-                  <option value="7" selected>7 dagen</option>
-                  <option value="14">14 dagen</option>
-                </select>
-              </label>
-            </div>
             <p class="muted small" id="meal-plan-generate-hint"></p>
             <p class="muted small" id="schema-reset-hint"></p>
             <div id="meal-plan-output" class="meal-plan-output" aria-live="polite"></div>
+          </section>
+        </div>
+
+        <div
+          id="schema-panel-free-plan"
+          class="schema-subpanel"
+          role="tabpanel"
+          hidden
+          aria-labelledby="schema-subtab-free-plan"
+        >
+          <section class="card">
+            <h2 id="free-plan-heading"></h2>
+            <p class="muted small" id="free-plan-intro"></p>
+            <p class="muted small" id="free-plan-web-note"></p>
+
+            <div class="meal-plan-toolbar row" style="flex-wrap: wrap; align-items: flex-end; gap: 12px">
+              <label class="field compact meal-plan-duration-field">
+                <span id="free-plan-kcal-label"></span>
+                <input id="free-plan-kcal" type="number" min="100" max="5000" step="50" value="2000" />
+              </label>
+              <label class="field compact meal-plan-duration-field">
+                <span id="free-plan-duration-label"></span>
+                <select id="free-plan-duration" aria-labelledby="free-plan-duration-label">
+                  <option value="1">1 dag</option>
+                  <option value="2">2 dagen</option>
+                  <option value="3" selected>3 dagen</option>
+                  <option value="4">4 dagen</option>
+                  <option value="5">5 dagen</option>
+                  <option value="6">6 dagen</option>
+                  <option value="7">7 dagen</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="schema-plan-actions row" style="flex-wrap: wrap; gap: 10px; margin: 12px 0">
+              <button id="btn-generate-free-plan" class="btn btn-primary" type="button"></button>
+              <button id="btn-reset-free-plan" class="btn" type="button"></button>
+            </div>
+            <p class="muted small" id="free-plan-generate-hint"></p>
+            <p class="muted small" id="free-plan-target-line" aria-live="polite"></p>
+            <div id="free-meal-plan-output" class="meal-plan-output" aria-live="polite"></div>
           </section>
         </div>
 
