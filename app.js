@@ -113,21 +113,30 @@ function hashCode(str) {
   return Math.abs(h);
 }
 
+function makeImageQuery(food) {
+  const base = (food?.imageQuery || food?.name || "food").trim();
+  const cat = food?.category ? String(food.category).trim() : "";
+
+  // categories_tags from OFF are often stored as `tags`. We take a small prefix to avoid overly long keywords.
+  const tags = Array.isArray(food?.tags) ? food.tags.slice(0, 3).join(" ") : "";
+
+  // Put the most identifying words first.
+  return [base, cat, tags].filter(Boolean).join(" ");
+}
+
 function makeImageUrl(food) {
-  if (food.imageUrl) return food.imageUrl;
-  const query = (food.imageQuery || food.name || "food").trim();
-  const q = encodeURIComponent(query);
-  const sig = hashCode(food.id || food.name || query);
-  // `source.unsplash.com` returns a random image for the query; `sig` makes it more stable per food.
-  return `https://source.unsplash.com/400x300/?${q}&sig=${sig}`;
+  const query = makeImageQuery(food);
+  const sig = hashCode(food?.id || food?.name || query);
+  // `source.unsplash.com` returns a random image for the query; adding `sig` helps keep it stable per food.
+  const q = encodeURIComponent(`${query} ${sig}`);
+  return `https://source.unsplash.com/400x300/?${q}`;
 }
 
 function makeImageFallbackUrl(food) {
-  // Same as `makeImageUrl`, but always ignores `imageUrl` (so we can recover when an image fails).
-  const query = (food.imageQuery || food.name || "food").trim();
-  const q = encodeURIComponent(query);
-  const sig = hashCode(food.id || food.name || query);
-  return `https://source.unsplash.com/400x300/?${q}&sig=${sig}`;
+  const query = makeImageQuery(food) || "food";
+  const sig = hashCode(`${food?.id || food?.name || query}|fallback`);
+  const q = encodeURIComponent(`${query} food ${sig}`);
+  return `https://source.unsplash.com/400x300/?${q}`;
 }
 
 function getScheduleDays(schedule) {
@@ -219,7 +228,8 @@ async function fetchOpenFoodFacts(query) {
         category: guessCategoryFromTags(p.categories_tags),
         caloriesPerServing: Number.isFinite(kcal) ? kcal : 0,
         servingLabel: "100g",
-        imageUrl: p.image_front_small_url || p.image_front_url || "",
+        // We intentionally use Unsplash for all images, so we only set keywords here.
+        imageQuery: `${p.product_name || name} ${p.brands || ""}`.trim(),
         ingredients: ingredients.length ? ingredients : [],
         tags: Array.isArray(p.categories_tags) ? p.categories_tags : [],
       });
