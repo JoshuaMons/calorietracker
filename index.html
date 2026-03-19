@@ -35,6 +35,7 @@
           <a class="tab" href="#/schema" id="tab-schema">Schema</a>
           <a class="tab" href="#/suggestions" id="tab-suggestions">Tips &amp; recepten</a>
           <a class="tab" href="#/library" id="tab-library">Voedingsdatabase</a>
+          <a class="tab" href="#/custom-food" id="tab-custom-food"></a>
           <a class="tab" href="#/log" id="tab-log">Dagboek</a>
           <a class="tab" href="#/stats" id="tab-stats">Macro's &amp; statistiek</a>
           <a class="tab" href="#/settings" id="tab-settings">Gegevens</a>
@@ -258,111 +259,119 @@
         </section>
       </section>
 
-      <!-- Voedingsdatabase: zoek/grid links, geselecteerd rechts -->
+      <!-- Voedingsdatabase: producten + geselecteerd (links uitgelijnd, onder elkaar) -->
       <section id="page-library" class="page">
         <section class="card library-combined-card">
-          <div class="library-split">
-            <div class="library-split-main">
-              <div class="section-head">
-                <div>
-                  <h2>Voedingsdatabase</h2>
-                  <p class="muted">
-                    Vink af wat je at. Eerst laden we een compacte NL-set; bij zoeken wordt de volledige lijst opgehaald.
-                    Calorieën zijn vaak per 100 g.
-                  </p>
-                </div>
-                <div class="library-controls">
-                  <label class="search">
-                    <span class="sr-only">Zoek producten</span>
-                    <input
-                      id="search"
-                      type="search"
-                      placeholder="Zoek NL of EN (bijv. rijst, rice, kip, chicken)"
-                      autocomplete="off"
-                    />
-                  </label>
-                  <label class="field compact">
-                    <span class="sr-only">Categorie</span>
-                    <select id="category">
-                      <option value="all">Alle categorieën</option>
-                      <option value="Meal">Maaltijden</option>
-                      <option value="Snack">Tussendoortjes</option>
-                      <option value="Drink">Dranken</option>
-                      <option value="Ingredient">Ingrediënten</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-
-              <div
-                class="library-food-scroll"
-                tabindex="0"
-                aria-label="Scrollbare productenlijst"
-              >
-                <div id="food-grid" class="food-grid" aria-live="polite"></div>
-              </div>
+          <div class="section-head">
+            <div>
+              <h2>Voedingsdatabase</h2>
+              <p class="muted">
+                Vink af wat je at. Eerst laden we een compacte NL-set; bij zoeken wordt de volledige lijst opgehaald.
+                Calorieën zijn vaak per 100 g. Productfoto’s komen uit Open Food Facts (zoekresultaten), anders Openverse
+                of Wikipedia.
+              </p>
             </div>
-
-            <aside class="library-split-aside" aria-label="Geselecteerd voor vandaag">
-              <h2 class="library-aside-title">Geselecteerd vandaag</h2>
-              <div id="selected-items" class="selected-items"></div>
-            </aside>
-          </div>
-        </section>
-
-        <section class="card">
-          <h2>Eigen product toevoegen</h2>
-          <form id="custom-food-form" class="form">
-              <label class="field">
-                <span>Naam</span>
-                <input id="custom-name" type="text" required maxlength="80" />
+            <div class="library-controls">
+              <label class="search">
+                <span class="sr-only">Zoek producten</span>
+                <input
+                  id="search"
+                  type="search"
+                  placeholder="Zoek NL of EN (bijv. rijst, rice, kip, chicken)"
+                  autocomplete="off"
+                />
               </label>
-              <label class="field">
-                <span>Categorie</span>
-                <select id="custom-category" required>
+              <label class="field compact">
+                <span class="sr-only">Categorie</span>
+                <select id="category">
+                  <option value="all">Alle categorieën</option>
                   <option value="Meal">Maaltijden</option>
                   <option value="Snack">Tussendoortjes</option>
                   <option value="Drink">Dranken</option>
                   <option value="Ingredient">Ingrediënten</option>
                 </select>
               </label>
-              <label class="field">
-                <span>Kcal per portie</span>
-                <input id="custom-kcal" type="number" min="0" step="1" required />
-              </label>
-              <label class="field">
-                <span>Portie-omschrijving</span>
-                <input id="custom-serving" type="text" placeholder="bijv. 1 reep (40 g)" maxlength="40" />
-              </label>
-              <label class="field">
-                <span>Afbeelding-zoekwoorden (optioneel)</span>
-                <input id="custom-image-query" type="text" placeholder="bijv. mueslireep, chocolade" maxlength="80" />
-              </label>
-              <label class="field">
-                <span>Ingrediënten (optioneel)</span>
-                <textarea
-                  id="custom-ingredients"
-                  rows="4"
-                  placeholder="Komma-gescheiden (bijv. haver, honing, cacao)"
-                ></textarea>
-              </label>
-              <label class="field">
-                <span>Eiwit (g) per portie (optioneel)</span>
-                <input id="custom-protein" type="number" min="0" step="0.1" />
-              </label>
-              <label class="field">
-                <span>Koolhydraten (g) per portie (optioneel)</span>
-                <input id="custom-carbs" type="number" min="0" step="0.1" />
-              </label>
-              <label class="field">
-                <span>Vet (g) per portie (optioneel)</span>
-                <input id="custom-fat" type="number" min="0" step="0.1" />
-              </label>
-              <button class="btn btn-primary" type="submit">Toevoegen aan database</button>
+            </div>
+          </div>
+
+          <div
+            class="library-food-scroll"
+            tabindex="0"
+            aria-label="Scrollbare productenlijst"
+          >
+            <div id="food-grid" class="food-grid" aria-live="polite"></div>
+          </div>
+
+          <p class="muted small library-custom-hint" id="library-custom-hint"></p>
+
+          <div class="library-selected-block" aria-label="Geselecteerd voor vandaag">
+            <h2 class="library-selected-title">Geselecteerd vandaag</h2>
+            <div id="selected-items" class="selected-items"></div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Eigen product (eigen pagina) -->
+      <section id="page-custom-food" class="page">
+        <section class="card">
+          <div class="section-head" style="align-items: flex-start">
+            <div>
+              <h2 id="custom-food-page-title"></h2>
+              <p class="muted" id="custom-food-page-intro"></p>
               <p class="muted small">
-                Voeg handmatig toe wat je eet; er wordt niet automatisch het hele internet ingeladen.
+                <a class="inline-link" href="#/library" id="custom-food-back-link"></a>
               </p>
-            </form>
+            </div>
+          </div>
+          <form id="custom-food-form" class="form">
+            <label class="field">
+              <span>Naam</span>
+              <input id="custom-name" type="text" required maxlength="80" />
+            </label>
+            <label class="field">
+              <span>Categorie</span>
+              <select id="custom-category" required>
+                <option value="Meal">Maaltijden</option>
+                <option value="Snack">Tussendoortjes</option>
+                <option value="Drink">Dranken</option>
+                <option value="Ingredient">Ingrediënten</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Kcal per portie</span>
+              <input id="custom-kcal" type="number" min="0" step="1" required />
+            </label>
+            <label class="field">
+              <span>Portie-omschrijving</span>
+              <input id="custom-serving" type="text" placeholder="bijv. 1 reep (40 g)" maxlength="40" />
+            </label>
+            <label class="field">
+              <span>Afbeelding-zoekwoorden (optioneel)</span>
+              <input id="custom-image-query" type="text" placeholder="bijv. mueslireep, chocolade" maxlength="80" />
+            </label>
+            <label class="field">
+              <span>Ingrediënten (optioneel)</span>
+              <textarea
+                id="custom-ingredients"
+                rows="4"
+                placeholder="Komma-gescheiden (bijv. haver, honing, cacao)"
+              ></textarea>
+            </label>
+            <label class="field">
+              <span>Eiwit (g) per portie (optioneel)</span>
+              <input id="custom-protein" type="number" min="0" step="0.1" />
+            </label>
+            <label class="field">
+              <span>Koolhydraten (g) per portie (optioneel)</span>
+              <input id="custom-carbs" type="number" min="0" step="0.1" />
+            </label>
+            <label class="field">
+              <span>Vet (g) per portie (optioneel)</span>
+              <input id="custom-fat" type="number" min="0" step="0.1" />
+            </label>
+            <button class="btn btn-primary" type="submit">Toevoegen aan database</button>
+            <p class="muted small" id="custom-food-form-note" aria-live="polite"></p>
+          </form>
         </section>
       </section>
 

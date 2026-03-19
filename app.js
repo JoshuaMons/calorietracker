@@ -208,8 +208,22 @@ function hashCode(str) {
   return Math.abs(h);
 }
 
+/** Maakt zoektermen schoner zodat Openverse/Wikipedia beter matchen (minder marketingtekst). */
+function simplifyProductNameForImage(name) {
+  let s = String(name || "")
+    .replace(/\[[^\]]*\]/g, " ")
+    .replace(/\([^)]{0,80}\)/g, " ")
+    .replace(/\b\d+\s*\/\s*\d+\s*(less|minder)\s*(fat|vet)\b/gi, " ")
+    .replace(/\b(reduced|low|less)\s+(fat|sugar|salt|calories)\b|\blight\b|\bdiet\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return s.slice(0, 100);
+}
+
 function makeImageQuery(food) {
-  const base = (food?.imageQuery || food?.name || "").trim();
+  const baseRaw = (food?.imageQuery || food?.name || "").trim();
+  const simplified = simplifyProductNameForImage(baseRaw);
+  const base = (simplified || baseRaw).trim();
   const cat = String(food?.category || "").toLowerCase();
   const catHint =
     cat === "drink"
@@ -248,7 +262,6 @@ function attachImageErrorFallback(imgEl) {
 /** Openverse — officiële API (engineering-domein is verouderd / faalt vaak in de browser) */
 const OPENVERSE_IMAGES_API = "https://api.openverse.org/v1/images/";
 const openverseImageCache = new Map();
-let suggestionsOpenverseGen = 0;
 
 const ovWaiters = [];
 let ovInFlight = 0;
@@ -280,7 +293,38 @@ async function fetchOpenverseThumbnailForQueryQueued(query) {
 
 let foodThumbObserver;
 
-function observeFoodThumb(img) {
+/** Laadt productfoto: eerst Open Food Facts-URL indien aanwezig, anders Openverse + Wikipedia. */
+async function loadFoodThumbFromFood(img, food) {
+  if (!img || !food) return;
+  img.decoding = "async";
+  const direct = String(food.imageUrl || "").trim();
+  if (/^https?:\/\//i.test(direct)) {
+    img.onerror = () => {
+      img.onerror = null;
+      void (async () => {
+        const u = await fetchOpenverseThumbnailForQueryQueued(makeImageQuery(food));
+        if (!img.isConnected) return;
+        if (u) {
+          attachImageErrorFallback(img);
+          img.src = u;
+        } else {
+          img.src = IMAGE_PLACEHOLDER_URL;
+        }
+      })();
+    };
+    img.src = direct;
+    return;
+  }
+  img.src = IMAGE_PLACEHOLDER_URL;
+  const u = await fetchOpenverseThumbnailForQueryQueued(makeImageQuery(food));
+  if (!img.isConnected) return;
+  if (u) {
+    attachImageErrorFallback(img);
+    img.src = u;
+  }
+}
+
+function observeFoodThumb(img, food) {
   if (!img) return;
   if (!foodThumbObserver) {
     foodThumbObserver = new IntersectionObserver(
@@ -289,13 +333,15 @@ function observeFoodThumb(img) {
           if (!e.isIntersecting) continue;
           const el = e.target;
           foodThumbObserver.unobserve(el);
-          const q = el.dataset.ovQ || "";
-          void loadOpenverseIntoImg(el, q);
+          const f = el._foodForThumb;
+          if (f) void loadFoodThumbFromFood(el, f);
+          else void loadOpenverseIntoImg(el, el.dataset.ovQ || "");
         }
       },
       { root: null, rootMargin: "140px", threshold: 0.01 },
     );
   }
+  img._foodForThumb = food || null;
   foodThumbObserver.observe(img);
 }
 
@@ -315,12 +361,17 @@ async function fetchWikipediaThumbForQuery(query) {
     .trim()
     .slice(0, 72);
   if (!raw) return null;
-  const tries = [
-    { host: "nl.wikipedia.org", suffix: " eten" },
-    { host: "en.wikipedia.org", suffix: " food" },
+  const simplified = simplifyProductNameForImage(raw).slice(0, 72) || raw;
+  const searchVariants = [
+    { host: "nl.wikipedia.org", term: `${raw} eten` },
+    { host: "nl.wikipedia.org", term: raw },
+    { host: "en.wikipedia.org", term: `${raw} food` },
+    { host: "en.wikipedia.org", term: raw },
+    { host: "en.wikipedia.org", term: `${simplified} cheese` },
+    { host: "en.wikipedia.org", term: simplified },
   ];
-  for (const { host, suffix } of tries) {
-    const searchQ = encodeURIComponent(`${raw}${suffix}`);
+  for (const { host, term } of searchVariants) {
+    const searchQ = encodeURIComponent(term.slice(0, 280));
     try {
       const apiUrl =
         `https://${host}/w/api.php?action=query&format=json&origin=*` +
@@ -331,13 +382,35 @@ async function fetchWikipediaThumbForQuery(query) {
       const pages = data?.query?.pages;
       if (!pages) continue;
       const first = Object.values(pages)[0];
+      if (first?.missing) continue;
       const src = first?.thumbnail?.source;
       if (src) return src;
     } catch {
-      /* volgende wiki */
+      /* volgende variant */
     }
   }
   return null;
+}
+
+async function fetchOpenverseOnce(searchQ) {
+  const key = searchQ.toLowerCase().trim().slice(0, 120);
+  if (openverseImageCache.has(key)) {
+    return openverseImageCache.get(key);
+  }
+  try {
+    const params = new URLSearchParams({ q: key, page_size: "1" });
+    const res = await fetch(`${OPENVERSE_IMAGES_API}?${params}`, {
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const hit = data?.results?.[0];
+    const url = hit?.thumbnail || hit?.url || null;
+    if (url) openverseImageCache.set(key, url);
+    return url;
+  } catch {
+    return null;
+  }
 }
 
 async function fetchOpenverseThumbnailForQuery(query) {
@@ -349,52 +422,27 @@ async function fetchOpenverseThumbnailForQuery(query) {
     .toLowerCase()
     .replace(/[^a-z0-9\u00C0-\u024f ]+/gi, " ")
     .replace(/\s+/g, " ");
-  const searchQ = `${qBase || "healthy"} food`.slice(0, 120);
-  if (openverseImageCache.has(searchQ)) {
-    return openverseImageCache.get(searchQ);
-  }
+  const words = qBase.split(/\s+/).filter((w) => w.length > 1);
+  const shortQ = words.slice(0, 6).join(" ");
+  const tinyQ = words.slice(0, 3).join(" ");
+
+  const attempts = [
+    `${qBase || "healthy"} food`,
+    qBase || "healthy meal",
+    shortQ,
+    tinyQ,
+    words[0] ? `${words[0]} food` : null,
+  ].filter(Boolean);
+
   let url = null;
-  try {
-    const params = new URLSearchParams({
-      q: searchQ,
-      page_size: "1",
-    });
-    const res = await fetch(`${OPENVERSE_IMAGES_API}?${params}`, {
-      headers: { Accept: "application/json" },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const hit = data?.results?.[0];
-      // Proxy-thumb van Openverse eerst, dan directe bron-URL.
-      url = hit?.thumbnail || hit?.url || null;
-    }
-  } catch {
-    /* Openverse onbereikbaar */
+  for (const a of [...new Set(attempts)]) {
+    url = await fetchOpenverseOnce(String(a).slice(0, 120));
+    if (url) break;
   }
   if (!url) {
     url = await fetchWikipediaThumbForQuery(wikiHint || qBase || "maaltijd");
   }
-  if (url) openverseImageCache.set(searchQ, url);
   return url;
-}
-
-async function hydrateOpenverseSuggestionImages(container, gen) {
-  if (!container) return;
-  const imgs = [...container.querySelectorAll('img[data-openverse="1"]')];
-  await Promise.all(
-    imgs.map(async (img) => {
-      if (gen !== suggestionsOpenverseGen) return;
-      img.decoding = "async";
-      const foodQuery = img.dataset.imgQuery || "";
-      const url = await fetchOpenverseThumbnailForQueryQueued(foodQuery);
-      if (gen !== suggestionsOpenverseGen) return;
-      if (!img.isConnected) return;
-      if (url) {
-        attachImageErrorFallback(img);
-        img.src = url;
-      }
-    }),
-  );
 }
 
 function getScheduleDays(schedule) {
@@ -478,7 +526,7 @@ async function fetchOpenFoodFacts(query) {
     `&search_simple=1` +
     `&action=process` +
     `&json=1` +
-    `&fields=product_name,brands,categories_tags,ingredients_text,nutriments,image_front_small_url,image_front_url` +
+    `&fields=product_name,brands,categories_tags,ingredients_text,nutriments,image_front_small_url,image_front_url,image_url` +
     `&page_size=24` +
     `&page=1`;
 
@@ -516,13 +564,16 @@ async function fetchOpenFoodFacts(query) {
             .slice(0, 18)
         : [];
 
+      const imageUrl =
+        [p.image_front_small_url, p.image_front_url, p.image_url].find((u) => u && String(u).startsWith("http")) || "";
+
       return normalizeFoodForStorage({
         id,
         name,
         category: guessCategoryFromTags(p.categories_tags),
         caloriesPerServing: Number.isFinite(kcal) ? kcal : 0,
         servingLabel: "100g",
-        // We only store keywords; image URL is generated client-side.
+        imageUrl: String(imageUrl).trim(),
         imageQuery: `${p.product_name || name} ${p.brands || ""}`.trim(),
         proteinPerBaseAmount: Number.isFinite(protein) ? protein : undefined,
         carbsPerBaseAmount: Number.isFinite(carbs) ? carbs : undefined,
@@ -911,6 +962,29 @@ function syncSchemaPageCopy() {
   const ingTitle = $("#recipe-modal-ingredients-title");
   if (ingTitle) ingTitle.textContent = ui.recipeModal.ingredientsTitle;
   $("#recipe-modal-footnote")?.replaceChildren(document.createTextNode(ui.recipeModal.hint));
+
+  const tabCf = $("#tab-custom-food");
+  if (tabCf) tabCf.textContent = ui.tabs.customFood;
+
+  const cft = $("#custom-food-page-title");
+  if (cft) cft.textContent = ui.customFoodPage.title;
+  const cfi = $("#custom-food-page-intro");
+  if (cfi) cfi.textContent = ui.customFoodPage.intro;
+  const cfn = $("#custom-food-form-note");
+  if (cfn) cfn.textContent = ui.customFoodPage.formNote;
+  const cfb = $("#custom-food-back-link");
+  if (cfb) cfb.textContent = ui.customFoodPage.backToLibrary;
+
+  const libHint = $("#library-custom-hint");
+  if (libHint) {
+    libHint.replaceChildren();
+    libHint.append(document.createTextNode(`${ui.customFoodPage.addHintLead} `));
+    const a = document.createElement("a");
+    a.className = "inline-link";
+    a.href = "#/custom-food";
+    a.textContent = ui.customFoodPage.addHint;
+    libHint.appendChild(a);
+  }
 }
 
 function setProgressBar(barEl, consumed, goal) {
@@ -1048,9 +1122,6 @@ function renderSuggestions() {
 
   const { remaining, suggestions } = computeSuggestions(state.selectedDate);
 
-  suggestionsOpenverseGen += 1;
-  const gen = suggestionsOpenverseGen;
-
   if (remaining <= 0) {
     wrap.innerHTML = `<div class="muted">${escapeHtml(ui.suggestions.goalMet)}</div>`;
     return;
@@ -1077,10 +1148,8 @@ function renderSuggestions() {
     `;
     const imgEl = el.querySelector("img");
     if (imgEl) {
-      imgEl.dataset.openverse = "1";
-      imgEl.dataset.imgQuery = makeImageQuery(food);
       imgEl.alt = `${food.name || "Product"}`;
-      attachImageErrorFallback(imgEl);
+      void loadFoodThumbFromFood(imgEl, food);
     }
     el.querySelector("button")?.addEventListener("click", () => {
       const log = getLogForDate(state.selectedDate);
@@ -1092,8 +1161,6 @@ function renderSuggestions() {
     });
     wrap.appendChild(el);
   }
-
-  void hydrateOpenverseSuggestionImages(wrap, gen);
 }
 
 function renderRecipes() {
@@ -1283,11 +1350,8 @@ function openModalForFood(food) {
   }
 
   const modalImg = $("#modal-image");
-  modalImg.decoding = "async";
-  modalImg.src = IMAGE_PLACEHOLDER_URL;
   modalImg.alt = `${food.name || "Product"}`;
-  attachImageErrorFallback(modalImg);
-  void loadOpenverseIntoImg(modalImg, makeImageQuery(food));
+  void loadFoodThumbFromFood(modalImg, food);
 
   const log = getLogForDate(state.selectedDate);
   const entry = log[food.id];
@@ -1410,10 +1474,7 @@ function renderFoodGrid() {
 
     const imgEl = card.querySelector(".food-thumb img");
     if (imgEl) {
-      imgEl.decoding = "async";
-      imgEl.dataset.ovQ = makeImageQuery(food);
-      attachImageErrorFallback(imgEl);
-      observeFoodThumb(imgEl);
+      observeFoodThumb(imgEl, food);
     }
 
     card.addEventListener("click", (e) => {
@@ -1519,6 +1580,7 @@ function initRouting() {
     "#/schema": "page-schema",
     "#/suggestions": "page-suggestions",
     "#/library": "page-library",
+    "#/custom-food": "page-custom-food",
     "#/log": "page-log",
     "#/stats": "page-stats",
     "#/settings": "page-settings",
@@ -1529,6 +1591,7 @@ function initRouting() {
     { tabId: "tab-schema", hash: "#/schema" },
     { tabId: "tab-suggestions", hash: "#/suggestions" },
     { tabId: "tab-library", hash: "#/library" },
+    { tabId: "tab-custom-food", hash: "#/custom-food" },
     { tabId: "tab-log", hash: "#/log" },
     { tabId: "tab-stats", hash: "#/stats" },
     { tabId: "tab-settings", hash: "#/settings" },
@@ -1708,6 +1771,7 @@ function initFoodSearch() {
 
 function initCustomFoodForm() {
   const form = $("#custom-food-form");
+  if (!form) return;
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const name = $("#custom-name").value.trim();
@@ -1765,6 +1829,7 @@ function initCustomFoodForm() {
     $("#custom-category").value = "Snack";
 
     renderAll();
+    location.hash = "#/library";
   });
 }
 

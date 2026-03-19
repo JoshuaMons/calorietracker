@@ -10,6 +10,7 @@ export const ui = {
     schema: "Schema",
     suggestions: "Tips & recepten",
     library: "Voedingsdatabase",
+    customFood: "Eigen product",
     log: "Dagboek",
     stats: "Macro's & statistiek",
     data: "Gegevens",
@@ -202,6 +203,16 @@ export const ui = {
     drinkLine: "Drank",
     stepsTitle: "Stappen",
     empty: "Klik op de knop om een plan te maken.",
+  },
+
+  customFoodPage: {
+    title: "Eigen product toevoegen",
+    intro:
+      "Voeg iets toe dat nog niet in de database staat. Na opslag ga je terug naar de voedingsdatabase om het te loggen.",
+    formNote: "Handmatige invoer; er wordt niet automatisch het hele internet ingeladen.",
+    backToLibrary: "← Terug naar voedingsdatabase",
+    addHint: "Eigen product toevoegen →",
+    addHintLead: "Staat je product er niet tussen?",
   },
 
   library: {
