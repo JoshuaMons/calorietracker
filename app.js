@@ -5,6 +5,35 @@ const STORAGE_KEY = "calorieTracker.v1";
 const $ = (sel) => document.querySelector(sel);
 
 const BUILTIN_FOOD_IDS = new Set(BUILTIN_FOODS.map((f) => f.id));
+const BUILTIN_NORMALIZED = BUILTIN_FOODS.map(normalizeFoodForStorage);
+
+let nlFoodsNormalized = [];
+let nlFoodsLoading = true;
+let NL_FOOD_IDS = new Set();
+
+let foodsVersion = 0;
+let foodsIndexVersion = -1;
+let foodByIdMap = new Map();
+
+function markFoodsDirty() {
+  foodsVersion++;
+}
+
+function rebuildFoodIndex() {
+  const custom = state.customFoods.map(normalizeFoodForStorage);
+  const all = [...BUILTIN_NORMALIZED, ...custom, ...nlFoodsNormalized];
+  foodByIdMap = new Map();
+  for (const f of all) {
+    if (!f || !f.id) continue;
+    foodByIdMap.set(f.id, f);
+  }
+  foodsIndexVersion = foodsVersion;
+}
+
+function getFoodByIdMap() {
+  if (foodsIndexVersion !== foodsVersion) rebuildFoodIndex();
+  return foodByIdMap;
+}
 
 // Open Food Facts (OFF) is used as the online food source.
 // We keep OFF results in memory (not localStorage) and persist any selected item
@@ -175,8 +204,10 @@ function ensureFoodInCustom(food) {
   // For web foods: persist a snapshot in `customFoods` so logs stay correct after refresh.
   if (!food || !food.id) return;
   if (BUILTIN_FOOD_IDS.has(food.id)) return;
+  if (NL_FOOD_IDS.has(food.id)) return;
   if (state.customFoods.some((f) => f.id === food.id)) return;
   state.customFoods = [...state.customFoods, normalizeFoodForStorage(food)];
+  markFoodsDirty();
   saveState();
 }
 
@@ -296,17 +327,34 @@ function scheduleWebSearch(query) {
   }, 450);
 }
 
+async function loadNlFoodsDataset() {
+  nlFoodsLoading = true;
+  try {
+    const res = await fetch("./data/nl-foods.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`Failed to load nl-foods.json: ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("nl-foods.json is not an array");
+    nlFoodsNormalized = data.map(normalizeFoodForStorage);
+    NL_FOOD_IDS = new Set(nlFoodsNormalized.map((f) => f.id));
+  } catch (err) {
+    // Fallback: keep only builtin/custom foods until dataset is available.
+    console.warn(err?.message || String(err));
+    nlFoodsNormalized = [];
+    NL_FOOD_IDS = new Set();
+  } finally {
+    nlFoodsLoading = false;
+    markFoodsDirty();
+    renderAll();
+  }
+}
+
 function foodLibrary() {
-  const builtin = BUILTIN_FOODS.map(normalizeFoodForStorage);
   const custom = state.customFoods.map(normalizeFoodForStorage);
-  const web = webFoods.map(normalizeFoodForStorage);
-  return [...builtin, ...custom, ...web];
+  return [...BUILTIN_NORMALIZED, ...custom, ...nlFoodsNormalized];
 }
 
 function foodById() {
-  const map = new Map();
-  for (const f of foodLibrary()) map.set(f.id, f);
-  return map;
+  return getFoodByIdMap();
 }
 
 function getLogForDate(ymd) {
@@ -834,14 +882,14 @@ function renderFoodGrid() {
   const log = getLogForDate(state.selectedDate);
 
   if (!foods.length) {
-    grid.innerHTML = `<div class="muted">${webLoading ? "Loading web results..." : "No foods match your search."}</div>`;
+    grid.innerHTML = `<div class="muted">${nlFoodsLoading ? "Loading Dutch foods..." : "No foods match your search."}</div>`;
     return;
   }
 
-  if (webLoading && q) {
+  if (nlFoodsLoading && q) {
     const hint = document.createElement("div");
     hint.className = "muted small";
-    hint.textContent = "Loading more products from Open Food Facts...";
+    hint.textContent = "Loading Dutch food database...";
     grid.appendChild(hint);
   }
 
@@ -1058,6 +1106,8 @@ function renderAll() {
 }
 
 let state = loadState();
+// Custom foods (and later the Dutch dataset) affect which foods exist for calorie/macro calculations.
+markFoodsDirty();
 
 function initScheduleForm() {
   const startInput = $("#schedule-start");
@@ -1091,7 +1141,6 @@ function initScheduleForm() {
 function initFoodSearch() {
   $("#search")?.addEventListener("input", () => {
     renderFoodGrid();
-    scheduleWebSearch($("#search")?.value);
   });
   $("#category")?.addEventListener("change", () => renderFoodGrid());
 }
@@ -1140,6 +1189,7 @@ function initCustomFoodForm() {
     });
 
     state.customFoods = [...state.customFoods, food];
+    markFoodsDirty();
     saveState();
 
     // Also add 1 serving to the currently selected day.
@@ -1204,6 +1254,7 @@ function initModals() {
           }
         }
       }
+      markFoodsDirty();
       saveState();
       closeAllModals();
       renderAll();
@@ -1244,5 +1295,6 @@ initFoodSearch();
 initCustomFoodForm();
 initModals();
 
+loadNlFoodsDataset();
 renderAll();
 
