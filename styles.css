@@ -1270,6 +1270,57 @@ textarea:focus {
 }
 
 /* Schema: maaltijdplan */
+.schema-subtabs-wrap {
+  margin-bottom: 14px;
+}
+
+.schema-subtabs-wrap .schema-subtabs {
+  margin: 0;
+}
+
+.schema-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.schema-subtab {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid rgba(17, 24, 39, 0.14);
+  background: rgba(17, 24, 39, 0.03);
+  border-radius: 999px;
+  padding: 9px 14px;
+  font-weight: 800;
+  color: rgba(17, 24, 39, 0.84);
+  transition: transform 0.08s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.schema-subtab:hover {
+  transform: translateY(-1px);
+  border-color: rgba(17, 24, 39, 0.22);
+}
+
+.schema-subtab.is-active {
+  border-color: rgba(37, 99, 235, 0.55);
+  background: rgba(37, 99, 235, 0.12);
+  color: rgba(17, 24, 39, 0.96);
+}
+
+.schema-subtabs-wrap.card {
+  padding: 12px 16px;
+}
+
+.schema-plan-actions {
+  align-items: center;
+}
+
+a.inline-link-btn {
+  text-decoration: none;
+  text-align: center;
+}
+
 .schema-target-line {
   margin: 10px 0 14px;
   font-weight: 800;

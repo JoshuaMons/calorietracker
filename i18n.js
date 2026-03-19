@@ -21,17 +21,16 @@ export const ui = {
   home: {
     goalsTitle: "Doelen",
     goalsSave: "Doelen opslaan",
+    goalsIntro:
+      "Stel je dag- en weekdoelen in en kies welk doel het maaltijdschema volgt. Na opslag ga je automatisch naar Schema voor je stappenplan. Je logdag staat rechts bij Voortgang.",
     dayGoalField: "Dagdoel (kcal)",
     weekGoalField: "Weekdoel (kcal)",
-    monthGoalField: "Maanddoel (kcal)",
     dayGoalHint: "Per gekozen dag (o.a. suggesties en dagtotaal).",
     weekGoalHint: "Kalenderweek (ma–zo) rond de gekozen dag.",
-    monthGoalHint: "Hele kalendermaand van de gekozen dag.",
     progressTitle: "Voortgang",
     selectedDaySchema: "Geselecteerde logdag",
     tierDay: "Dagdoel",
     tierWeek: "Weekdoel",
-    tierMonth: "Maanddoel",
     remainingToday: "kcal resterend vandaag",
     ringDayPct: "Dag (%)",
     schemaLink: "Schema →",
@@ -46,8 +45,7 @@ export const ui = {
     planBasisLabel: "Schema op basis van",
     planBasisDaily: "Dagdoel (kcal/dag)",
     planBasisWeekly: "Weekdoel ÷ 7",
-    planBasisMonthly: "Maanddoel ÷ 30",
-    planBasisHint: "Het maaltijdschema op de pagina Schema gebruikt deze kcal per dag.",
+    planBasisHint: "Het maaltijdschema gebruikt deze kcal per dag (zie tab Stappenplan op Schema).",
     logDayTitle: "Logdag",
     logDayHint: "Welke dag je invult in dagboek en database.",
     logToday: "Vandaag",
@@ -58,6 +56,17 @@ export const ui = {
     intro:
       "Genereer een willekeurig stappenplan (hoog eiwit, beperkte kcal) dat aansluit op je gekozen doelbron op Start.",
     logDayNote: "Je logdag stel je in op Start — die dag wordt gebruikt voor dagtotaal, suggesties en macro’s.",
+    subTabPlan: "Stappenplan",
+    subTabStatus: "Huidige stand",
+    resetPlanBtn: "Plan wissen",
+    otherGoalBtn: "Ander doel kiezen",
+    resetPlanHint:
+      "Plan wissen verwijdert alleen het gegenereerde schema; je doelen blijven staan. Ga naar Start om je doelen aan te passen.",
+    statusTitle: "Huidige stand",
+    statusIntro: "Zelfde voortgang als op Start: dag- en weekdoel voor je gekozen logdag (zonder maanddoel).",
+    linkHome: "Start →",
+    linkLibrary: "Voedingsdatabase →",
+    linkLog: "Dagtotaal →",
   },
 
   summaryLines: {
@@ -187,12 +196,11 @@ export const ui = {
   schemaPlan: {
     title: "Maaltijdschema (hoog eiwit, beperkt kcal)",
     intro:
-      "Dit schema sluit aan op je doelen van Start. Kies hoeveel dagen je wilt plannen en genereer een geshud stappenplan. Drink vooral water/thee; beperk suiker en alcohol.",
+      "Dit schema sluit aan op je dag- of weekdoel van Start. Kies hoeveel dagen je wilt plannen en genereer een geshud stappenplan. Drink vooral water/thee; beperk suiker en alcohol.",
     targetLine: (kcal, basis) =>
       `Rekening gehouden met ca. ${kcal} kcal per dag (bron: ${basis}).`,
     basisDaily: "dagdoel",
     basisWeekly: "weekdoel ÷ 7",
-    basisMonthly: "maanddoel ÷ 30",
     durationLabel: "Duur van het plan",
     duration1: "1 dag",
     duration3: "3 dagen",

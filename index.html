@@ -44,30 +44,22 @@
     </header>
 
     <main class="container">
-      <!-- Start: alleen doelen (dag / week / maand) -->
+      <!-- Start: doelen dag / week → daarna Schema -->
       <section id="page-home" class="page is-active">
         <section class="grid grid-2">
           <div class="card">
             <h2>Doelen</h2>
-            <p class="muted small" style="margin-top: 0">
-              Stel je calorie-limieten in. Kies welk doel het <strong>maaltijdschema</strong> moet volgen. Je logdag voor
-              dagboek en suggesties staat rechts bij Voortgang.
-            </p>
+            <p class="muted small" style="margin-top: 0" id="home-goals-intro"></p>
             <form id="goals-form" class="form">
               <label class="field">
                 <span>Dagdoel (kcal)</span>
                 <input id="goal-daily" type="number" min="100" max="20000" step="10" required />
-                <span class="hint">Per gekozen dag (o.a. suggesties en dagboek).</span>
+                <span class="hint">Per gekozen dag (o.a. suggesties en dagtotaal).</span>
               </label>
               <label class="field">
                 <span>Weekdoel (kcal)</span>
                 <input id="goal-weekly" type="number" min="500" max="500000" step="50" required />
                 <span class="hint">Kalenderweek (ma–zo) rond de gekozen dag.</span>
-              </label>
-              <label class="field">
-                <span>Maanddoel (kcal)</span>
-                <input id="goal-monthly" type="number" min="1000" max="2000000" step="100" required />
-                <span class="hint">Hele kalendermaand van de gekozen dag.</span>
               </label>
               <fieldset class="field plan-basis-fieldset">
                 <legend class="plan-basis-legend">Schema op basis van</legend>
@@ -76,15 +68,12 @@
                     ><input type="radio" name="plan-basis" value="daily" checked /> Dagdoel (kcal/dag)</label
                   >
                   <label class="radio-label"><input type="radio" name="plan-basis" value="weekly" /> Weekdoel ÷ 7</label>
-                  <label class="radio-label"
-                    ><input type="radio" name="plan-basis" value="monthly" /> Maanddoel ÷ 30</label
-                  >
                 </div>
                 <p class="hint plan-basis-hint" style="margin: 0">
-                  Het maaltijdschema op de pagina Schema gebruikt deze kcal per dag.
+                  Het maaltijdschema gebruikt deze kcal per dag. Na opslag ga je naar Schema voor je stappenplan.
                 </p>
               </fieldset>
-              <button class="btn btn-primary" type="submit">Doelen opslaan</button>
+              <button class="btn btn-primary" type="submit" id="btn-goals-save">Doelen opslaan</button>
             </form>
           </div>
 
@@ -148,24 +137,6 @@
                   </div>
                 </div>
 
-                <div class="goal-tier">
-                  <div class="goal-tier-head">
-                    <span class="goal-tier-title">Maanddoel</span>
-                    <span class="goal-tier-nums"
-                      ><span id="consumed-month-label">0</span> / <span id="goal-monthly-display">0</span> kcal</span
-                    >
-                  </div>
-                  <div class="progress-bar-wrap progress-bar-wrap-compact">
-                    <div
-                      id="progress-bar-month"
-                      class="progress-bar"
-                      role="progressbar"
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                      aria-valuenow="0"
-                    ></div>
-                  </div>
-                </div>
               </div>
 
               <div class="ring-wrap ring-wrap-compact" style="margin-top: 8px; justify-content: flex-start">
@@ -192,28 +163,148 @@
         </section>
       </section>
 
-      <!-- Schema: maaltijdplan randomizer -->
+      <!-- Schema: subtab Stappenplan | Huidige stand -->
       <section id="page-schema" class="page">
-        <section class="card">
-          <h2 id="schema-heading">Maaltijdschema</h2>
-          <p class="muted small" id="schema-intro"></p>
-          <p class="muted small" id="schema-logday-note"></p>
-          <p class="schema-target-line" id="meal-plan-target" aria-live="polite"></p>
-          <div class="meal-plan-toolbar row">
-            <label class="field compact meal-plan-duration-field">
-              <span id="meal-plan-duration-label">Duur van het plan</span>
-              <select id="meal-plan-duration" aria-labelledby="meal-plan-duration-label">
-                <option value="1">1 dag</option>
-                <option value="3">3 dagen</option>
-                <option value="7" selected>7 dagen</option>
-                <option value="14">14 dagen</option>
-              </select>
-            </label>
-            <button id="btn-generate-meal-plan" class="btn btn-primary" type="button">Nieuw plan genereren</button>
+        <div class="card schema-subtabs-wrap">
+          <div class="schema-subtabs" role="tablist" aria-label="Schema">
+            <button
+              type="button"
+              class="schema-subtab is-active"
+              role="tab"
+              id="schema-subtab-plan"
+              aria-selected="true"
+              aria-controls="schema-panel-plan"
+              data-schema-subtab="plan"
+            ></button>
+            <button
+              type="button"
+              class="schema-subtab"
+              role="tab"
+              id="schema-subtab-status"
+              aria-selected="false"
+              aria-controls="schema-panel-status"
+              data-schema-subtab="status"
+            ></button>
           </div>
-          <p class="muted small" id="meal-plan-generate-hint"></p>
-          <div id="meal-plan-output" class="meal-plan-output" aria-live="polite"></div>
-        </section>
+        </div>
+
+        <div id="schema-panel-plan" class="schema-subpanel is-active" role="tabpanel" aria-labelledby="schema-subtab-plan">
+          <section class="card">
+            <h2 id="schema-heading">Maaltijdschema</h2>
+            <p class="muted small" id="schema-intro"></p>
+            <p class="muted small" id="schema-logday-note"></p>
+            <p class="schema-target-line" id="meal-plan-target" aria-live="polite"></p>
+
+            <div class="schema-plan-actions row" style="flex-wrap: wrap; gap: 10px; margin-bottom: 12px">
+              <button id="btn-generate-meal-plan" class="btn btn-primary" type="button"></button>
+              <button id="btn-schema-reset-plan" class="btn" type="button"></button>
+              <a class="btn btn-ghost inline-link-btn" href="#/home" id="btn-schema-other-goal"></a>
+            </div>
+
+            <div class="meal-plan-toolbar row">
+              <label class="field compact meal-plan-duration-field">
+                <span id="meal-plan-duration-label">Duur van het plan</span>
+                <select id="meal-plan-duration" aria-labelledby="meal-plan-duration-label">
+                  <option value="1">1 dag</option>
+                  <option value="3">3 dagen</option>
+                  <option value="7" selected>7 dagen</option>
+                  <option value="14">14 dagen</option>
+                </select>
+              </label>
+            </div>
+            <p class="muted small" id="meal-plan-generate-hint"></p>
+            <p class="muted small" id="schema-reset-hint"></p>
+            <div id="meal-plan-output" class="meal-plan-output" aria-live="polite"></div>
+          </section>
+        </div>
+
+        <div
+          id="schema-panel-status"
+          class="schema-subpanel"
+          role="tabpanel"
+          hidden
+          aria-labelledby="schema-subtab-status"
+        >
+          <section class="card">
+            <h2 id="schema-status-heading"></h2>
+            <p class="muted small" id="schema-status-intro"></p>
+
+            <div class="summary summary-compact schema-status-summary">
+              <div class="summary-top summary-compact-top" style="align-items: flex-start">
+                <div>
+                  <div class="muted small" id="schema-status-day-caption"></div>
+                  <div class="summary-day" id="schema-status-day-label">—</div>
+                </div>
+              </div>
+
+              <div class="goal-tiers">
+                <div class="goal-tier">
+                  <div class="goal-tier-head">
+                    <span class="goal-tier-title" id="schema-tier-day-title"></span>
+                    <span class="goal-tier-nums"
+                      ><span id="schema-consumed-label">0</span> /
+                      <span id="schema-goal-daily-display">0</span> kcal</span
+                    >
+                  </div>
+                  <div class="progress-bar-wrap progress-bar-wrap-compact">
+                    <div
+                      id="schema-progress-bar-day"
+                      class="progress-bar"
+                      role="progressbar"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-valuenow="0"
+                    ></div>
+                  </div>
+                  <div class="muted small">
+                    <strong id="schema-remaining-label">0</strong>
+                    <span id="schema-remaining-suffix"></span>
+                  </div>
+                </div>
+
+                <div class="goal-tier">
+                  <div class="goal-tier-head">
+                    <span class="goal-tier-title" id="schema-tier-week-title"></span>
+                    <span class="goal-tier-nums"
+                      ><span id="schema-consumed-week-label">0</span> /
+                      <span id="schema-goal-weekly-display">0</span> kcal</span
+                    >
+                  </div>
+                  <div class="progress-bar-wrap progress-bar-wrap-compact">
+                    <div
+                      id="schema-progress-bar-week"
+                      class="progress-bar"
+                      role="progressbar"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-valuenow="0"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ring-wrap ring-wrap-compact" style="margin-top: 8px; justify-content: flex-start">
+                <div
+                  id="schema-calorie-ring"
+                  class="calorie-ring calorie-ring-compact"
+                  role="img"
+                  aria-label="Dag-voortgang"
+                ></div>
+                <div class="ring-text">
+                  <div class="muted small" id="schema-ring-caption"></div>
+                  <div id="schema-ring-percent" class="ring-main">0%</div>
+                </div>
+              </div>
+
+              <p class="muted small summary-one-liner" id="schema-summary-one-liner" aria-live="polite"></p>
+              <p class="muted small" style="margin: 0">
+                <a class="inline-link" href="#/home" id="schema-link-home"></a> ·
+                <a class="inline-link" href="#/library" id="schema-link-library"></a> ·
+                <a class="inline-link" href="#/log" id="schema-link-log"></a>
+              </p>
+            </div>
+          </section>
+        </div>
       </section>
 
       <!-- Tips: suggesties + vaste recepten -->
