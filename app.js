@@ -148,7 +148,6 @@ function makeImageQuery(food) {
   const tags = Array.isArray(food?.tags) ? food.tags.slice(0, 2).join(" ") : "";
 
   const raw = [base, cat, tags].filter(Boolean).join(" ");
-  // Unsplash “source” works best with clean keyword strings.
   return raw
     .toLowerCase()
     .replace(/[^a-z0-9 ]+/g, " ")
@@ -156,16 +155,30 @@ function makeImageQuery(food) {
     .trim();
 }
 
-function makeImageUrl(food) {
+function makeLoremFlickrTag(food) {
   const query = makeImageQuery(food);
-  const q = encodeURIComponent(query || "food");
-  return `https://source.unsplash.com/400x300/?${q}`;
+  const words = query
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(",");
+  return words || "food";
+}
+
+function makeImageUrl(food) {
+  // Uses a public image endpoint with topic tags (not Unsplash).
+  const tags = makeLoremFlickrTag(food);
+  return `https://loremflickr.com/400/300/${encodeURIComponent(tags)}`;
 }
 
 function makeImageFallbackUrl(food) {
-  const query = makeImageQuery(food) || "food";
-  const q = encodeURIComponent(`${query} food`);
-  return `https://source.unsplash.com/400x300/?${q}`;
+  const cat = String(food?.category || "").toLowerCase();
+  let tags = "food";
+  if (cat === "drink") tags = "drink,beverage";
+  else if (cat === "snack") tags = "snack,food";
+  else if (cat === "meal") tags = "meal,plate,food";
+  else if (cat === "ingredient") tags = "ingredient,food";
+  return `https://loremflickr.com/400/300/${encodeURIComponent(tags)}`;
 }
 
 const IMAGE_PLACEHOLDER_URL =
@@ -337,7 +350,7 @@ async function fetchOpenFoodFacts(query) {
         category: guessCategoryFromTags(p.categories_tags),
         caloriesPerServing: Number.isFinite(kcal) ? kcal : 0,
         servingLabel: "100g",
-        // We intentionally use Unsplash for all images, so we only set keywords here.
+        // We only store keywords; image URL is generated client-side.
         imageQuery: `${p.product_name || name} ${p.brands || ""}`.trim(),
         proteinPerBaseAmount: Number.isFinite(protein) ? protein : undefined,
         carbsPerBaseAmount: Number.isFinite(carbs) ? carbs : undefined,
@@ -747,7 +760,7 @@ function renderSuggestions() {
     const el = document.createElement("div");
     el.className = "suggestion";
     el.innerHTML = `
-      <img alt="" loading="lazy" src="${IMAGE_PLACEHOLDER_URL}" width="60" height="50" />
+      <img alt="" loading="lazy" src="${makeImageUrl(food)}" width="60" height="50" />
       <div>
         <div class="name">${escapeHtml(food.name)}</div>
         <div class="meta">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 serving")}</div>
@@ -759,6 +772,7 @@ function renderSuggestions() {
       imgEl.dataset.openverse = "1";
       imgEl.dataset.imgQuery = makeImageQuery(food);
       imgEl.alt = `${food.name || "Food"} (Openverse)`;
+      attachImageErrorFallback(imgEl, food);
     }
     el.querySelector("button")?.addEventListener("click", () => {
       const log = getLogForDate(state.selectedDate);
