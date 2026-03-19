@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Calorie Tracker</title>
+    <meta name="description" content="Track what you eat and drink, set calorie goals, and get smart suggestions." />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container header-inner">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">C</div>
+          <div>
+            <h1 class="brand-title">Calorie Tracker</h1>
+            <p class="brand-subtitle">Daily checkoff + goal countdown</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="btn-export" class="btn btn-ghost" type="button">Export</button>
+          <button id="btn-import" class="btn btn-ghost" type="button">Import</button>
+          <button id="btn-reset-log" class="btn btn-danger" type="button" title="Clears only food logs (keeps schedule + goals).">
+            Reset today
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="grid grid-2">
+        <div class="card">
+          <h2>Schedule & Goals</h2>
+          <form id="schedule-form" class="form">
+            <label class="field">
+              <span>Schedule start date</span>
+              <input id="schedule-start" type="date" required />
+            </label>
+            <label class="field">
+              <span>Number of days</span>
+              <input id="schedule-days" type="number" min="1" max="365" value="7" required />
+            </label>
+            <label class="field">
+              <span>Daily calorie goal</span>
+              <input id="schedule-goal" type="number" min="100" max="20000" step="10" required />
+              <span class="hint">Calories per day (used for remaining + suggestions).</span>
+            </label>
+            <div class="row">
+              <button class="btn btn-primary" type="submit">Create schedule</button>
+              <button id="btn-use-today" class="btn" type="button" title="Uses schedule goal for today without changing the schedule.">
+                Use today
+              </button>
+            </div>
+          </form>
+
+          <div class="separator"></div>
+
+          <div class="date-strip">
+            <div class="date-strip-head">
+              <h3>Pick a day</h3>
+              <div class="muted" id="schedule-meta"></div>
+            </div>
+            <div id="date-strip" class="date-strip-list" aria-label="Schedule days"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Daily Summary</h2>
+          <div class="summary">
+            <div class="summary-top">
+              <div>
+                <div class="muted">Selected day</div>
+                <div class="summary-day" id="selected-day-label">—</div>
+              </div>
+              <div class="pill" id="goal-pill">Goal: —</div>
+            </div>
+            <div class="progress">
+              <div class="progress-bar-wrap">
+                <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+              </div>
+              <div class="progress-nums">
+                <div><strong id="consumed-label">0</strong> kcal eaten</div>
+                <div><strong id="remaining-label">0</strong> kcal remaining</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="separator"></div>
+
+          <div class="suggestions">
+            <h3>Suggestions (snacks/drinks)</h3>
+            <p class="muted small">
+              Based on your remaining calories. If you already ate everything, add a custom food below.
+            </p>
+            <div id="suggestions-list" class="suggestions-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Food Library</h2>
+            <p class="muted">
+              Check off what you ate and drank. Quantity multiplies calories.
+              Searching pulls products (with pictures) from Open Food Facts; calories are shown as “per 100g”.
+            </p>
+          </div>
+          <div class="library-controls">
+            <label class="search">
+              <span class="sr-only">Search foods</span>
+              <input id="search" type="search" placeholder="Search (e.g. chicken, yogurt, soda)" autocomplete="off" />
+            </label>
+            <label class="field compact">
+              <span class="sr-only">Category filter</span>
+              <select id="category">
+                <option value="all">All categories</option>
+                <option value="Meal">Meals</option>
+                <option value="Snack">Snacks</option>
+                <option value="Drink">Drinks</option>
+                <option value="Ingredient">Ingredients</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div id="food-grid" class="food-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="card grid grid-2" style="align-items:start;">
+        <div>
+          <h2>Selected Items</h2>
+          <div id="selected-items" class="selected-items"></div>
+        </div>
+
+        <div>
+          <h2>Add Custom Food</h2>
+          <form id="custom-food-form" class="form">
+            <label class="field">
+              <span>Name</span>
+              <input id="custom-name" type="text" required maxlength="80" />
+            </label>
+            <label class="field">
+              <span>Category</span>
+              <select id="custom-category" required>
+                <option value="Meal">Meals</option>
+                <option value="Snack">Snacks</option>
+                <option value="Drink">Drinks</option>
+                <option value="Ingredient">Ingredients</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Calories per serving</span>
+              <input id="custom-kcal" type="number" min="0" step="1" required />
+            </label>
+            <label class="field">
+              <span>Serving label</span>
+              <input id="custom-serving" type="text" placeholder="e.g. 1 bar (40g)" maxlength="40" />
+            </label>
+            <label class="field">
+              <span>Picture keywords (optional)</span>
+              <input id="custom-image-query" type="text" placeholder="e.g. granola bar, chocolate" maxlength="80" />
+            </label>
+            <label class="field">
+              <span>Ingredients (optional)</span>
+              <textarea id="custom-ingredients" rows="4" placeholder="Comma-separated ingredients (e.g. oats, honey, cocoa)"></textarea>
+            </label>
+            <button class="btn btn-primary" type="submit">Add to library</button>
+            <p class="muted small">
+              Note: I cannot scrape “all foods on the internet” automatically. This MVP ships with a starter library, and you can add anything you eat.
+            </p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <!-- Details modal -->
+    <div id="modal-backdrop" class="modal-backdrop" hidden></div>
+    <div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-label="Food details">
+      <div class="modal-inner">
+        <div class="modal-head">
+          <div>
+            <div class="modal-kicker" id="modal-category">—</div>
+            <h3 id="modal-title">—</h3>
+          </div>
+          <button id="modal-close" class="btn btn-ghost" type="button" aria-label="Close details">Close</button>
+        </div>
+        <div class="modal-body">
+          <img id="modal-image" class="modal-image" alt="" loading="lazy" />
+          <div class="modal-meta">
+            <div class="meta-row"><span class="muted">Calories</span> <strong id="modal-kcal">—</strong> <span class="muted">kcal per serving</span></div>
+            <div class="meta-row" id="modal-serving-row"><span class="muted">Serving</span> <span id="modal-serving">—</span></div>
+            <div class="meta-row">
+              <span class="muted">Ingredients</span>
+              <div id="modal-ingredients" class="modal-ingredients"></div>
+            </div>
+
+            <div class="row" style="margin-top: 0.75rem;">
+              <button id="modal-toggle" class="btn btn-primary" type="button">Add / Remove</button>
+            </div>
+            <div class="muted small">
+              Tip: use the quantity stepper on the card for multi-serving logging.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import modal -->
+    <div id="import-backdrop" class="modal-backdrop" hidden></div>
+    <div id="import-modal" class="modal" hidden role="dialog" aria-modal="true" aria-label="Import data">
+      <div class="modal-inner">
+        <div class="modal-head">
+          <div>
+            <div class="modal-kicker">Data</div>
+            <h3>Export / Import</h3>
+          </div>
+          <button id="import-close" class="btn btn-ghost" type="button" aria-label="Close import">Close</button>
+        </div>
+        <div class="modal-body">
+          <label class="field">
+            <span>Paste JSON</span>
+            <textarea id="import-text" rows="8" placeholder='{"schedule":...,"logs":...,"customFoods":[...]}'></textarea>
+          </label>
+          <div class="row">
+            <button id="btn-do-import" class="btn btn-primary" type="button">Import</button>
+          </div>
+          <p class="muted small">Import overwrites your current app state.</p>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./foods.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
+
