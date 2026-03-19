@@ -206,6 +206,13 @@ def main() -> None:
     with open(out_json, "w", encoding="utf-8") as out:
         json.dump(items, out, ensure_ascii=False, separators=(",", ":"))
 
+    # Small “core” file for fast first paint (first N items)
+    core_path = os.path.join(args.out_dir, "nl-foods-core.json")
+    core_n = min(150, len(items))
+    with open(core_path, "w", encoding="utf-8") as outc:
+        json.dump(items[:core_n], outc, ensure_ascii=False, separators=(",", ":"))
+    print("Wrote:", core_path, f"({core_n} items)")
+
     # Also write gzip version for backup.
     with gzip.open(out_gz, "wt", encoding="utf-8", compresslevel=9) as outgz:
         json.dump(items, outgz, ensure_ascii=False, separators=(",", ":"))

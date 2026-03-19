@@ -1,6 +1,12 @@
 import { BUILTIN_FOODS, normalizeFoodForStorage } from "./foods.js";
+import { ui } from "./i18n.js";
 
 const STORAGE_KEY = "calorieTracker.v1";
+const LOCALE = "nl-NL";
+
+function catLabel(category) {
+  return ui.categories[category] || category || "—";
+}
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -10,6 +16,9 @@ const BUILTIN_NORMALIZED = BUILTIN_FOODS.map(normalizeFoodForStorage);
 let nlFoodsNormalized = [];
 let nlFoodsLoading = true;
 let NL_FOOD_IDS = new Set();
+let nlFoodsFullLoaded = false;
+let nlFoodsFullLoading = false;
+let nlFoodsFullTimer = null;
 
 let foodsVersion = 0;
 let foodsIndexVersion = -1;
@@ -115,14 +124,13 @@ function addDaysYMD(startYMD, deltaDays) {
 function formatNiceDate(ymd) {
   const [y, m, d] = ymd.split("-").map(Number);
   const dt = new Date(y, m - 1, d);
-  const parts = dt.toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "short", day: "numeric" });
-  return parts;
+  return dt.toLocaleDateString(LOCALE, { weekday: "short", year: "numeric", month: "short", day: "numeric" });
 }
 
 function formatShortDay(ymd) {
   const [y, m, d] = ymd.split("-").map(Number);
   const dt = new Date(y, m - 1, d);
-  const dow = dt.toLocaleDateString(undefined, { weekday: "short" });
+  const dow = dt.toLocaleDateString(LOCALE, { weekday: "short" });
   return `${dow} ${d}`;
 }
 
@@ -143,42 +151,26 @@ function hashCode(str) {
 }
 
 function makeImageQuery(food) {
-  const base = (food?.imageQuery || food?.name || "food").trim();
-  const cat = food?.category ? String(food.category).trim() : "";
+  const base = (food?.imageQuery || food?.name || "").trim();
+  const cat = String(food?.category || "").toLowerCase();
+  const catHint =
+    cat === "drink"
+      ? "drink beverage"
+      : cat === "snack"
+        ? "snack food"
+        : cat === "meal"
+          ? "meal dish plate"
+          : cat === "ingredient"
+            ? "ingredient cooking"
+            : "food";
   const tags = Array.isArray(food?.tags) ? food.tags.slice(0, 2).join(" ") : "";
-
-  const raw = [base, cat, tags].filter(Boolean).join(" ");
+  const raw = [base, catHint, tags].filter(Boolean).join(" ");
   return raw
     .toLowerCase()
-    .replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/[^a-z0-9\u00C0-\u024f ]+/gi, " ")
     .replace(/\s+/g, " ")
-    .trim();
-}
-
-function makeLoremFlickrTag(food) {
-  const query = makeImageQuery(food);
-  const words = query
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 3)
-    .join(",");
-  return words || "food";
-}
-
-function makeImageUrl(food) {
-  // Uses a public image endpoint with topic tags (not Unsplash).
-  const tags = makeLoremFlickrTag(food);
-  return `https://loremflickr.com/400/300/${encodeURIComponent(tags)}`;
-}
-
-function makeImageFallbackUrl(food) {
-  const cat = String(food?.category || "").toLowerCase();
-  let tags = "food";
-  if (cat === "drink") tags = "drink,beverage";
-  else if (cat === "snack") tags = "snack,food";
-  else if (cat === "meal") tags = "meal,plate,food";
-  else if (cat === "ingredient") tags = "ingredient,food";
-  return `https://loremflickr.com/400/300/${encodeURIComponent(tags)}`;
+    .trim()
+    .slice(0, 100);
 }
 
 const IMAGE_PLACEHOLDER_URL =
@@ -187,17 +179,11 @@ const IMAGE_PLACEHOLDER_URL =
     `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="#f3f4f7"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="18" fill="#6b7280">Food</text></svg>`,
   );
 
-function attachImageErrorFallback(imgEl, food) {
+function attachImageErrorFallback(imgEl) {
   if (!imgEl) return;
   imgEl.onerror = () => {
     imgEl.onerror = null;
-    const tried = imgEl.dataset.imgTried || "";
-    if (tried === "1") {
-      imgEl.src = IMAGE_PLACEHOLDER_URL;
-      return;
-    }
-    imgEl.dataset.imgTried = "1";
-    imgEl.src = makeImageFallbackUrl(food);
+    imgEl.src = IMAGE_PLACEHOLDER_URL;
   };
 }
 
@@ -205,6 +191,65 @@ function attachImageErrorFallback(imgEl, food) {
 const OPENVERSE_IMAGES_API = "https://api.openverse.engineering/v1/images/";
 const openverseImageCache = new Map();
 let suggestionsOpenverseGen = 0;
+
+const ovWaiters = [];
+let ovInFlight = 0;
+const OV_MAX_CONCURRENT = 3;
+
+async function ovAcquire() {
+  if (ovInFlight < OV_MAX_CONCURRENT) {
+    ovInFlight++;
+    return;
+  }
+  await new Promise((resolve) => ovWaiters.push(resolve));
+  ovInFlight++;
+}
+
+function ovRelease() {
+  ovInFlight = Math.max(0, ovInFlight - 1);
+  const next = ovWaiters.shift();
+  if (next) next();
+}
+
+async function fetchOpenverseThumbnailForQueryQueued(query) {
+  await ovAcquire();
+  try {
+    return await fetchOpenverseThumbnailForQuery(query);
+  } finally {
+    ovRelease();
+  }
+}
+
+let foodThumbObserver;
+
+function observeFoodThumb(img) {
+  if (!img) return;
+  if (!foodThumbObserver) {
+    foodThumbObserver = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const el = e.target;
+          foodThumbObserver.unobserve(el);
+          const q = el.dataset.ovQ || "";
+          void loadOpenverseIntoImg(el, q);
+        }
+      },
+      { root: null, rootMargin: "140px", threshold: 0.01 },
+    );
+  }
+  foodThumbObserver.observe(img);
+}
+
+async function loadOpenverseIntoImg(img, queryText) {
+  if (!img) return;
+  const url = await fetchOpenverseThumbnailForQueryQueued(queryText || "food");
+  if (!img.isConnected) return;
+  if (url) {
+    attachImageErrorFallback(img);
+    img.src = url;
+  }
+}
 
 async function fetchOpenverseThumbnailForQuery(query) {
   const qBase = (query || "healthy food")
@@ -239,14 +284,11 @@ async function hydrateOpenverseSuggestionImages(container, gen) {
   for (const img of imgs) {
     if (gen !== suggestionsOpenverseGen) return;
     const foodQuery = img.dataset.imgQuery || "";
-    const url = await fetchOpenverseThumbnailForQuery(foodQuery);
+    const url = await fetchOpenverseThumbnailForQueryQueued(foodQuery);
     if (gen !== suggestionsOpenverseGen) return;
     if (!img.isConnected) continue;
     if (url) {
-      img.onerror = () => {
-        img.onerror = null;
-        img.src = IMAGE_PLACEHOLDER_URL;
-      };
+      attachImageErrorFallback(img);
       img.src = url;
     }
   }
@@ -391,22 +433,51 @@ function scheduleWebSearch(query) {
   }, 450);
 }
 
-async function loadNlFoodsDataset() {
+function scheduleNlFoodsFullLoad() {
+  if (nlFoodsFullLoaded || nlFoodsFullLoading) return;
+  if (nlFoodsFullTimer) window.clearTimeout(nlFoodsFullTimer);
+  nlFoodsFullTimer = window.setTimeout(() => {
+    nlFoodsFullTimer = null;
+    void loadNlFoodsFull();
+  }, 250);
+}
+
+async function loadNlFoodsCore() {
   nlFoodsLoading = true;
   try {
-    const res = await fetch("./data/nl-foods.json", { cache: "no-store" });
-    if (!res.ok) throw new Error(`Failed to load nl-foods.json: ${res.status}`);
+    const res = await fetch("./data/nl-foods-core.json", { cache: "force-cache" });
+    if (!res.ok) throw new Error(`nl-foods-core.json ${res.status}`);
     const data = await res.json();
-    if (!Array.isArray(data)) throw new Error("nl-foods.json is not an array");
+    if (!Array.isArray(data)) throw new Error("nl-foods-core.json invalid");
     nlFoodsNormalized = data.map(normalizeFoodForStorage);
     NL_FOOD_IDS = new Set(nlFoodsNormalized.map((f) => f.id));
   } catch (err) {
-    // Fallback: keep only builtin/custom foods until dataset is available.
     console.warn(err?.message || String(err));
     nlFoodsNormalized = [];
     NL_FOOD_IDS = new Set();
   } finally {
     nlFoodsLoading = false;
+    markFoodsDirty();
+    renderAll();
+  }
+}
+
+async function loadNlFoodsFull() {
+  if (nlFoodsFullLoaded || nlFoodsFullLoading) return;
+  nlFoodsFullLoading = true;
+  renderFoodGrid();
+  try {
+    const res = await fetch("./data/nl-foods.json", { cache: "force-cache" });
+    if (!res.ok) throw new Error(`nl-foods.json ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("nl-foods.json invalid");
+    nlFoodsNormalized = data.map(normalizeFoodForStorage);
+    NL_FOOD_IDS = new Set(nlFoodsNormalized.map((f) => f.id));
+    nlFoodsFullLoaded = true;
+  } catch (err) {
+    console.warn(err?.message || String(err));
+  } finally {
+    nlFoodsFullLoading = false;
     markFoodsDirty();
     renderAll();
   }
@@ -553,26 +624,32 @@ function matchesFoodQuery(food, query) {
   return hay.includes(q);
 }
 
+function suggestionFoodPool() {
+  const custom = state.customFoods.map(normalizeFoodForStorage);
+  return [...BUILTIN_NORMALIZED, ...custom].filter(
+    (f) =>
+      f &&
+      Number.isFinite(f.caloriesPerServing) &&
+      f.caloriesPerServing > 0 &&
+      ["Snack", "Drink"].includes(f.category),
+  );
+}
+
 function computeSuggestions(dateYMD) {
   const goal = currentGoal();
   const { consumed } = calcTotalsForDate(dateYMD);
   const remaining = goal - consumed;
-  const foodMap = foodById();
   const log = getLogForDate(dateYMD);
 
   if (remaining <= 0) {
     return { remaining, suggestions: [] };
   }
 
-  const allFoods = foodLibrary()
-    .filter((f) => f && Number.isFinite(f.caloriesPerServing))
-    .filter((f) => f.caloriesPerServing > 0)
-    .filter((f) => ["Snack", "Drink"].includes(f.category))
-    .filter((f) => {
-      const entry = log[f.id];
-      const qty = entry && typeof entry === "object" ? entry.qty : 0;
-      return !(qty > 0);
-    });
+  const allFoods = suggestionFoodPool().filter((f) => {
+    const entry = log[f.id];
+    const qty = entry && typeof entry === "object" ? entry.qty : 0;
+    return !(qty > 0);
+  });
 
   const target = remaining;
   const suitable = allFoods
@@ -595,9 +672,12 @@ function computeSuggestions(dateYMD) {
     }
   }
 
-  // If still empty, fall back to any snack/drink not in log (even if 0 calories items exist).
   if (suggestions.length === 0) {
-    const fallback = foodLibrary().filter((f) => ["Snack", "Drink"].includes(f.category) && f.caloriesPerServing >= 0);
+    const fallback = suggestionFoodPool().filter((f) => {
+      const entry = log[f.id];
+      const qty = entry && typeof entry === "object" ? entry.qty : 0;
+      return !(qty > 0);
+    });
     return { remaining, suggestions: fallback.slice(0, 5) };
   }
 
@@ -614,7 +694,7 @@ function renderSchedule() {
   strip.innerHTML = "";
 
   const meta = $("#schedule-meta");
-  meta.textContent = `${state.schedule.days} days`;
+  meta.textContent = ui.home.daysCount(state.schedule.days);
 
   for (const ymd of days) {
     const btn = document.createElement("button");
@@ -642,12 +722,12 @@ function renderSummary() {
   const ringPercentEl = $("#ring-percent");
 
   const ymd = state.selectedDate;
-  const { consumed, macros } = calcTotalsForDate(ymd);
+  const { consumed } = calcTotalsForDate(ymd);
   const goal = currentGoal();
   const remaining = goal - consumed;
 
   dayLabel.textContent = formatNiceDate(ymd);
-  goalPill.textContent = `Goal: ${goal} kcal`;
+  goalPill.textContent = ui.home.goalPill(goal);
   consumedEl.textContent = Math.round(consumed);
   remainingEl.textContent = Math.round(remaining);
 
@@ -668,15 +748,15 @@ function renderSummary() {
     const c = Math.round(consumed);
     const r = Math.round(remaining);
     if (g <= 0) {
-      oneLiner.textContent = "";
+      oneLiner.textContent = ui.summaryLines.emptyGoal;
     } else if (r < 0) {
-      oneLiner.textContent = `You’re about ${Math.abs(r)} kcal over today’s goal — adjust tomorrow or move a bit more.`;
+      oneLiner.textContent = ui.summaryLines.overGoal(Math.abs(r));
     } else if (c >= g) {
-      oneLiner.textContent = "You’ve hit your calorie goal for this day. Great work.";
+      oneLiner.textContent = ui.summaryLines.hitGoal;
     } else if (c === 0) {
-      oneLiner.textContent = `Nothing logged yet — ${r} kcal left to plan for ${formatShortDay(ymd)}.`;
+      oneLiner.textContent = ui.summaryLines.nothingLogged(r, formatShortDay(ymd));
     } else {
-      oneLiner.textContent = `${c} kcal logged · ${r} kcal still available toward your ${g} kcal goal.`;
+      oneLiner.textContent = ui.summaryLines.normal(c, r, g);
     }
   }
 }
@@ -694,7 +774,7 @@ function renderMacroBreakdown(macros, remaining) {
   if (!wrap) return;
 
   if (!macros || !macros.hasAnyMacro) {
-    wrap.innerHTML = `<div class="muted">No macro data available for logged foods yet. Add custom macros or use Open Food Facts foods.</div>`;
+    wrap.innerHTML = `<div class="muted">${escapeHtml(ui.stats.macrosEmpty)}</div>`;
     return;
   }
 
@@ -706,7 +786,7 @@ function renderMacroBreakdown(macros, remaining) {
   wrap.innerHTML = `
     <div class="macro-row">
       <div class="macro-row-top">
-        <span>Protein</span>
+        <span>${escapeHtml(ui.stats.protein)}</span>
         <span>${macros.proteinGrams.toFixed(0)}g</span>
       </div>
       <div class="macro-bar-wrap"><div class="macro-bar" style="--w:${proteinPct}%"></div></div>
@@ -714,7 +794,7 @@ function renderMacroBreakdown(macros, remaining) {
     </div>
     <div class="macro-row">
       <div class="macro-row-top">
-        <span>Carbs</span>
+        <span>${escapeHtml(ui.stats.carbs)}</span>
         <span>${macros.carbsGrams.toFixed(0)}g</span>
       </div>
       <div class="macro-bar-wrap"><div class="macro-bar" style="--w:${carbsPct}%"></div></div>
@@ -722,7 +802,7 @@ function renderMacroBreakdown(macros, remaining) {
     </div>
     <div class="macro-row">
       <div class="macro-row-top">
-        <span>Fat</span>
+        <span>${escapeHtml(ui.stats.fat)}</span>
         <span>${macros.fatGrams.toFixed(0)}g</span>
       </div>
       <div class="macro-bar-wrap"><div class="macro-bar" style="--w:${fatPct}%"></div></div>
@@ -737,7 +817,7 @@ function renderSuggestions() {
 
   const hint = $("#suggestions-day-hint");
   if (hint) {
-    hint.textContent = `Using the day selected on Home: ${formatNiceDate(state.selectedDate)}.`;
+    hint.textContent = ui.suggestionsPage.dayHint(formatNiceDate(state.selectedDate));
   }
 
   const { remaining, suggestions } = computeSuggestions(state.selectedDate);
@@ -746,13 +826,13 @@ function renderSuggestions() {
   const gen = suggestionsOpenverseGen;
 
   if (remaining <= 0) {
-    wrap.innerHTML = `<div class="muted">Nice work. You met your goal for this day.</div>`;
+    wrap.innerHTML = `<div class="muted">${escapeHtml(ui.suggestions.goalMet)}</div>`;
     return;
   }
 
   wrap.innerHTML = "";
   if (suggestions.length === 0) {
-    wrap.innerHTML = `<div class="muted">No suggestions available. Add a custom snack/drink.</div>`;
+    wrap.innerHTML = `<div class="muted">${escapeHtml(ui.suggestions.none)}</div>`;
     return;
   }
 
@@ -760,19 +840,19 @@ function renderSuggestions() {
     const el = document.createElement("div");
     el.className = "suggestion";
     el.innerHTML = `
-      <img alt="" loading="lazy" src="${makeImageUrl(food)}" width="60" height="50" />
+      <img alt="" loading="lazy" src="${IMAGE_PLACEHOLDER_URL}" width="60" height="50" />
       <div>
         <div class="name">${escapeHtml(food.name)}</div>
-        <div class="meta">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 serving")}</div>
+        <div class="meta">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 portie")}</div>
       </div>
-      <button class="btn btn-primary" type="button" data-add="${escapeHtml(food.id)}">Add</button>
+      <button class="btn btn-primary" type="button" data-add="${escapeHtml(food.id)}">${escapeHtml(ui.suggestions.add)}</button>
     `;
     const imgEl = el.querySelector("img");
     if (imgEl) {
       imgEl.dataset.openverse = "1";
       imgEl.dataset.imgQuery = makeImageQuery(food);
-      imgEl.alt = `${food.name || "Food"} (Openverse)`;
-      attachImageErrorFallback(imgEl, food);
+      imgEl.alt = `${food.name || "Product"}`;
+      attachImageErrorFallback(imgEl);
     }
     el.querySelector("button")?.addEventListener("click", () => {
       const log = getLogForDate(state.selectedDate);
@@ -788,94 +868,55 @@ function renderSuggestions() {
   void hydrateOpenverseSuggestionImages(wrap, gen);
 }
 
-function renderMealPlan() {
-  const list = $("#mealplan-list");
-  const meta = $("#mealplan-meta");
-  if (!list || !meta) return;
+function renderRecipes() {
+  const wrap = $("#recipe-cards");
+  if (!wrap) return;
+  wrap.innerHTML = (ui.recipes || [])
+    .map(
+      (r) => `
+    <article class="recipe-card">
+      <div class="recipe-tag">${escapeHtml(r.tag)}</div>
+      <h4>${escapeHtml(r.title)}</h4>
+      <p>${escapeHtml(r.body)}</p>
+    </article>`,
+    )
+    .join("");
+}
 
+function renderWeekStats() {
+  const wrap = $("#week-stats-bars");
+  const goalEl = $("#week-stats-goal");
+  if (!wrap || !goalEl) return;
   const goal = currentGoal();
-  const { consumed } = calcTotalsForDate(state.selectedDate);
-  const remaining = goal - consumed;
-
-  if (remaining <= 0) {
-    meta.textContent = `Remaining: ${Math.round(remaining)} kcal`;
-    list.innerHTML = `<div class="muted">Goal reached today. Nice work.</div>`;
-    return;
+  goalEl.textContent = ui.stats.weekGoal(goal);
+  const end = state.selectedDate;
+  const rows = [];
+  for (let i = 6; i >= 0; i--) {
+    const ymd = addDaysYMD(end, -i);
+    const { consumed } = calcTotalsForDate(ymd);
+    const pct = goal > 0 ? Math.min(100, Math.round((consumed / goal) * 100)) : 0;
+    rows.push({ ymd, consumed, pct });
   }
+  wrap.innerHTML = rows
+    .map(
+      (r) => `
+    <div class="week-stat-row">
+      <span>${escapeHtml(formatShortDay(r.ymd))}</span>
+      <div class="week-stat-bar-wrap" aria-hidden="true"><div class="week-stat-bar" style="width:${r.pct}%"></div></div>
+      <span>${Math.round(r.consumed)}</span>
+    </div>`,
+    )
+    .join("");
+}
 
-  const log = getLogForDate(state.selectedDate);
-  const isLogged = (foodId) => {
-    const entry = log[foodId];
-    const qty = entry && typeof entry === "object" ? entry.qty || 0 : 0;
-    return qty > 0;
-  };
-
-  const allFoods = foodLibrary().filter((f) => f && Number.isFinite(f.caloriesPerServing) && f.caloriesPerServing > 0);
-
-  const mealCandidates = allFoods.filter((f) => f.category === "Meal" && !isLogged(f.id));
-  const snackCandidates = allFoods.filter((f) => ["Snack", "Drink"].includes(f.category) && !isLogged(f.id));
-
-  const slots = [
-    { name: "Breakfast", frac: 0.3, pickFrom: () => mealCandidates },
-    { name: "Lunch", frac: 0.35, pickFrom: () => mealCandidates },
-    { name: "Dinner", frac: 0.25, pickFrom: () => mealCandidates },
-    { name: "Snack/Drink", frac: 0.1, pickFrom: () => snackCandidates.length ? snackCandidates : mealCandidates },
-  ];
-
-  const used = new Set();
-  const picks = []; // [{ slotName, food }]
-
-  const pickFoodClosest = (candidates, target) => {
-    if (!candidates.length) return null;
-    const under = candidates.filter((f) => !used.has(f.id) && f.caloriesPerServing <= target);
-    const pool = under.length ? under : candidates.filter((f) => !used.has(f.id));
-    if (!pool.length) return null;
-    pool.sort((a, b) => Math.abs(a.caloriesPerServing - target) - Math.abs(b.caloriesPerServing - target));
-    return pool[0] || null;
-  };
-
-  for (const slot of slots) {
-    const target = Math.round(remaining * slot.frac);
-    const choice = pickFoodClosest(slot.pickFrom(), target);
-    if (!choice) continue;
-    used.add(choice.id);
-    picks.push({ slotName: slot.name, food: choice });
-    // Stop early if we already filled most of remaining.
-    if (picks.reduce((sum, p) => sum + p.food.caloriesPerServing, 0) >= remaining) break;
+function renderStatsPanel() {
+  if (!document.getElementById("page-stats")) return;
+  const hint = $("#stats-day-hint");
+  if (hint) {
+    hint.textContent = ui.suggestionsPage.dayHint(formatNiceDate(state.selectedDate));
   }
-
-  const planned = picks.reduce((sum, p) => sum + p.food.caloriesPerServing, 0);
-  meta.textContent = `Remaining: ${Math.round(remaining)} kcal · Plan estimate: ${Math.round(planned)} kcal`;
-
-  if (!picks.length) {
-    list.innerHTML = `<div class="muted">No suitable meal plan items found. Add custom foods or search more items.</div>`;
-    return;
-  }
-
-  list.innerHTML = "";
-  for (const pick of picks) {
-    const food = pick.food;
-    const itemEl = document.createElement("div");
-    itemEl.className = "mealplan-item";
-    itemEl.innerHTML = `
-      <div class="left">
-        <div class="mealplan-slot">${escapeHtml(pick.slotName)}</div>
-        <div class="mealplan-name">${escapeHtml(food.name)}</div>
-        <div class="mealplan-meta">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 serving")}</div>
-      </div>
-      <button class="btn btn-primary" type="button">Add</button>
-    `;
-    const btn = itemEl.querySelector("button");
-    btn?.addEventListener("click", () => {
-      ensureFoodInCustom(food);
-      const dayLog = getLogForDate(state.selectedDate);
-      const entry = dayLog[food.id];
-      const existing = entry && typeof entry === "object" ? entry.qty || 0 : 0;
-      setQtyForFood(state.selectedDate, food.id, existing + 1);
-      renderAll();
-    });
-    list.appendChild(itemEl);
-  }
+  renderMacrosPanel();
+  renderWeekStats();
 }
 
 function renderSelectedItems() {
@@ -884,7 +925,7 @@ function renderSelectedItems() {
 
   const { items } = calcTotalsForDate(state.selectedDate);
 
-  const emptyHtml = `<div class="muted">No items logged for this day yet.</div>`;
+  const emptyHtml = `<div class="muted">${escapeHtml(ui.log.empty)}</div>`;
   if (!items.length) {
     for (const wrap of wraps) wrap.innerHTML = emptyHtml;
     return;
@@ -895,11 +936,15 @@ function renderSelectedItems() {
     for (const { food, qty, servingAmount, calories } of items) {
       const row = document.createElement("div");
       row.className = "selected-row";
+      const gramsPart =
+        food.caloriesBaseUnit === "g" && Number.isFinite(servingAmount)
+          ? ` · ${escapeHtml(ui.common.eachGrams(Math.round(servingAmount)))}`
+          : "";
       row.innerHTML = `
         <div>
           <strong>${escapeHtml(food.name)}</strong>
           <div class="muted small">
-            ${escapeHtml(food.category)} · Qty ${qty}${food.caloriesBaseUnit === "g" ? ` · ${Math.round(servingAmount)}g each` : ""}
+            ${escapeHtml(catLabel(food.category))} · ${escapeHtml(ui.common.qtyLabel)} ${qty}${gramsPart}
           </div>
         </div>
         <div class="muted" style="font-weight:900;">${Math.round(calories)} kcal</div>
@@ -907,7 +952,7 @@ function renderSelectedItems() {
       const btn = document.createElement("button");
       btn.className = "btn btn-ghost";
       btn.type = "button";
-      btn.textContent = "Remove";
+      btn.textContent = ui.common.remove;
       btn.addEventListener("click", () => {
         setQtyForFood(state.selectedDate, food.id, 0);
         renderAll();
@@ -923,7 +968,7 @@ function openModalForFood(food) {
   const backdrop = $("#modal-backdrop");
   const modal = $("#modal");
 
-  $("#modal-category").textContent = food.category || "—";
+  $("#modal-category").textContent = catLabel(food.category);
   $("#modal-title").textContent = food.name || "—";
   $("#modal-kcal").textContent = String(Math.round(food.caloriesPerServing));
   $("#modal-serving").textContent = food.servingLabel || "—";
@@ -935,15 +980,17 @@ function openModalForFood(food) {
     ingredients.textContent = "—";
   }
 
-  $("#modal-image").src = makeImageUrl(food);
-  $("#modal-image").alt = `${food.name} photo`;
-  attachImageErrorFallback($("#modal-image"), food);
+  const modalImg = $("#modal-image");
+  modalImg.src = IMAGE_PLACEHOLDER_URL;
+  modalImg.alt = `${food.name || "Product"}`;
+  attachImageErrorFallback(modalImg);
+  void loadOpenverseIntoImg(modalImg, makeImageQuery(food));
 
   const log = getLogForDate(state.selectedDate);
   const entry = log[food.id];
   const qty = entry && typeof entry === "object" ? entry.qty || 0 : 0;
   $("#modal-toggle").dataset.foodId = food.id;
-  $("#modal-toggle").textContent = qty > 0 ? `Remove (currently ${qty})` : "Add / Remove";
+  $("#modal-toggle").textContent = qty > 0 ? ui.modal.toggleQty(qty) : ui.modal.toggle;
 
   backdrop.hidden = false;
   modal.hidden = false;
@@ -985,15 +1032,9 @@ function renderFoodGrid() {
   const log = getLogForDate(state.selectedDate);
 
   if (!foods.length) {
-    grid.innerHTML = `<div class="muted">${nlFoodsLoading ? "Loading Dutch foods..." : "No foods match your search."}</div>`;
+    const msg = nlFoodsLoading ? ui.library.loadingCore : ui.library.noMatch;
+    grid.innerHTML = `<div class="muted">${escapeHtml(msg)}</div>`;
     return;
-  }
-
-  if (nlFoodsLoading && q) {
-    const hint = document.createElement("div");
-    hint.className = "muted small";
-    hint.textContent = "Loading Dutch food database...";
-    grid.appendChild(hint);
   }
 
   for (const food of foods) {
@@ -1011,20 +1052,20 @@ function renderFoodGrid() {
 
     card.innerHTML = `
       <div class="food-thumb">
-        <img alt="" loading="eager" src="${makeImageUrl(food)}" />
+        <img alt="" loading="lazy" src="${IMAGE_PLACEHOLDER_URL}" />
       </div>
       <div class="food-main">
         <div>
           <div class="food-name">${escapeHtml(food.name)}</div>
-          <div class="food-kcal">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 serving")}</div>
+          <div class="food-kcal">${Math.round(food.caloriesPerServing)} kcal · ${escapeHtml(food.servingLabel || "1 portie")}</div>
         </div>
         <div class="food-actions">
           <div class="food-check">
-            <input type="checkbox" ${qty > 0 ? "checked" : ""} aria-label="Log ${escapeHtml(food.name)}" data-food-id="${food.id}" />
-            <span class="muted small">Log</span>
+            <input type="checkbox" ${qty > 0 ? "checked" : ""} aria-label="${escapeHtml(ui.common.log)}: ${escapeHtml(food.name)}" data-food-id="${food.id}" />
+            <span class="muted small">${escapeHtml(ui.common.log)}</span>
           </div>
-          <div class="qty" aria-label="Quantity selector">
-            <button type="button" class="qty-minus" ${qty <= 0 ? "disabled" : ""} data-food-id="${food.id}" aria-label="Decrease quantity">-</button>
+          <div class="qty" aria-label="${escapeHtml(ui.common.qtyLabel)}">
+            <button type="button" class="qty-minus" ${qty <= 0 ? "disabled" : ""} data-food-id="${food.id}" aria-label="${escapeHtml(ui.common.qtyMinus)}">-</button>
             <input
               type="number"
               min="0"
@@ -1034,7 +1075,7 @@ function renderFoodGrid() {
               class="qty-input"
               ${qty <= 0 ? "disabled" : ""}
             />
-            <button type="button" class="qty-plus" data-food-id="${food.id}" aria-label="Increase quantity" ${qty <= 0 ? "disabled" : ""}>+</button>
+            <button type="button" class="qty-plus" data-food-id="${food.id}" aria-label="${escapeHtml(ui.common.qtyPlus)}" ${qty <= 0 ? "disabled" : ""}>+</button>
             ${
               food?.caloriesBaseUnit === "g"
                 ? `<input
@@ -1046,7 +1087,7 @@ function renderFoodGrid() {
                     data-serving-grams="${food.id}"
                     class="grams-input"
                     ${qty <= 0 ? "disabled" : ""}
-                    aria-label="Serving grams for ${escapeHtml(food.name)}"
+                    aria-label="${escapeHtml(ui.common.gramsLabel)} (${escapeHtml(food.name)})"
                   />`
                 : ""
             }
@@ -1057,7 +1098,9 @@ function renderFoodGrid() {
 
     const imgEl = card.querySelector(".food-thumb img");
     if (imgEl) {
-      attachImageErrorFallback(imgEl, food);
+      imgEl.dataset.ovQ = makeImageQuery(food);
+      attachImageErrorFallback(imgEl);
+      observeFoodThumb(imgEl);
     }
 
     card.addEventListener("click", (e) => {
@@ -1134,11 +1177,20 @@ function renderFoodGrid() {
 
     grid.appendChild(card);
   }
+
+  if (q && nlFoodsFullLoading) {
+    const hint = document.createElement("div");
+    hint.className = "muted small";
+    hint.style.gridColumn = "1 / -1";
+    hint.textContent = ui.library.loadingFull;
+    grid.appendChild(hint);
+  }
 }
 
 function ensureImagesInActivePage() {
   const imgs = document.querySelectorAll(".page.is-active img");
   for (const img of imgs) {
+    if (img.getAttribute("loading") === "lazy") continue;
     img.loading = "eager";
     if (typeof img.decode === "function") {
       img.decode().catch(() => {});
@@ -1153,6 +1205,7 @@ function initRouting() {
     "#/suggestions": "page-suggestions",
     "#/library": "page-library",
     "#/log": "page-log",
+    "#/stats": "page-stats",
     "#/settings": "page-settings",
   };
 
@@ -1161,6 +1214,7 @@ function initRouting() {
     { tabId: "tab-suggestions", hash: "#/suggestions" },
     { tabId: "tab-library", hash: "#/library" },
     { tabId: "tab-log", hash: "#/log" },
+    { tabId: "tab-stats", hash: "#/stats" },
     { tabId: "tab-settings", hash: "#/settings" },
   ];
 
@@ -1206,9 +1260,9 @@ function renderAll() {
   // but date strip will highlight schedule days only.
   renderSchedule();
   renderSummary();
-  renderMacrosPanel();
   renderSuggestions();
-  renderMealPlan();
+  renderRecipes();
+  renderStatsPanel();
   renderSelectedItems();
   renderFoodGrid();
 }
@@ -1248,7 +1302,12 @@ function initScheduleForm() {
 
 function initFoodSearch() {
   $("#search")?.addEventListener("input", () => {
+    const q = normalizeSearch($("#search")?.value);
+    if (q.length >= 2) scheduleNlFoodsFullLoad();
     renderFoodGrid();
+  });
+  $("#search")?.addEventListener("focus", () => {
+    scheduleNlFoodsFullLoad();
   });
   $("#category")?.addEventListener("change", () => renderFoodGrid());
 }
@@ -1367,7 +1426,7 @@ function initModals() {
       closeAllModals();
       renderAll();
     } catch (err) {
-      alert(`Import failed: ${err?.message || String(err)}`);
+      alert(ui.alerts.importFailed(err?.message || String(err)));
     }
   });
 
@@ -1389,7 +1448,7 @@ function initModals() {
 
   $("#btn-reset-log").addEventListener("click", () => {
     if (!state?.selectedDate) return;
-    if (!confirm("Clear logged foods for the selected day?")) return;
+    if (!confirm(ui.alerts.resetConfirm)) return;
     state.logs[state.selectedDate] = {};
     saveState();
     renderAll();
@@ -1403,6 +1462,6 @@ initFoodSearch();
 initCustomFoodForm();
 initModals();
 
-loadNlFoodsDataset();
+loadNlFoodsCore();
 renderAll();
 

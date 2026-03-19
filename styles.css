@@ -923,3 +923,76 @@ textarea:focus {
   border-width: 0;
 }
 
+/* Receptkaarten + weekstatistiek */
+.recipe-cards {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  margin-top: 10px;
+}
+
+.recipe-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.recipe-card .recipe-tag {
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(37, 99, 235, 0.95);
+}
+
+.recipe-card h4 {
+  margin: 6px 0 8px;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.recipe-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+.week-stats-bars {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.week-stat-row {
+  display: grid;
+  grid-template-columns: minmax(72px, 110px) 1fr 48px;
+  gap: 10px;
+  align-items: center;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+@media (max-width: 520px) {
+  .week-stat-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+.week-stat-bar-wrap {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.06);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.week-stat-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(31, 157, 85, 0.95), rgba(37, 99, 235, 0.95));
+}
+

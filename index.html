@@ -1,10 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="nl">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Calorie Tracker</title>
-    <meta name="description" content="Track meals and calories, set daily goals, and browse Openverse-powered food suggestions." />
+    <title>Calorieteller</title>
+    <meta
+      name="description"
+      content="Calorieteller: schema, doelen, NL productdatabase en macro-statistieken."
+    />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -13,112 +16,135 @@
         <div class="fitness-banner-bg" aria-hidden="true"></div>
         <div class="container fitness-banner-inner">
           <div class="fitness-banner-text">
-            <p class="fitness-kicker">Train · Fuel · Repeat</p>
-            <h1 class="fitness-title">Calorie Tracker</h1>
-            <p class="fitness-tagline">Hit your daily fuel target with a clear schedule and smart suggestions.</p>
+            <p class="fitness-kicker">Train · Brandstof · Herhaal</p>
+            <h1 class="fitness-title">Calorieteller</h1>
+            <p class="fitness-tagline">
+              Bereik je dagelijkse energiedoel met een duidelijk schema en praktische tips.
+            </p>
           </div>
           <div class="fitness-banner-badge" aria-hidden="true">
             <span class="fitness-icon">◆</span>
-            <span>Stay on track</span>
+            <span>Blijf op koers</span>
           </div>
         </div>
       </div>
 
       <div class="tabs-wrap">
-        <nav class="tabs" aria-label="Sections">
-          <a class="tab" href="#/home" id="tab-home" aria-current="page">Home</a>
-          <a class="tab" href="#/suggestions" id="tab-suggestions">Suggestions</a>
-          <a class="tab" href="#/library" id="tab-library">Food Library</a>
-          <a class="tab" href="#/log" id="tab-log">Log</a>
-          <a class="tab" href="#/settings" id="tab-settings">Data</a>
+        <nav class="tabs" aria-label="Hoofdonderdelen">
+          <a class="tab" href="#/home" id="tab-home" aria-current="page">Start</a>
+          <a class="tab" href="#/suggestions" id="tab-suggestions">Tips &amp; recepten</a>
+          <a class="tab" href="#/library" id="tab-library">Voedingsdatabase</a>
+          <a class="tab" href="#/log" id="tab-log">Dagboek</a>
+          <a class="tab" href="#/stats" id="tab-stats">Macro's &amp; statistiek</a>
+          <a class="tab" href="#/settings" id="tab-settings">Gegevens</a>
         </nav>
       </div>
     </header>
 
     <main class="container">
-      <!-- Home: schedule + compact daily summary -->
+      <!-- Start: schema + compacte samenvatting -->
       <section id="page-home" class="page is-active">
         <section class="grid grid-2">
           <div class="card">
-          <h2>Schedule & Goals</h2>
-          <form id="schedule-form" class="form">
-            <label class="field">
-              <span>Schedule start date</span>
-              <input id="schedule-start" type="date" required />
-            </label>
-            <label class="field">
-              <span>Number of days</span>
-              <input id="schedule-days" type="number" min="1" max="365" value="7" required />
-            </label>
-            <label class="field">
-              <span>Daily calorie goal</span>
-              <input id="schedule-goal" type="number" min="100" max="20000" step="10" required />
-              <span class="hint">Calories per day (used for remaining + suggestions).</span>
-            </label>
-            <div class="row">
-              <button class="btn btn-primary" type="submit">Create schedule</button>
-              <button id="btn-use-today" class="btn" type="button" title="Uses schedule goal for today without changing the schedule.">
-                Use today
-              </button>
-            </div>
-          </form>
+            <h2>Schema &amp; doelen</h2>
+            <form id="schedule-form" class="form">
+              <label class="field">
+                <span>Startdatum schema</span>
+                <input id="schedule-start" type="date" required />
+              </label>
+              <label class="field">
+                <span>Aantal dagen</span>
+                <input id="schedule-days" type="number" min="1" max="365" value="7" required />
+              </label>
+              <label class="field">
+                <span>Dagelijks calorie-doel</span>
+                <input id="schedule-goal" type="number" min="100" max="20000" step="10" required />
+                <span class="hint">Kcal per dag (voor resterend budget en tips).</span>
+              </label>
+              <div class="row">
+                <button class="btn btn-primary" type="submit">Schema opslaan</button>
+                <button
+                  id="btn-use-today"
+                  class="btn"
+                  type="button"
+                  title="Selecteert vandaag; schema blijft hetzelfde."
+                >
+                  Vandaag
+                </button>
+              </div>
+            </form>
 
-          <div class="separator"></div>
+            <div class="separator"></div>
 
-          <div class="date-strip">
-            <div class="date-strip-head">
-              <h3>Pick a day</h3>
-              <div class="muted" id="schedule-meta"></div>
+            <div class="date-strip">
+              <div class="date-strip-head">
+                <h3>Kies een dag</h3>
+                <div class="muted" id="schedule-meta"></div>
+              </div>
+              <div id="date-strip" class="date-strip-list" aria-label="Dagen in schema"></div>
             </div>
-            <div id="date-strip" class="date-strip-list" aria-label="Schedule days"></div>
-          </div>
           </div>
 
           <div class="card summary-compact-card">
-          <h2>Daily summary</h2>
-          <div class="summary summary-compact">
-            <div class="summary-top summary-compact-top">
-              <div>
-                <div class="muted small">Selected day</div>
-                <div class="summary-day" id="selected-day-label">—</div>
-              </div>
-              <div class="summary-compact-ring-block">
-                <div class="pill pill-compact" id="goal-pill">Goal: —</div>
-                <div class="ring-wrap ring-wrap-compact">
-                  <div id="calorie-ring" class="calorie-ring calorie-ring-compact" role="img" aria-label="Calories progress"></div>
-                  <div class="ring-text">
-                    <div class="muted small">Progress</div>
-                    <div id="ring-percent" class="ring-main">0%</div>
+            <h2>Dagelijkse samenvatting</h2>
+            <div class="summary summary-compact">
+              <div class="summary-top summary-compact-top">
+                <div>
+                  <div class="muted small">Geselecteerde dag</div>
+                  <div class="summary-day" id="selected-day-label">—</div>
+                </div>
+                <div class="summary-compact-ring-block">
+                  <div class="pill pill-compact" id="goal-pill">Doel: —</div>
+                  <div class="ring-wrap ring-wrap-compact">
+                    <div
+                      id="calorie-ring"
+                      class="calorie-ring calorie-ring-compact"
+                      role="img"
+                      aria-label="Calorie-voortgang"
+                    ></div>
+                    <div class="ring-text">
+                      <div class="muted small">Voortgang</div>
+                      <div id="ring-percent" class="ring-main">0%</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="progress progress-compact">
-              <div class="progress-bar-wrap progress-bar-wrap-compact">
-                <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+              <div class="progress progress-compact">
+                <div class="progress-bar-wrap progress-bar-wrap-compact">
+                  <div
+                    id="progress-bar"
+                    class="progress-bar"
+                    role="progressbar"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow="0"
+                  ></div>
+                </div>
+                <div class="progress-nums progress-nums-compact">
+                  <div><strong id="consumed-label">0</strong> kcal gegeten</div>
+                  <div><strong id="remaining-label">0</strong> kcal resterend</div>
+                </div>
               </div>
-              <div class="progress-nums progress-nums-compact">
-                <div><strong id="consumed-label">0</strong> kcal eaten</div>
-                <div><strong id="remaining-label">0</strong> kcal remaining</div>
-              </div>
+              <p class="muted small summary-one-liner" id="summary-one-liner" aria-live="polite"></p>
+              <p class="muted small" style="margin: 0">
+                <a class="inline-link" href="#/suggestions">Tips &amp; recepten →</a>
+                voor tussendoortjes en gezonde receptideeën;
+                <a class="inline-link" href="#/stats">macro's &amp; statistiek →</a>
+              </p>
             </div>
-            <p class="muted small summary-one-liner" id="summary-one-liner" aria-live="polite"></p>
-            <p class="muted small" style="margin: 0;">
-              <a class="inline-link" href="#/suggestions">Open suggestions →</a> for snacks, a sample meal plan, and macros.
-            </p>
-          </div>
           </div>
         </section>
       </section>
 
-      <!-- Suggestions: snacks/drinks images via Openverse, meal plan, macros -->
+      <!-- Tips: suggesties + vaste recepten -->
       <section id="page-suggestions" class="page">
         <section class="card">
           <div class="section-head">
             <div>
-              <h2>Suggestions &amp; insights</h2>
+              <h2>Tips &amp; recepten</h2>
               <p class="muted">
-                Snack and drink ideas based on calories left today, plus a quick meal plan and macro breakdown for the selected day.
+                Tussendoortjes en drankjes op basis van je resterende kcal (standaard + eigen producten). Daarnaast
+                vaste, gezonde receptideeën wereldwijd en voor gevogelte, vis en rund.
               </p>
             </div>
           </div>
@@ -126,159 +152,195 @@
           <div class="date-hint muted small" id="suggestions-day-hint"></div>
 
           <div class="suggestions">
-            <h3>Suggestions (snacks/drinks)</h3>
+            <h3>Suggesties (tussendoortjes / drankjes)</h3>
             <p class="muted small">
-              Thumbnails load from the <a href="https://openverse.org/" target="_blank" rel="noopener noreferrer">Openverse</a> catalog (CC-licensed media).
+              Afbeeldingen via
+              <a href="https://openverse.org/" target="_blank" rel="noopener noreferrer">Openverse</a>
+              (CC-media), op basis van productnaam.
             </p>
             <div id="suggestions-list" class="suggestions-list"></div>
           </div>
 
           <div class="separator"></div>
 
-          <div class="mealplan">
-            <h3>Suggested meal plan</h3>
+          <div class="recipes-block">
+            <h3>Gezonde recepten</h3>
             <p class="muted small">
-              Quick plan to help you reach your goal. Click “Add” to log servings.
+              Twee bekende gezonde eetpatronen wereldwijd, plus receptideeën voor kip, vis en rund — ter inspiratie.
             </p>
-            <div id="mealplan-meta" class="muted small"></div>
-            <div id="mealplan-list" class="mealplan-list"></div>
-          </div>
-
-          <div class="separator"></div>
-
-          <div class="macros">
-            <h3>Macro breakdown</h3>
-            <div id="macro-breakdown" class="macro-breakdown"></div>
-            <p class="muted small" style="margin-top: 10px;">
-              Macros come from Open Food Facts when available.
-            </p>
+            <div id="recipe-cards" class="recipe-cards" aria-label="Receptideeën"></div>
           </div>
         </section>
       </section>
 
-      <!-- Food library page -->
+      <!-- Voedingsdatabase -->
       <section id="page-library" class="page">
         <section class="card">
-        <div class="section-head">
-          <div>
-            <h2>Food Library</h2>
-            <p class="muted">
-              Check off what you ate and drank. Quantity multiplies calories.
-              Search uses a compact Dutch foods dataset (from Open Food Facts); calories are shown as “per 100g”.
-            </p>
+          <div class="section-head">
+            <div>
+              <h2>Voedingsdatabase</h2>
+              <p class="muted">
+                Vink af wat je at. Eerst laden we een compacte NL-set; bij zoeken wordt de volledige lijst opgehaald.
+                Calorieën zijn vaak per 100 g.
+              </p>
+            </div>
+            <div class="library-controls">
+              <label class="search">
+                <span class="sr-only">Zoek producten</span>
+                <input
+                  id="search"
+                  type="search"
+                  placeholder="Zoek (bijv. kip, yoghurt, frisdrank)"
+                  autocomplete="off"
+                />
+              </label>
+              <label class="field compact">
+                <span class="sr-only">Categorie</span>
+                <select id="category">
+                  <option value="all">Alle categorieën</option>
+                  <option value="Meal">Maaltijden</option>
+                  <option value="Snack">Tussendoortjes</option>
+                  <option value="Drink">Dranken</option>
+                  <option value="Ingredient">Ingrediënten</option>
+                </select>
+              </label>
+            </div>
           </div>
-          <div class="library-controls">
-            <label class="search">
-              <span class="sr-only">Search foods</span>
-              <input id="search" type="search" placeholder="Search (e.g. chicken, yogurt, soda)" autocomplete="off" />
-            </label>
-            <label class="field compact">
-              <span class="sr-only">Category filter</span>
-              <select id="category">
-                <option value="all">All categories</option>
-                <option value="Meal">Meals</option>
-                <option value="Snack">Snacks</option>
-                <option value="Drink">Drinks</option>
-                <option value="Ingredient">Ingredients</option>
-              </select>
-            </label>
-          </div>
-        </div>
 
-        <div id="food-grid" class="food-grid" aria-live="polite"></div>
+          <div id="food-grid" class="food-grid" aria-live="polite"></div>
         </section>
 
-        <section class="card grid grid-2" style="align-items:start;">
+        <section class="card grid grid-2" style="align-items: start">
           <div>
-            <h2>Selected Items</h2>
+            <h2>Geselecteerd vandaag</h2>
             <div id="selected-items" class="selected-items"></div>
           </div>
 
           <div>
-          <h2>Add Custom Food</h2>
-          <form id="custom-food-form" class="form">
-            <label class="field">
-              <span>Name</span>
-              <input id="custom-name" type="text" required maxlength="80" />
-            </label>
-            <label class="field">
-              <span>Category</span>
-              <select id="custom-category" required>
-                <option value="Meal">Meals</option>
-                <option value="Snack">Snacks</option>
-                <option value="Drink">Drinks</option>
-                <option value="Ingredient">Ingredients</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>Calories per serving</span>
-              <input id="custom-kcal" type="number" min="0" step="1" required />
-            </label>
-            <label class="field">
-              <span>Serving label</span>
-              <input id="custom-serving" type="text" placeholder="e.g. 1 bar (40g)" maxlength="40" />
-            </label>
-            <label class="field">
-              <span>Picture keywords (optional)</span>
-              <input id="custom-image-query" type="text" placeholder="e.g. granola bar, chocolate" maxlength="80" />
-            </label>
-            <label class="field">
-              <span>Ingredients (optional)</span>
-              <textarea id="custom-ingredients" rows="4" placeholder="Comma-separated ingredients (e.g. oats, honey, cocoa)"></textarea>
-            </label>
-            <label class="field">
-              <span>Protein (g) per serving label (optional)</span>
-              <input id="custom-protein" type="number" min="0" step="0.1" />
-            </label>
-            <label class="field">
-              <span>Carbs (g) per serving label (optional)</span>
-              <input id="custom-carbs" type="number" min="0" step="0.1" />
-            </label>
-            <label class="field">
-              <span>Fat (g) per serving label (optional)</span>
-              <input id="custom-fat" type="number" min="0" step="0.1" />
-            </label>
-            <button class="btn btn-primary" type="submit">Add to library</button>
-            <p class="muted small">
-              Note: I cannot scrape “all foods on the internet” automatically. This MVP ships with a starter library, and you can add anything you eat.
-            </p>
-          </form>
+            <h2>Eigen product toevoegen</h2>
+            <form id="custom-food-form" class="form">
+              <label class="field">
+                <span>Naam</span>
+                <input id="custom-name" type="text" required maxlength="80" />
+              </label>
+              <label class="field">
+                <span>Categorie</span>
+                <select id="custom-category" required>
+                  <option value="Meal">Maaltijden</option>
+                  <option value="Snack">Tussendoortjes</option>
+                  <option value="Drink">Dranken</option>
+                  <option value="Ingredient">Ingrediënten</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Kcal per portie</span>
+                <input id="custom-kcal" type="number" min="0" step="1" required />
+              </label>
+              <label class="field">
+                <span>Portie-omschrijving</span>
+                <input id="custom-serving" type="text" placeholder="bijv. 1 reep (40 g)" maxlength="40" />
+              </label>
+              <label class="field">
+                <span>Afbeelding-zoekwoorden (optioneel)</span>
+                <input id="custom-image-query" type="text" placeholder="bijv. mueslireep, chocolade" maxlength="80" />
+              </label>
+              <label class="field">
+                <span>Ingrediënten (optioneel)</span>
+                <textarea
+                  id="custom-ingredients"
+                  rows="4"
+                  placeholder="Komma-gescheiden (bijv. haver, honing, cacao)"
+                ></textarea>
+              </label>
+              <label class="field">
+                <span>Eiwit (g) per portie (optioneel)</span>
+                <input id="custom-protein" type="number" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>Koolhydraten (g) per portie (optioneel)</span>
+                <input id="custom-carbs" type="number" min="0" step="0.1" />
+              </label>
+              <label class="field">
+                <span>Vet (g) per portie (optioneel)</span>
+                <input id="custom-fat" type="number" min="0" step="0.1" />
+              </label>
+              <button class="btn btn-primary" type="submit">Toevoegen aan database</button>
+              <p class="muted small">
+                Voeg handmatig toe wat je eet; er wordt niet automatisch het hele internet ingeladen.
+              </p>
+            </form>
           </div>
         </section>
       </section>
 
-      <!-- Log page -->
+      <!-- Dagboek -->
       <section id="page-log" class="page">
         <section class="card">
           <div class="section-head">
             <div>
-              <h2>Selected Items</h2>
-              <p class="muted">Everything you checked off for the selected day.</p>
+              <h2>Dagboek</h2>
+              <p class="muted">Alles wat je voor de gekozen dag hebt aangevinkt.</p>
             </div>
           </div>
           <div id="selected-items-2" class="selected-items"></div>
         </section>
       </section>
 
-      <!-- Settings page -->
+      <!-- Macro's & statistiek -->
+      <section id="page-stats" class="page">
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <h2>Macro's &amp; statistiek</h2>
+              <p class="muted">
+                Macro’s voor de geselecteerde dag en calorieën van de laatste 7 dagen ten opzichte van je doel.
+              </p>
+            </div>
+          </div>
+          <div class="date-hint muted small" id="stats-day-hint"></div>
+
+          <div class="macros">
+            <h3>Macroverdeling</h3>
+            <div id="macro-breakdown" class="macro-breakdown"></div>
+            <p class="muted small" style="margin-top: 10px">
+              Macro’s komen uit Open Food Facts / je eigen invoer waar beschikbaar.
+            </p>
+          </div>
+
+          <div class="separator"></div>
+
+          <div class="week-stats">
+            <h3>Laatste 7 dagen (kcal)</h3>
+            <p class="muted small" id="week-stats-goal"></p>
+            <div id="week-stats-bars" class="week-stats-bars" aria-label="Calorieën per dag"></div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Gegevens -->
       <section id="page-settings" class="page">
         <section class="card">
           <div class="section-head">
             <div>
-              <h2>Data</h2>
-              <p class="muted">Export/import your data and reset the selected day’s log.</p>
+              <h2>Gegevens</h2>
+              <p class="muted">Exporteren, importeren of het logboek van de gekozen dag wissen.</p>
             </div>
           </div>
-          <div class="row" style="margin-top: 12px;">
-            <button id="btn-export" class="btn btn-ghost" type="button">Export</button>
-            <button id="btn-import" class="btn btn-ghost" type="button">Import</button>
-            <button id="btn-reset-log" class="btn btn-danger" type="button" title="Clears only food logs (keeps schedule + goals).">
-              Reset selected day
+          <div class="row" style="margin-top: 12px">
+            <button id="btn-export" class="btn btn-ghost" type="button">Exporteren</button>
+            <button id="btn-import" class="btn btn-ghost" type="button">Importeren</button>
+            <button
+              id="btn-reset-log"
+              class="btn btn-danger"
+              type="button"
+              title="Wist alleen logs (schema en doelen blijven)."
+            >
+              Dag wissen
             </button>
           </div>
           <div class="separator"></div>
           <p class="muted small">
-            Tip: Export lets you back up your plan + daily checkoffs. Import overwrites current data.
+            Tip: export is je back-up. Import overschrijft de huidige app-gegevens.
           </p>
         </section>
       </section>
@@ -286,31 +348,34 @@
 
     <!-- Details modal -->
     <div id="modal-backdrop" class="modal-backdrop" hidden></div>
-    <div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-label="Food details">
+    <div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-label="Productdetails">
       <div class="modal-inner">
         <div class="modal-head">
           <div>
             <div class="modal-kicker" id="modal-category">—</div>
             <h3 id="modal-title">—</h3>
           </div>
-          <button id="modal-close" class="btn btn-ghost" type="button" aria-label="Close details">Close</button>
+          <button id="modal-close" class="btn btn-ghost" type="button" aria-label="Sluiten">Sluiten</button>
         </div>
         <div class="modal-body">
-          <img id="modal-image" class="modal-image" alt="" loading="eager" />
+          <img id="modal-image" class="modal-image" alt="" loading="lazy" />
           <div class="modal-meta">
-            <div class="meta-row"><span class="muted">Calories</span> <strong id="modal-kcal">—</strong> <span class="muted">kcal per serving</span></div>
-            <div class="meta-row" id="modal-serving-row"><span class="muted">Serving</span> <span id="modal-serving">—</span></div>
             <div class="meta-row">
-              <span class="muted">Ingredients</span>
+              <span class="muted">Calorieën</span> <strong id="modal-kcal">—</strong>
+              <span class="muted">kcal per portie</span>
+            </div>
+            <div class="meta-row" id="modal-serving-row">
+              <span class="muted">Portie</span> <span id="modal-serving">—</span>
+            </div>
+            <div class="meta-row">
+              <span class="muted">Ingrediënten</span>
               <div id="modal-ingredients" class="modal-ingredients"></div>
             </div>
 
-            <div class="row" style="margin-top: 0.75rem;">
-              <button id="modal-toggle" class="btn btn-primary" type="button">Add / Remove</button>
+            <div class="row" style="margin-top: 0.75rem">
+              <button id="modal-toggle" class="btn btn-primary" type="button">Toevoegen / verwijderen</button>
             </div>
-            <div class="muted small">
-              Tip: use the quantity stepper on the card for multi-serving logging.
-            </div>
+            <div class="muted small">Tip: gebruik de hoeveelheid op de kaart voor meerdere porties.</div>
           </div>
         </div>
       </div>
@@ -318,30 +383,28 @@
 
     <!-- Import modal -->
     <div id="import-backdrop" class="modal-backdrop" hidden></div>
-    <div id="import-modal" class="modal" hidden role="dialog" aria-modal="true" aria-label="Import data">
+    <div id="import-modal" class="modal" hidden role="dialog" aria-modal="true" aria-label="Gegevens importeren">
       <div class="modal-inner">
         <div class="modal-head">
           <div>
-            <div class="modal-kicker">Data</div>
-            <h3>Export / Import</h3>
+            <div class="modal-kicker">Gegevens</div>
+            <h3>Exporteren / importeren</h3>
           </div>
-          <button id="import-close" class="btn btn-ghost" type="button" aria-label="Close import">Close</button>
+          <button id="import-close" class="btn btn-ghost" type="button" aria-label="Sluiten">Sluiten</button>
         </div>
         <div class="modal-body">
           <label class="field">
-            <span>Paste JSON</span>
+            <span>Plak JSON</span>
             <textarea id="import-text" rows="8" placeholder='{"schedule":...,"logs":...,"customFoods":[...]}'></textarea>
           </label>
           <div class="row">
-            <button id="btn-do-import" class="btn btn-primary" type="button">Import</button>
+            <button id="btn-do-import" class="btn btn-primary" type="button">Importeren</button>
           </div>
-          <p class="muted small">Import overwrites your current app state.</p>
+          <p class="muted small">Import overschrijft je huidige app-status.</p>
         </div>
       </div>
     </div>
 
-    <script type="module" src="./foods.js"></script>
     <script type="module" src="./app.js"></script>
   </body>
 </html>
-
